@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Silven Tec | Gestão de Projetos</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="style.css">
+    <!-- Supabase JS -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+</head>
+<body>
+    <!-- LOGIN SCREEN -->
+    <div id="login-screen" class="screen active">
+        <div class="login-box">
+            <h1>Silven<span>Tec</span></h1>
+            <p>Acesse seu painel de controle</p>
+            <input type="email" id="email" placeholder="Seu e-mail">
+            <input type="password" id="password" placeholder="Sua senha">
+            <button onclick="handleLogin()">Entrar no Sistema</button>
+            <p class="small">Ainda não tem conta? <a href="#" onclick="toggleAuthMode()">Cadastre-se</a></p>
+        </div>
+    </div>
+
+    <!-- DASHBOARD CONTAINER -->
+    <div id="app-container" class="screen hidden">
+        <aside class="sidebar">
+            <div class="logo">Silven<span>Tec</span></div>
+            <nav id="nav-menu">
+                <!-- Menu injetado via JS baseado na role -->
+            </nav>
+            <button onclick="handleLogout()" class="logout-btn">Sair</button>
+        </aside>
+
+        <main class="content">
+            <header>
+                <h2 id="page-title">Dashboard</h2>
+                <div class="user-info" id="user-display">Usuário</div>
+            </header>
+            
+            <div id="dynamic-content">
+                <!-- Conteúdo das abas carregado aqui -->
+            </div>
+        </main>
+    </div>
+
+    <script src="config.js"></script>
+    <script src="app.js"></script>
+</body>
+</html>
