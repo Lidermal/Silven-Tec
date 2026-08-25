@@ -1,0 +1,63 @@
+:root {
+    --bg-main: #0B0E14;
+    --bg-card: #151B28;
+    --primary: #3B82F6;
+    --success: #10B981;
+    --danger: #EF4444;
+    --text-main: #F8FAFC;
+    --text-muted: #94A3B8;
+    --border: #1E293B;
+}
+
+* { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Inter', sans-serif; }
+body { background-color: var(--bg-main); color: var(--text-main); height: 100vh; overflow: hidden; }
+
+/* Login */
+.screen { width: 100%; height: 100%; position: absolute; top: 0; left: 0; transition: 0.3s; }
+.hidden { opacity: 0; pointer-events: none; z-index: -1; }
+.active { opacity: 1; pointer-events: all; z-index: 10; }
+
+.login-box { 
+    width: 400px; margin: 10% auto; background: var(--bg-card); 
+    padding: 3rem; border-radius: 16px; border: 1px solid var(--border); text-align: center; 
+}
+.login-box h1 { font-size: 2.5rem; margin-bottom: 0.5rem; }
+.login-box span { color: var(--primary); }
+input { 
+    width: 100%; padding: 12px; margin: 10px 0; background: var(--bg-main); 
+    border: 1px solid var(--border); color: white; border-radius: 8px; outline: none; 
+}
+input:focus { border-color: var(--primary); }
+button { 
+    width: 100%; padding: 12px; background: var(--primary); color: white; 
+    border: none; border-radius: 8px; cursor: pointer; font-weight: 600; margin-top: 10px; 
+}
+button:hover { opacity: 0.9; }
+
+/* Layout App */
+#app-container { display: flex; }
+.sidebar { width: 260px; background: var(--bg-card); border-right: 1px solid var(--border); padding: 2rem; display: flex; flex-direction: column; }
+.logo { font-size: 1.5rem; font-weight: 700; margin-bottom: 3rem; }
+.logo span { color: var(--primary); }
+.sidebar nav button { 
+    background: transparent; text-align: left; margin: 5px 0; color: var(--text-muted); 
+}
+.sidebar nav button:hover, .sidebar nav button.active { color: var(--primary); background: rgba(59, 130, 246, 0.1); }
+.logout-btn { margin-top: auto; background: var(--danger); }
+
+.content { flex: 1; padding: 2rem; overflow-y: auto; }
+header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 2rem; }
+
+/* Cards e Listas */
+.grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 1.5rem; }
+.card { background: var(--bg-card); padding: 1.5rem; border-radius: 12px; border: 1px solid var(--border); }
+.card h3 { margin-bottom: 0.5rem; color: var(--primary); }
+.status-badge { padding: 4px 8px; border-radius: 4px; font-size: 0.8rem; background: var(--border); }
+.status-approved { background: rgba(16, 185, 129, 0.2); color: var(--success); }
+.status-pending { background: rgba(245, 158, 11, 0.2); color: #F59E0B; }
+
+/* Tabelas */
+table { width: 100%; border-collapse: collapse; margin-top: 1rem; }
+th, td { text-align: left; padding: 12px; border-bottom: 1px solid var(--border); }
+th { color: var(--text-muted); font-size: 0.9rem; }
+.actions button { width: auto; padding: 6px 12px; margin-right: 5px; font-size: 0.8rem; }
