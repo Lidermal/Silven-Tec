@@ -89,3 +89,14 @@ body {
 
 .footer-links { margin-top: 1.5rem; font-size: 0.85rem; color: var(--text-muted); }
 .footer-links a { color: var(--primary); text-decoration: none; }
+
+/* Transição suave entre telas */
+.hidden { display: none !important; }
+#auth-box { transition: opacity 0.3s ease; }
+
+/* Feedback de erro/sucesso nos inputs */
+.input-group input:invalid:not(:placeholder-shown) { border-color: #ef4444; }
+.input-group input:valid:not(:placeholder-shown) { border-color: #10b981; }
+
+/* Botão desabilitado */
+.btn-primary:disabled { opacity: 0.7; cursor: not-allowed; transform: none !important; }
