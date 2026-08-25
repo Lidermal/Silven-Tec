@@ -1,126 +1,141 @@
-// --- AUTENTICAÇÃO ---
-async function handleLogin() {
-    const email = document.getElementById('email').value;
+// --- CONFIGURAÇÃO E ESTADO ---
+const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+let currentUser = null;
+
+// --- FUNÇÕES DE AUTENTICAÇÃO ---
+async function handleLogin(e) {
+    e.preventDefault();
+    const email = document.getElementById('email').value.trim();
+    const password = document.getElementById('password').value;
+    const btn = document.querySelector('.btn-primary');
+    
+    // Feedback visual de carregamento
+    const originalText = btn.innerText;
+    btn.innerText = 'Verificando...';
+    btn.disabled = true;
+
+    try {
+        const { data, error } = await supabase.auth.signInWithPassword({ email, password });
+        
+        if (error) {
+            if (error.message.includes('Email not confirmed')) {
+                alert('⚠️ E-mail não confirmado! Verifique sua caixa de entrada (ou spam) e clique no link de validação.');
+            } else {
+                alert(`Erro: ${error.message}`);
+            }
+            return;
+        }
+
+        if (data.user) {
+            await loadUserData(data.user);
+        }
+    } catch (err) {
+        alert('Falha na conexão com o servidor.');
+    } finally {
+        btn.innerText = originalText;
+        btn.disabled = false;
+    }
+}
+
+async function handleSignup(e) {
+    e.preventDefault();
+    const email = document.getElementById('email').value.trim();
     const password = document.getElementById('password').value;
     
-    const { data, error } = await supabase.auth.signInWithPassword({ email, password });
-    if (error) return alert(error.message);
-    
-    await loadUserData(data.user);
+    // Validação básica de senha forte
+    if (password.length < 8) {
+        alert('A senha deve ter no mínimo 8 caracteres.');
+        return;
+    }
+
+    const { data, error } = await supabase.auth.signUp({ 
+        email, 
+        password,
+        options: {
+            emailRedirectTo: `${window.location.origin}/dashboard` // Redireciona após confirmar e-mail
+        }
+    });
+
+    if (error) {
+        alert(`Erro ao cadastrar: ${error.message}`);
+    } else {
+        alert('✅ Cadastro realizado! Enviamos um link de confirmação para seu e-mail. Por favor, verifique sua caixa de entrada.');
+        toggleMode(); // Volta para tela de login
+    }
 }
 
+// --- CARREGAMENTO DE DADOS DO USUÁRIO ---
 async function loadUserData(user) {
     currentUser = user;
-    // Busca perfil e role
-    const { data: profile } = await supabase.from('profiles').select('*').eq('id', user.id).single();
-    currentRole = profile?.role || 'client';
     
-    document.getElementById('login-screen').classList.remove('active');
-    document.getElementById('login-screen').classList.add('hidden');
-    document.getElementById('app-container').classList.remove('hidden');
-    document.getElementById('app-container').classList.add('active');
-    document.getElementById('user-display').innerText = profile.full_name || user.email;
-    
-    renderMenu();
-    navigateTo('dashboard');
-}
+    // Busca perfil e role (admin/client)
+    const { data: profile, error } = await supabase
+        .from('profiles')
+        .select('*')
+        .eq('id', user.id)
+        .single();
 
-function renderMenu() {
-    const nav = document.getElementById('nav-menu');
-    let items = [];
-    
-    if (currentRole === 'admin') {
-        items = [
-            { id: 'dashboard', label: '📊 Dashboard' },
-            { id: 'clients', label: '👥 Clientes' },
-            { id: 'projects', label: '🚀 Projetos' },
-            { id: 'docs', label: '📄 Contratos' },
-            { id: 'finance', label: '💰 Financeiro (Asaas)' },
-            { id: 'requests', label: '📨 Solicitações' }
-        ];
-    } else {
-        items = [
-            { id: 'my-docs', label: '📄 Meus Contratos' },
-            { id: 'my-finance', label: '💰 Minhas Parcelas' },
-            { id: 'my-requests', label: '📨 Abrir Chamado' }
-        ];
+    if (error && error.code !== 'PGRST116') { // PGRST116 = não encontrado (primeiro login)
+        console.error('Erro ao buscar perfil:', error);
     }
-    
-    nav.innerHTML = items.map(i => `<button onclick="navigateTo('${i.id}')">${i.label}</button>`).join('');
-}
 
-function navigateTo(page) {
-    document.querySelectorAll('.sidebar button').forEach(b => b.classList.remove('active'));
-    // Lógica simples de roteamento de conteúdo
-    const content = document.getElementById('dynamic-content');
-    const title = document.getElementById('page-title');
-    
-    // Aqui você implementaria o switch case para carregar cada tela
-    // Exemplo simplificado para Projetos (Admin):
-    if (page === 'projects' && currentRole === 'admin') {
-        title.innerText = 'Gerenciamento de Projetos';
-        loadProjects(content);
-    } else if (page === 'dashboard') {
-        title.innerText = 'Visão Geral';
-        content.innerHTML = `<div class="grid"><div class="card"><h3>Projetos Ativos</h3><p>Carregando...</p></div></div>`;
+    // Se for primeiro acesso, cria perfil básico
+    if (!profile) {
+        await supabase.from('profiles').insert({
+            id: user.id,
+            full_name: user.email.split('@')[0],
+            role: 'client' // Padrão é cliente. Admin você cria manualmente no DB.
+        });
     }
-}
 
-// --- MÓDULO DE PROJETOS (ADMIN) ---
-async function loadProjects(container) {
-    const { data, error } = await supabase.from('projects').select('*, profiles(full_name)');
-    if (error) return container.innerHTML = '<p>Erro ao carregar.</p>';
-    
-    let html = `
-        <button onclick="openNewProjectModal()" style="width:auto; margin-bottom:1rem;">+ Novo Projeto</button>
-        <table>
-            <thead><tr><th>Projeto</th><th>Solicitante</th><th>URL</th><th>Integrações</th><th>Ações</th></tr></thead>
-            <tbody>
-    `;
-    
-    data.forEach(p => {
-        html += `
-            <tr>
-                <td>${p.name}</td>
-                <td>${p.profiles?.full_name}</td>
-                <td><a href="${p.url}" target="_blank" style="color:var(--primary)">Acessar</a></td>
-                <td>
-                    <a href="${p.github_url}" target="_blank">GitHub</a> | 
-                    <a href="${p.vercel_url}" target="_blank">Vercel</a> | 
-                    <span style="cursor:pointer" onclick="alert('DB: ${SUPABASE_URL}')">Supabase</span>
-                </td>
-                <td class="actions">
-                    <button onclick="editProject(${p.id})">Editar</button>
-                    <button onclick="deleteProject(${p.id})" style="background:var(--danger)">Excluir</button>
-                </td>
-            </tr>
-        `;
-    });
-    
-    html += '</tbody></table>';
-    container.innerHTML = html;
-}
-
-// --- MÓDULO FINANCEIRO (ASAAS INTEGRATION SIMULATION) ---
-// Nota: Em produção, chame a API do Asaas via Edge Functions da Vercel para não expor a chave
-async function createAsaasPayment(customerName, email, value, dueDate) {
-    // Exemplo de payload para Asaas
-    const payload = {
-        name: customerName,
-        email: email,
-        billingType: 'PIX',
-        value: value,
-        dueDate: dueDate,
-        description: 'Pagamento Projeto Silven Tec'
-    };
-    
-    console.log("Enviando para Asaas:", payload);
-    alert(`Cobrança PIX de R$ ${value} gerada para ${customerName}. (Integração simulada)`);
+    // Transição de tela suave
+    document.getElementById('auth-box').style.opacity = '0';
+    setTimeout(() => {
+        document.getElementById('auth-box').classList.add('hidden');
+        document.getElementById('app-container').classList.remove('hidden');
+        renderMenu(profile?.role || 'client');
+        navigateTo('dashboard');
+    }, 300);
 }
 
 // --- INICIALIZAÇÃO ---
-window.onload = () => {
-    supabase.auth.onAuthStateChange((event, session) => {
+document.addEventListener('DOMContentLoaded', () => {
+    // Verifica se já existe sessão ativa
+    supabase.auth.getSession().then(({ data: { session } }) => {
         if (session) loadUserData(session.user);
     });
-};
+
+    // Listener para mudanças de auth (ex: usuário confirmou e-mail em outra aba)
+    supabase.auth.onAuthStateChange((event, session) => {
+        if (event === 'SIGNED_IN' && session) loadUserData(session.user);
+    });
+
+    // Bind do formulário de login
+    document.getElementById('login-form')?.addEventListener('submit', handleLogin);
+});
+
+// Alternar entre Login e Cadastro
+function toggleMode() {
+    const form = document.getElementById('login-form');
+    const title = document.querySelector('.logo-area p');
+    const footer = document.querySelector('.footer-links');
+    const btn = document.querySelector('.btn-primary');
+    
+    if (form.getAttribute('data-mode') === 'signup') {
+        // Modo Login
+        form.setAttribute('data-mode', 'login');
+        title.innerText = 'Gestão inteligente de projetos e pagamentos';
+        btn.innerText = 'Entrar no Painel';
+        btn.onclick = null;
+        form.onsubmit = handleLogin;
+        footer.innerHTML = 'Não tem conta? <a href="#" onclick="toggleMode()">Solicitar acesso</a>';
+    } else {
+        // Modo Cadastro
+        form.setAttribute('data-mode', 'signup');
+        title.innerText = 'Crie sua conta Silven Tec';
+        btn.innerText = 'Criar Conta';
+        btn.onclick = null;
+        form.onsubmit = handleSignup;
+        footer.innerHTML = 'Já tem conta? <a href="#" onclick="toggleMode()">Fazer login</a>';
+    }
+}
