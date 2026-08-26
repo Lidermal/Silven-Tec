@@ -3,19 +3,23 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Silven Tec | Sistema de Gestão</title>
+    <title>Silven Tec | Sistema</title>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="style.css">
+    <!-- 1. Carrega o Supabase -->
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <!-- 2. Carrega a Configuração (DEVE vir antes do app.js) -->
+    <script src="config.js"></script>
+    <!-- 3. Carrega a Lógica -->
+    <script src="app.js" defer></script>
 </head>
 <body>
-
     <!-- TELA DE LOGIN -->
     <div id="auth-screen" class="screen active">
         <div class="login-container">
             <div class="logo-area">
                 <h1>Silven<span>Tec</span></h1>
-                <p>Gestão inteligente de projetos e pagamentos</p>
+                <p>Gestão inteligente de projetos</p>
             </div>
             <form id="auth-form">
                 <div class="input-group">
@@ -39,7 +43,7 @@
         <aside class="sidebar">
             <div class="logo">Silven<span>Tec</span></div>
             <nav id="sidebar-nav"></nav>
-            <button onclick="logout()" class="btn-logout">Sair do Sistema</button>
+            <button onclick="logout()" class="btn-logout">Sair</button>
         </aside>
         <main class="content">
             <header>
@@ -49,8 +53,5 @@
             <div id="main-content"></div>
         </main>
     </div>
-
-    <script src="config.js"></script>
-    <script src="app.js"></script>
 </body>
 </html>
