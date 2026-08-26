@@ -1,141 +1,163 @@
-// --- CONFIGURAÇÃO E ESTADO ---
-const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
-let currentUser = null;
+// --- ESTADO E INICIALIZAÇÃO ---
+let isLoginMode = true;
 
-// --- FUNÇÕES DE AUTENTICAÇÃO ---
-async function handleLogin(e) {
-    e.preventDefault();
-    const email = document.getElementById('email').value.trim();
-    const password = document.getElementById('password').value;
-    const btn = document.querySelector('.btn-primary');
-    
-    // Feedback visual de carregamento
-    const originalText = btn.innerText;
-    btn.innerText = 'Verificando...';
-    btn.disabled = true;
+document.addEventListener('DOMContentLoaded', async () => {
+    // Verifica sessão existente
+    const { data: { session } } = await supabase.auth.getSession();
+    if (session) await initApp(session.user);
 
-    try {
-        const { data, error } = await supabase.auth.signInWithPassword({ email, password });
-        
-        if (error) {
-            if (error.message.includes('Email not confirmed')) {
-                alert('⚠️ E-mail não confirmado! Verifique sua caixa de entrada (ou spam) e clique no link de validação.');
-            } else {
-                alert(`Erro: ${error.message}`);
-            }
-            return;
-        }
-
-        if (data.user) {
-            await loadUserData(data.user);
-        }
-    } catch (err) {
-        alert('Falha na conexão com o servidor.');
-    } finally {
-        btn.innerText = originalText;
-        btn.disabled = false;
-    }
-}
-
-async function handleSignup(e) {
-    e.preventDefault();
-    const email = document.getElementById('email').value.trim();
-    const password = document.getElementById('password').value;
-    
-    // Validação básica de senha forte
-    if (password.length < 8) {
-        alert('A senha deve ter no mínimo 8 caracteres.');
-        return;
-    }
-
-    const { data, error } = await supabase.auth.signUp({ 
-        email, 
-        password,
-        options: {
-            emailRedirectTo: `${window.location.origin}/dashboard` // Redireciona após confirmar e-mail
-        }
+    // Listener para login/logout
+    supabase.auth.onAuthStateChange((event, session) => {
+        if (event === 'SIGNED_IN') initApp(session.user);
+        if (event === 'SIGNED_OUT') location.reload();
     });
 
-    if (error) {
-        alert(`Erro ao cadastrar: ${error.message}`);
-    } else {
-        alert('✅ Cadastro realizado! Enviamos um link de confirmação para seu e-mail. Por favor, verifique sua caixa de entrada.');
-        toggleMode(); // Volta para tela de login
-    }
-}
+    // Bind do formulário
+    document.getElementById('auth-form').addEventListener('submit', handleAuth);
+});
 
-// --- CARREGAMENTO DE DADOS DO USUÁRIO ---
-async function loadUserData(user) {
-    currentUser = user;
+// --- AUTENTICAÇÃO ---
+async function handleAuth(e) {
+    e.preventDefault();
+    const btn = document.getElementById('auth-btn');
+    const email = document.getElementById('email').value;
+    const password = document.getElementById('password').value;
     
-    // Busca perfil e role (admin/client)
-    const { data: profile, error } = await supabase
-        .from('profiles')
-        .select('*')
-        .eq('id', user.id)
-        .single();
+    btn.innerText = 'Processando...';
+    btn.disabled = true;
 
-    if (error && error.code !== 'PGRST116') { // PGRST116 = não encontrado (primeiro login)
-        console.error('Erro ao buscar perfil:', error);
-    }
-
-    // Se for primeiro acesso, cria perfil básico
-    if (!profile) {
-        await supabase.from('profiles').insert({
-            id: user.id,
-            full_name: user.email.split('@')[0],
-            role: 'client' // Padrão é cliente. Admin você cria manualmente no DB.
+    let res;
+    if (isLoginMode) {
+        res = await supabase.auth.signInWithPassword({ email, password });
+    } else {
+        res = await supabase.auth.signUp({ 
+            email, 
+            password,
+            options: { data: { full_name: email.split('@')[0] } }
         });
     }
 
-    // Transição de tela suave
-    document.getElementById('auth-box').style.opacity = '0';
-    setTimeout(() => {
-        document.getElementById('auth-box').classList.add('hidden');
-        document.getElementById('app-container').classList.remove('hidden');
-        renderMenu(profile?.role || 'client');
-        navigateTo('dashboard');
-    }, 300);
+    btn.innerText = isLoginMode ? 'Entrar no Painel' : 'Criar Conta';
+    btn.disabled = false;
+
+    if (res.error) {
+        alert(res.error.message);
+    } else if (!isLoginMode) {
+        alert('Cadastro realizado! Verifique seu e-mail para confirmar.');
+        toggleAuthMode();
+    }
 }
 
-// --- INICIALIZAÇÃO ---
-document.addEventListener('DOMContentLoaded', () => {
-    // Verifica se já existe sessão ativa
-    supabase.auth.getSession().then(({ data: { session } }) => {
-        if (session) loadUserData(session.user);
-    });
+function toggleAuthMode() {
+    isLoginMode = !isLoginMode;
+    document.getElementById('auth-btn').innerText = isLoginMode ? 'Entrar no Painel' : 'Criar Conta';
+    document.getElementById('auth-toggle').innerText = isLoginMode ? 'Não tem conta? Solicitar acesso' : 'Já tem conta? Fazer login';
+}
 
-    // Listener para mudanças de auth (ex: usuário confirmou e-mail em outra aba)
-    supabase.auth.onAuthStateChange((event, session) => {
-        if (event === 'SIGNED_IN' && session) loadUserData(session.user);
-    });
+async function logout() {
+    await supabase.auth.signOut();
+    location.reload();
+}
 
-    // Bind do formulário de login
-    document.getElementById('login-form')?.addEventListener('submit', handleLogin);
-});
-
-// Alternar entre Login e Cadastro
-function toggleMode() {
-    const form = document.getElementById('login-form');
-    const title = document.querySelector('.logo-area p');
-    const footer = document.querySelector('.footer-links');
-    const btn = document.querySelector('.btn-primary');
+// --- ROTEAMENTO E DASHBOARD ---
+async function initApp(user) {
+    currentUser = user;
     
-    if (form.getAttribute('data-mode') === 'signup') {
-        // Modo Login
-        form.setAttribute('data-mode', 'login');
-        title.innerText = 'Gestão inteligente de projetos e pagamentos';
-        btn.innerText = 'Entrar no Painel';
-        btn.onclick = null;
-        form.onsubmit = handleLogin;
-        footer.innerHTML = 'Não tem conta? <a href="#" onclick="toggleMode()">Solicitar acesso</a>';
-    } else {
-        // Modo Cadastro
-        form.setAttribute('data-mode', 'signup');
-        title.innerText = 'Crie sua conta Silven Tec';
-        btn.innerText = 'Criar Conta';
-        btn.onclick = null;
-        form.onsubmit = handleSignup;
-        footer.innerHTML = 'Já tem conta? <a href="#" onclick="toggleMode()">Fazer login</a>';
+    // Busca perfil e role
+    const { data: profile } = await supabase.from('profiles').select('*').eq('id', user.id).single();
+    currentRole = profile?.role || 'client';
+    
+    document.getElementById('user-name').innerText = profile?.full_name || user.email;
+    
+    // Troca de tela
+    document.getElementById('auth-screen').classList.replace('active', 'hidden');
+    document.getElementById('app-screen').classList.replace('hidden', 'active');
+    
+    renderSidebar();
+    navigateTo('dashboard');
+}
+
+function renderSidebar() {
+    const nav = document.getElementById('sidebar-nav');
+    const items = currentRole === 'admin' ? [
+        { id: 'dashboard', icon: '', label: 'Visão Geral' },
+        { id: 'projects', icon: '', label: 'Projetos' },
+        { id: 'finance', icon: '💰', label: 'Financeiro' },
+        { id: 'clients', icon: '👥', label: 'Clientes' }
+    ] : [
+        { id: 'my-projects', icon: '📁', label: 'Meus Projetos' },
+        { id: 'invoices', icon: '🧾', label: 'Faturas' }
+    ];
+
+    nav.innerHTML = items.map(i => `
+        <button onclick="navigateTo('${i.id}')" id="nav-${i.id}">
+            ${i.icon} ${i.label}
+        </button>
+    `).join('');
+}
+
+function navigateTo(page) {
+    // Atualiza menu ativo
+    document.querySelectorAll('.sidebar button').forEach(b => b.classList.remove('active'));
+    document.getElementById(`nav-${page}`)?.classList.add('active');
+    
+    const title = document.getElementById('page-title');
+    const content = document.getElementById('main-content');
+    
+    // Roteamento simples
+    if (page === 'dashboard') {
+        title.innerText = 'Visão Geral';
+        content.innerHTML = `<div class="grid">
+            <div class="card"><h3>Projetos Ativos</h3><p class="big-number">Carregando...</p></div>
+            <div class="card"><h3>Faturamento Mês</h3><p class="big-number">R$ 0,00</p></div>
+        </div>`;
+        loadStats();
+    } 
+    else if (page === 'projects') {
+        title.innerText = 'Gerenciar Projetos';
+        content.innerHTML = '<button class="btn-primary" style="width:auto; margin-bottom:20px" onclick="addProject()">+ Novo Projeto</button><div id="projects-list"></div>';
+        loadProjects();
     }
+    else {
+        title.innerText = page.charAt(0).toUpperCase() + page.slice(1);
+        content.innerHTML = '<div class="card">Em desenvolvimento...</div>';
+    }
+}
+
+// --- FUNÇÕES DE DADOS (SUPABASE) ---
+async function loadStats() {
+    const { count } = await supabase.from('projects').select('*', { count: 'exact', head: true });
+    document.querySelector('.big-number').innerText = count || 0;
+}
+
+async function loadProjects() {
+    const { data } = await supabase.from('projects').select('*, profiles(full_name)').order('created_at', { ascending: false });
+    const list = document.getElementById('projects-list');
+    
+    if (!data || data.length === 0) {
+        list.innerHTML = '<p>Nenhum projeto encontrado.</p>';
+        return;
+    }
+
+    list.innerHTML = `<table class="data-table">
+        <thead><tr><th>Projeto</th><th>Cliente</th><th>Status</th><th>Ações</th></tr></thead>
+        <tbody>${data.map(p => `
+            <tr>
+                <td><strong>${p.name}</strong><br><small>${p.url || 'Sem URL'}</small></td>
+                <td>${p.profiles?.full_name || 'N/A'}</td>
+                <td><span class="badge">${p.status}</span></td>
+                <td><button class="btn-sm">Editar</button></td>
+            </tr>
+        `).join('')}</tbody>
+    </table>`;
+}
+
+async function addProject() {
+    const name = prompt('Nome do Projeto:');
+    if (!name) return;
+    
+    // Para teste, pega o primeiro cliente que encontrar ou usa null
+    const { error } = await supabase.from('projects').insert({ name, client_id: currentUser.id });
+    if (error) alert(error.message);
+    else loadProjects();
 }
