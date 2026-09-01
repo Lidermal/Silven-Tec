@@ -8,11 +8,19 @@ export default function AdminPanel() {
   const [projects, setProjects] = useState([]);
   const [newProject, setNewProject] = useState({ client_name: '', title: '', total_value: '' });
 
-  const ADMIN_PASSWORD = "SilvenTec2026"; // Sua senha mestra
+  const handleLogin = async () => {
+    const res = await fetch('/api/auth/login', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ password }),
+    });
 
-  const handleLogin = () => {
-    if (password === ADMIN_PASSWORD) setIsAuthenticated(true);
-    else alert("Senha incorreta!");
+    if (res.ok) {
+      setIsAuthenticated(true);
+      fetchProjects();
+    } else {
+      alert("Senha incorreta!");
+    }
   };
 
   const fetchProjects = async () => {
@@ -29,8 +37,6 @@ export default function AdminPanel() {
     fetchProjects();
     setNewProject({ client_name: '', title: '', total_value: '' });
   };
-
-  useEffect(() => { if(isAuthenticated) fetchProjects(); }, [isAuthenticated]);
 
   if (!isAuthenticated) {
     return (
