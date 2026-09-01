@@ -10,8 +10,7 @@ export async function GET() {
 
 export async function POST(req: Request) {
   const body = await req.json();
-  // Gera um token curto de 8 caracteres para o cliente acessar
-  const token = uuidv4().split('-')[0]; 
+  const token = uuidv4().split('-')[0]; // Token curto para o cliente
   
   const { data, error } = await supabase.from('projects').insert([{
     ...body,
