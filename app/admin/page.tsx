@@ -64,7 +64,6 @@ export default function AdminPanel() {
         <button onClick={() => setIsAuthenticated(false)} className="text-sm text-red-400 hover:text-red-300">Sair</button>
       </header>
 
-      {/* Formulário de Novo Projeto */}
       <div className="bg-slate-900/50 p-6 rounded-xl border border-slate-800 mb-8">
         <h2 className="text-xl font-bold mb-4 text-indigo-300">Novo Projeto</h2>
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
@@ -80,14 +79,13 @@ export default function AdminPanel() {
         </button>
       </div>
 
-      {/* Lista de Projetos */}
       <div className="space-y-4">
         {projects.map((p: any) => (
           <div key={p.id} className="p-4 bg-slate-900/30 border border-slate-800 rounded-lg flex justify-between items-center">
             <div>
               <h3 className="font-bold text-white">{p.title}</h3>
               <p className="text-sm text-slate-400">Cliente: {p.client_name}</p>
-              <p className="text-xs text-cyan-500 mt-1">Link do Cliente: /client/{p.access_token}</p>
+              <p className="text-xs text-cyan-500 mt-1">Link: /client/{p.access_token}</p>
             </div>
             <div className="text-right">
               <span className="block text-emerald-400 font-bold">R$ {p.total_value}</span>
