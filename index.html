@@ -50,7 +50,7 @@
             <button onclick="window.navigate('admin-login')" class="btn-primary mt-8 px-10 py-4 text-lg">Acessar Painel Admin</button>
         </section>
 
-        <!-- LOGIN ADMIN -->
+        <!-- LOGIN ADMIN (APENAS SENHA) -->
         <section id="view-admin-login" class="view-section hidden max-w-md mx-auto mt-20 animate-slide-up">
             <div class="glass p-8 rounded-2xl border border-cyan-500/30 shadow-[0_0_30px_rgba(6,182,212,0.1)]">
                 <h2 class="text-2xl font-tech text-center mb-6 text-cyan-300">ACESSO RESTRITO</h2>
@@ -135,14 +135,12 @@
         </section>
     </main>
 
-    <!-- MODAIS PERSONALIZADOS (Substituindo Alert/Prompt) -->
-    
-    <!-- Modal de Token de Acesso -->
+    <!-- MODAIS PERSONALIZADOS -->
     <div id="modal-token" class="fixed inset-0 z-50 hidden flex items-center justify-center bg-black/80 backdrop-blur-sm animate-fade-in">
-        <div class="glass p-8 rounded-2xl border border-cyan-500/30 w-full max-w-md mx-4 transform transition-all scale-100">
+        <div class="glass p-8 rounded-2xl border border-cyan-500/30 w-full max-w-md mx-4">
             <h3 class="text-xl font-tech text-cyan-300 mb-4 text-center">ACESSO DO CLIENTE</h3>
-            <p class="text-slate-400 text-sm mb-4 text-center">Cole seu Link de Acesso completo ou apenas o Token abaixo:</p>
-            <input type="text" id="token-input" placeholder="Ex: https://silventec...?token=XYZ ou XYZ" class="input-field mb-6 text-center tracking-wider uppercase">
+            <p class="text-slate-400 text-sm mb-4 text-center">Cole seu Link de Acesso ou Token (Ex: ST-LEMO-8X9P):</p>
+            <input type="text" id="token-input" placeholder="ST-XXXX-YYYY" class="input-field mb-6 text-center tracking-widest uppercase font-tech">
             <div class="flex gap-3">
                 <button onclick="window.closeModal('modal-token')" class="flex-1 py-3 rounded-lg border border-slate-600 hover:bg-slate-800 transition font-bold">Cancelar</button>
                 <button onclick="window.submitToken()" class="flex-1 py-3 rounded-lg bg-cyan-600 hover:bg-cyan-500 transition font-bold shadow-[0_0_15px_rgba(6,182,212,0.4)]">Acessar</button>
@@ -150,7 +148,6 @@
         </div>
     </div>
 
-    <!-- Modal de Notificação Genérico (Substituto do Alert) -->
     <div id="modal-notification" class="fixed inset-0 z-50 hidden flex items-center justify-center bg-black/80 backdrop-blur-sm animate-fade-in">
         <div class="glass p-6 rounded-2xl border border-slate-700 w-full max-w-sm mx-4 text-center">
             <div id="notif-icon" class="mx-auto mb-4 w-12 h-12 rounded-full flex items-center justify-center bg-slate-800"></div>
