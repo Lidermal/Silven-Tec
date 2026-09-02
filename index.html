@@ -5,6 +5,9 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Silven Tec | Gestão Tecnológica</title>
     
+    <!-- Favicon Oficial -->
+    <link rel="icon" type="image/png" href="https://cdn-icons-png.flaticon.com/512/3067/3067260.png">
+    
     <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
     
@@ -12,79 +15,81 @@
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/signature_pad@4.0.0/dist/signature_pad.umd.min.js"></script>
-    <script src="https://unpkg.com/lucide@latest"></script> <!-- Ícones -->
+    <script src="https://unpkg.com/lucide@latest"></script>
     
     <!-- Fontes Futuristas -->
     <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&family=Inter:wght@300;400;600&display=swap" rel="stylesheet">
-    
-    <!-- CSS Personalizado -->
     <link rel="stylesheet" href="style.css">
 </head>
 <body class="bg-dark text-slate-200 font-inter min-h-screen flex flex-col">
 
-    <!-- NAVBAR -->
+    <!-- NAVBAR COM LOGO OFICIAL -->
     <nav class="glass sticky top-0 z-50 px-6 py-4 flex justify-between items-center border-b border-white/10">
-        <div class="flex items-center gap-2 cursor-pointer" onclick="navigate('home')">
-            <i data-lucide="cpu" class="text-indigo-400 w-8 h-8"></i>
+        <div class="flex items-center gap-3 cursor-pointer" onclick="navigate('home')">
+            <!-- LOGO SVG INLINE SILVEN TEC -->
+            <svg width="40" height="40" viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg" class="drop-shadow-[0_0_8px_rgba(99,102,241,0.6)]">
+                <path d="M75 25H25V45H65V65H25" stroke="#818CF8" stroke-width="8" stroke-linecap="round" stroke-linejoin="round"/>
+                <circle cx="25" cy="25" r="6" fill="#06B6D4"/>
+                <circle cx="75" cy="25" r="6" fill="#06B6D4"/>
+                <circle cx="25" cy="65" r="6" fill="#06B6D4"/>
+                <circle cx="65" cy="45" r="6" fill="#06B6D4"/>
+                <path d="M85 75L65 75L65 85" stroke="#818CF8" stroke-width="6" stroke-linecap="round"/>
+            </svg>
             <span class="text-2xl font-tech tracking-widest text-transparent bg-clip-text bg-gradient-to-r from-indigo-400 to-cyan-400">SILVEN TEC</span>
         </div>
-        <div class="flex gap-4">
+        <div class="flex gap-3">
             <button onclick="navigate('admin-login')" class="px-4 py-2 rounded-lg border border-indigo-500/30 hover:bg-indigo-500/20 transition text-sm font-bold">ADMIN</button>
             <button onclick="checkClientAccess()" class="px-4 py-2 rounded-lg bg-indigo-600 hover:bg-indigo-700 transition text-sm font-bold shadow-[0_0_15px_rgba(99,102,241,0.4)]">CLIENTE</button>
         </div>
     </nav>
 
-    <!-- CONTAINER PRINCIPAL -->
     <main id="app-container" class="flex-grow p-4 md:p-8 max-w-7xl mx-auto w-full relative">
         
-        <!-- TELA: HOME -->
+        <!-- TELA HOME -->
         <section id="view-home" class="view-section flex flex-col items-center justify-center min-h-[60vh] text-center space-y-8 animate-fade-in">
-            <div class="p-8 rounded-full bg-indigo-500/10 border border-indigo-500/20 mb-4">
-                <i data-lucide="rocket" class="w-16 h-16 text-indigo-400"></i>
+            <div class="p-8 rounded-full bg-indigo-500/10 border border-indigo-500/20 mb-4 animate-pulse">
+                <svg width="80" height="80" viewBox="0 0 100 100" fill="none">
+                    <path d="M75 25H25V45H65V65H25" stroke="#818CF8" stroke-width="6" stroke-linecap="round"/>
+                    <circle cx="25" cy="25" r="5" fill="#06B6D4"/><circle cx="75" cy="25" r="5" fill="#06B6D4"/>
+                </svg>
             </div>
             <h1 class="text-5xl md:text-7xl font-tech neon-text">INOVAÇÃO & GESTÃO</h1>
-            <p class="text-slate-400 max-w-2xl text-lg">Sistema completo para gerenciamento de projetos tecnológicos, contratos digitais e pagamentos automatizados via PIX.</p>
-            <div class="flex gap-4 mt-8">
-                <button onclick="navigate('admin-login')" class="btn-primary">Acessar Painel Admin</button>
-            </div>
+            <p class="text-slate-400 max-w-2xl text-lg">Sistema completo para gerenciamento de projetos, contratos digitais assinados e pagamentos PIX automatizados.</p>
+            <button onclick="navigate('admin-login')" class="btn-primary mt-8">Acessar Painel Admin</button>
         </section>
 
-        <!-- TELA: LOGIN ADMIN -->
+        <!-- LOGIN ADMIN -->
         <section id="view-admin-login" class="view-section hidden max-w-md mx-auto mt-20 animate-slide-up">
             <div class="glass p-8 rounded-2xl border border-indigo-500/30 shadow-2xl">
                 <h2 class="text-2xl font-tech text-center mb-6 text-indigo-300">ACESSO RESTRITO</h2>
-                <div class="space-y-4">
-                    <input type="password" id="admin-pass" placeholder="Senha Mestra" class="input-field">
-                    <button onclick="loginAdmin()" class="btn-primary w-full">ENTRAR NO SISTEMA</button>
-                </div>
+                <input type="password" id="admin-pass" placeholder="Senha Mestra" class="input-field mb-4">
+                <button onclick="loginAdmin()" class="btn-primary w-full">ENTRAR NO SISTEMA</button>
                 <p id="login-msg" class="text-red-400 text-center mt-4 text-sm hidden"></p>
             </div>
         </section>
 
-        <!-- TELA: DASHBOARD ADMIN -->
+        <!-- DASHBOARD ADMIN -->
         <section id="view-admin-dash" class="view-section hidden space-y-8 animate-fade-in">
             <div class="flex justify-between items-center">
                 <h2 class="text-3xl font-tech text-cyan-400">PAINEL DE CONTROLE</h2>
                 <button onclick="logout()" class="text-red-400 hover:text-red-300 flex items-center gap-2"><i data-lucide="log-out" size="18"></i> Sair</button>
             </div>
 
-            <!-- Stats Cards -->
             <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
                 <div class="glass p-6 rounded-xl border-l-4 border-indigo-500">
-                    <p class="text-slate-400 text-sm uppercase">Projetos Ativos</p>
+                    <p class="text-slate-400 text-xs uppercase">Projetos Ativos</p>
                     <h3 id="stat-projects" class="text-3xl font-bold text-white mt-2">-</h3>
                 </div>
                 <div class="glass p-6 rounded-xl border-l-4 border-emerald-500">
-                    <p class="text-slate-400 text-sm uppercase">Receita Pendente</p>
+                    <p class="text-slate-400 text-xs uppercase">Receita Pendente</p>
                     <h3 id="stat-revenue" class="text-3xl font-bold text-emerald-400 mt-2">R$ 0,00</h3>
                 </div>
                 <div class="glass p-6 rounded-xl border-l-4 border-purple-500">
-                    <p class="text-slate-400 text-sm uppercase">Contratos Assinados</p>
+                    <p class="text-slate-400 text-xs uppercase">Contratos Assinados</p>
                     <h3 id="stat-contracts" class="text-3xl font-bold text-purple-400 mt-2">-</h3>
                 </div>
             </div>
 
-            <!-- Ações Rápidas -->
             <div class="glass p-6 rounded-xl">
                 <h3 class="text-xl font-bold mb-4 text-indigo-300 flex items-center gap-2"><i data-lucide="plus-circle"></i> Novo Projeto</h3>
                 <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
@@ -95,16 +100,13 @@
                 </div>
             </div>
 
-            <!-- Lista de Projetos -->
             <div class="glass p-6 rounded-xl">
                 <h3 class="text-xl font-bold mb-4 text-slate-300">Projetos Recentes</h3>
-                <div id="admin-projects-list" class="space-y-3">
-                    <!-- Inserido via JS -->
-                </div>
+                <div id="admin-projects-list" class="space-y-3"></div>
             </div>
         </section>
 
-        <!-- TELA: ÁREA DO CLIENTE -->
+        <!-- ÁREA DO CLIENTE -->
         <section id="view-client-area" class="view-section hidden max-w-4xl mx-auto space-y-8 animate-fade-in">
             <div class="glass p-8 rounded-2xl border border-indigo-500/20">
                 <div class="flex justify-between items-start mb-6">
@@ -115,7 +117,6 @@
                     <span id="client-status-badge" class="px-3 py-1 rounded-full bg-slate-800 text-xs font-bold border border-slate-700">STATUS</span>
                 </div>
 
-                <!-- Tabs Cliente -->
                 <div class="flex gap-2 mb-6 border-b border-slate-800 pb-2 overflow-x-auto">
                     <button onclick="switchClientTab('overview')" class="tab-btn active" data-tab="overview">Visão Geral</button>
                     <button onclick="switchClientTab('finance')" class="tab-btn" data-tab="finance">Financeiro & PIX</button>
@@ -123,7 +124,7 @@
                     <button onclick="switchClientTab('support')" class="tab-btn" data-tab="support">Suporte</button>
                 </div>
 
-                <!-- Conteúdo Tab: Visão Geral -->
+                <!-- TAB VISÃO GERAL -->
                 <div id="tab-overview" class="client-tab-content">
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                         <div class="bg-slate-900/50 p-6 rounded-xl">
@@ -131,70 +132,64 @@
                             <p id="client-deadline" class="text-2xl font-bold text-white">--/--/----</p>
                         </div>
                         <div class="bg-slate-900/50 p-6 rounded-xl">
-                            <h4 class="text-slate-500 text-xs uppercase mb-2">Progresso Estimado</h4>
+                            <h4 class="text-slate-500 text-xs uppercase mb-2">Progresso</h4>
                             <div class="w-full bg-slate-800 rounded-full h-2.5 mt-3">
                                 <div class="bg-indigo-500 h-2.5 rounded-full" style="width: 45%"></div>
                             </div>
-                            <p class="text-right text-xs text-indigo-400 mt-1">Em desenvolvimento</p>
                         </div>
                     </div>
                 </div>
 
-                <!-- Conteúdo Tab: Financeiro -->
+                <!-- TAB FINANCEIRO -->
                 <div id="tab-finance" class="client-tab-content hidden">
                     <div class="bg-slate-900/50 p-6 rounded-xl text-center space-y-4">
                         <h3 class="text-xl font-bold text-emerald-400">Pagamento do Projeto</h3>
                         <p class="text-slate-400">Valor Total: <span id="client-total-value" class="text-white font-bold text-xl">R$ 0,00</span></p>
                         
                         <div id="pix-area" class="hidden p-4 bg-white rounded-lg inline-block">
-                            <!-- QR Code será inserido aqui -->
                             <img id="pix-qr-img" src="" alt="QR Code PIX" class="w-48 h-48 mx-auto mb-2">
-                            <p class="text-black text-xs font-mono break-all" id="pix-copy-paste"></p>
-                            <button onclick="copyPix()" class="mt-2 text-xs bg-slate-200 px-2 py-1 rounded text-black">Copiar Código</button>
+                            <p class="text-black text-xs font-mono break-all px-2" id="pix-copy-paste"></p>
+                            <button onclick="copyPix()" class="mt-2 text-xs bg-slate-200 px-2 py-1 rounded text-black hover:bg-slate-300">Copiar Código</button>
                         </div>
 
                         <button id="btn-generate-pix" onclick="generatePixPayment()" class="btn-primary w-full md:w-auto">
                             <i data-lucide="qr-code" class="inline mr-2"></i> Gerar PIX Agora
                         </button>
+                        <p id="pix-loading" class="hidden text-indigo-400 text-sm animate-pulse">Gerando cobrança segura...</p>
                     </div>
                 </div>
 
-                <!-- Conteúdo Tab: Contrato -->
+                <!-- TAB CONTRATO -->
                 <div id="tab-contract" class="client-tab-content hidden space-y-6">
                     <div class="bg-slate-900/50 p-6 rounded-xl">
                         <h3 class="font-bold mb-4">Assinatura Eletrônica</h3>
-                        <p class="text-sm text-slate-400 mb-4">Desenhe sua assinatura abaixo para validar o contrato digital.</p>
-                        <canvas id="signature-pad" class="w-full h-40 bg-white rounded-lg border border-slate-700 cursor-crosshair"></canvas>
+                        <canvas id="signature-pad" class="w-full h-40 bg-white rounded-lg border border-slate-700 cursor-crosshair touch-none"></canvas>
                         <div class="flex gap-2 mt-4">
-                            <button onclick="clearSignature()" class="px-4 py-2 bg-slate-700 rounded text-sm">Limpar</button>
+                            <button onclick="clearSignature()" class="px-4 py-2 bg-slate-700 rounded text-sm hover:bg-slate-600">Limpar</button>
                             <button onclick="signContract()" class="btn-success flex-grow">Assinar Contrato</button>
                         </div>
                     </div>
                     <div id="contract-signed-msg" class="hidden p-4 bg-emerald-900/30 border border-emerald-500/30 rounded-lg text-emerald-400 text-center">
-                        <i data-lucide="check-circle" class="inline mr-2"></i> Contrato assinado com sucesso! PDF gerado.
+                        <i data-lucide="check-circle" class="inline mr-2"></i> Contrato assinado! PDF baixado automaticamente.
                     </div>
                 </div>
 
-                <!-- Conteúdo Tab: Suporte -->
+                <!-- TAB SUPORTE -->
                 <div id="tab-support" class="client-tab-content hidden">
                     <div class="bg-slate-900/50 p-6 rounded-xl">
                         <h3 class="font-bold mb-4">Abrir Solicitação</h3>
-                        <textarea id="support-msg" rows="4" placeholder="Descreva sua dúvida ou solicitação de alteração..." class="input-field w-full"></textarea>
+                        <textarea id="support-msg" rows="4" placeholder="Descreva sua dúvida ou solicitação..." class="input-field w-full"></textarea>
                         <button onclick="sendSupportMessage()" class="btn-primary mt-4">Enviar para Admin</button>
                     </div>
                     <div class="mt-6">
-                        <h4 class="text-sm text-slate-500 uppercase mb-3">Histórico de Mensagens</h4>
-                        <div id="support-history" class="space-y-3 max-h-60 overflow-y-auto pr-2">
-                            <!-- Mensagens via JS -->
-                        </div>
+                        <h4 class="text-sm text-slate-500 uppercase mb-3">Histórico</h4>
+                        <div id="support-history" class="space-y-3 max-h-60 overflow-y-auto pr-2"></div>
                     </div>
                 </div>
             </div>
         </section>
-
     </main>
 
-    <!-- SCRIPT PRINCIPAL -->
     <script src="app.js"></script>
     <script>lucide.createIcons();</script>
 </body>
