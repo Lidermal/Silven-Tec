@@ -1,17 +1,71 @@
 document.addEventListener('DOMContentLoaded', () => {
     
-    // CONFIGURAÇÃO SUPABASE
     const SUPABASE_URL = 'https://evwsxwkvtjgexhjwofxh.supabase.co';
     const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImV2d3N4d2t2dGpnZXhoandvZnhoIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODc2ODk0MDEsImV4cCI6MjEwMzI2NTQwMX0.oN_ATHMc7KBHC7NA7O35Q5nS3H4OxSIAXMXvE7xYXCA';
-
     const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+    
     let signaturePad;
     let currentProjectId = null;
 
     // ==========================================
-    // FUNÇÕES GLOBAIS
+    // SISTEMA DE MODAIS PERSONALIZADOS
     // ==========================================
+    window.showNotification = function(message, type = 'info') {
+        const modal = document.getElementById('modal-notification');
+        const msgEl = document.getElementById('notif-message');
+        const iconEl = document.getElementById('notif-icon');
+        
+        msgEl.textContent = message;
+        modal.classList.remove('hidden');
+        
+        if(type === 'success') {
+            iconEl.innerHTML = '<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#10b981" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>';
+            iconEl.className = "mx-auto mb-4 w-12 h-12 rounded-full flex items-center justify-center bg-emerald-900/30 border border-emerald-500/30";
+        } else if (type === 'error') {
+            iconEl.innerHTML = '<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#ef4444" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><line x1="15" y1="9" x2="9" y2="15"></line><line x1="9" y1="9" x2="15" y2="15"></line></svg>';
+            iconEl.className = "mx-auto mb-4 w-12 h-12 rounded-full flex items-center justify-center bg-red-900/30 border border-red-500/30";
+        } else {
+            iconEl.innerHTML = '<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#06b6d4" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="16" x2="12" y2="12"></line><line x1="12" y1="8" x2="12.01" y2="8"></line></svg>';
+            iconEl.className = "mx-auto mb-4 w-12 h-12 rounded-full flex items-center justify-center bg-cyan-900/30 border border-cyan-500/30";
+        }
+    };
 
+    window.closeModal = function(modalId) {
+        document.getElementById(modalId).classList.add('hidden');
+    };
+
+    window.openTokenModal = function() {
+        document.getElementById('modal-token').classList.remove('hidden');
+        document.getElementById('token-input').value = '';
+        document.getElementById('token-input').focus();
+    };
+
+    window.submitToken = function() {
+        const input = document.getElementById('token-input').value.trim().toUpperCase();
+        if(!input) return window.showNotification("Por favor, insira um token válido.", "error");
+        
+        // Aceita tanto o token puro quanto a URL completa
+        const cleanToken = input.includes('token=') ? input.split('token=')[1].split('&')[0] : input;
+        window.closeModal('modal-token');
+        window.loadClientArea(cleanToken);
+    };
+
+    // ==========================================
+    // GERADOR DE TOKEN PERSONALIZADO
+    // Formato: ST-[4 LETRAS DO NOME]-[4 CARACTERES ÚNICOS]
+    // ==========================================
+    function generateSmartToken(clientName) {
+        const prefix = "ST";
+        // Pega as primeiras 4 letras do nome, remove espaços e acentos
+        const namePart = clientName.normalize("NFD").replace(/[\u0300-\u036f]/g, "").replace(/[^a-zA-Z]/g, "").substring(0, 4).toUpperCase().padEnd(4, 'X');
+        // Gera 4 caracteres alfanuméricos únicos
+        const uniquePart = Math.random().toString(36).substring(2, 6).toUpperCase();
+        return `${prefix}-${namePart}-${uniquePart}`;
+    }
+
+    // ==========================================
+    // NAVEGAÇÃO E LÓGICA PRINCIPAL
+    // ==========================================
     window.navigate = function(viewId) {
         document.querySelectorAll('.view-section').forEach(el => el.classList.add('hidden'));
         const target = document.getElementById(`view-${viewId}`);
@@ -33,34 +87,38 @@ document.addEventListener('DOMContentLoaded', () => {
         if(tabName === 'contract') window.initSignaturePad();
     };
 
-    // ADMINISTRAÇÃO
+    // ADMINISTRAÇÃO COM TABELA USERS
     window.loginAdmin = async function() {
+        const user = document.getElementById('admin-user').value.trim();
         const pass = document.getElementById('admin-pass').value;
         const msgEl = document.getElementById('login-msg');
         
+        if(!user || !pass) return window.showNotification("Preencha usuário e senha!", "error");
+
         try {
-            const { data, error } = await supabase
-                .from('system_config')
-                .select('config_value')
-                .eq('config_key', 'admin_password_hash')
-                .single();
+            // Busca usuário na tabela 'users'
+            const { data, error } = await supabase.from('users').select('*').eq('username', user).single();
+            
+            if(error || !data) {
+                msgEl.textContent = "Usuário não encontrado!";
+                msgEl.classList.remove('hidden');
+                return;
+            }
 
-            if(error || !data) throw new Error("Configuração não encontrada");
-
+            // Valida hash SHA-256
             const encoder = new TextEncoder();
             const hashBuffer = await crypto.subtle.digest('SHA-256', encoder.encode(pass));
             const hashHex = Array.from(new Uint8Array(hashBuffer)).map(b => b.toString(16).padStart(2, '0')).join('');
 
-            if(hashHex === data.config_value) {
-                sessionStorage.setItem('silven_admin', 'true');
+            if(hashHex === data.password_hash) {
+                sessionStorage.setItem('silven_admin', JSON.stringify({ username: data.username, role: data.role }));
                 window.navigate('admin-dash');
             } else {
                 msgEl.textContent = "Senha incorreta!";
                 msgEl.classList.remove('hidden');
             }
         } catch(e) {
-            msgEl.textContent = "Erro de conexão: " + e.message;
-            msgEl.classList.remove('hidden');
+            window.showNotification("Erro ao validar login: " + e.message, "error");
         }
     };
 
@@ -70,7 +128,8 @@ document.addEventListener('DOMContentLoaded', () => {
     };
 
     window.loadAdminDashboard = async function() {
-        if(!sessionStorage.getItem('silven_admin')) return window.navigate('admin-login');
+        const session = sessionStorage.getItem('silven_admin');
+        if(!session) return window.navigate('admin-login');
 
         const { data: projects, error } = await supabase.from('projects').select('*').order('created_at', {ascending: false});
         const list = document.getElementById('admin-projects-list');
@@ -93,8 +152,8 @@ document.addEventListener('DOMContentLoaded', () => {
                 <div class="flex justify-between items-center p-4 bg-slate-800/40 rounded-lg border border-slate-700 hover:border-cyan-500/50 transition group">
                     <div>
                         <h4 class="font-bold text-white">${p.title}</h4>
-                        <p class="text-xs text-slate-400">${p.client_name} • ${new Date(p.created_at).toLocaleDateString()}</p>
-                        <p class="text-[10px] text-cyan-400 mt-1 select-all opacity-0 group-hover:opacity-100 transition cursor-pointer" onclick="navigator.clipboard.writeText('${link}')">📋 Copiar Link Cliente</p>
+                        <p class="text-xs text-slate-400">${p.client_name} • Token: <span class="text-cyan-400 font-tech">${p.access_token}</span></p>
+                        <p class="text-[10px] text-slate-500 mt-1 select-all opacity-0 group-hover:opacity-100 transition cursor-pointer" onclick="navigator.clipboard.writeText('${link}')">📋 Copiar Link Completo</p>
                     </div>
                     <div class="text-right">
                         <span class="block text-emerald-400 font-bold">R$ ${Number(p.total_value).toFixed(2)}</span>
@@ -110,22 +169,28 @@ document.addEventListener('DOMContentLoaded', () => {
     };
 
     window.createProject = async function() {
-        const client = document.getElementById('new-client').value;
-        const title = document.getElementById('new-title').value;
+        const client = document.getElementById('new-client').value.trim();
+        const title = document.getElementById('new-title').value.trim();
         const value = document.getElementById('new-value').value;
 
-        if(!client || !title || !value) return alert("Preencha todos os campos!");
+        if(!client || !title || !value) return window.showNotification("Preencha todos os campos obrigatórios!", "error");
 
-        const token = Math.random().toString(36).substring(2, 10).toUpperCase();
+        // GERA TOKEN PERSONALIZADO AQUI
+        const smartToken = generateSmartToken(client);
         const deadline = new Date(Date.now() + 30*24*60*60*1000).toISOString().split('T')[0];
 
         const { error } = await supabase.from('projects').insert([{
-            client_name: client, title, total_value: value, access_token: token, status: 'em_andamento', deadline
+            client_name: client, 
+            title, 
+            total_value: value, 
+            access_token: smartToken, 
+            status: 'em_andamento', 
+            deadline
         }]);
 
-        if(error) alert("Erro ao criar: " + error.message);
+        if(error) window.showNotification("Erro ao criar projeto: " + error.message, "error");
         else {
-            alert(`✅ Projeto criado!\nToken: ${token}\nLink: ${window.location.origin}${window.location.pathname}?token=${token}`);
+            window.showNotification(`Projeto criado!\nToken Personalizado: ${smartToken}`, "success");
             document.getElementById('new-client').value = '';
             document.getElementById('new-title').value = '';
             document.getElementById('new-value').value = '';
@@ -134,25 +199,13 @@ document.addEventListener('DOMContentLoaded', () => {
     };
 
     // ÁREA DO CLIENTE
-    window.checkClientAccess = function() {
-        const params = new URLSearchParams(window.location.search);
-        const token = params.get('token');
-        if(token) window.loadClientArea(token);
-        else {
-            const input = prompt("Cole seu Link de Acesso ou Token:");
-            if(input) {
-                const cleanToken = input.includes('token=') ? input.split('token=')[1] : input;
-                window.location.search = `?token=${cleanToken.trim()}`;
-            }
-        }
-    };
-
     window.loadClientArea = async function(token) {
         window.navigate('client-area');
         const { data, error } = await supabase.from('projects').select('*').eq('access_token', token).single();
 
         if(error || !data) {
             document.getElementById('client-proj-title').textContent = "Projeto Não Encontrado";
+            window.showNotification("Token inválido ou projeto inexistente.", "error");
             return;
         }
 
@@ -182,9 +235,10 @@ document.addEventListener('DOMContentLoaded', () => {
             document.getElementById('pix-qr-img').src = `https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=${encodeURIComponent(mpLink)}`;
             document.getElementById('pix-copy-paste').textContent = mpLink;
             document.getElementById('pix-area').classList.remove('hidden');
+            window.showNotification("PIX gerado com sucesso!", "success");
             
         } catch(e) {
-            alert("Erro ao gerar PIX: " + e.message);
+            window.showNotification("Erro ao gerar PIX: " + e.message, "error");
             btn.classList.remove('hidden');
         } finally {
             loading.classList.add('hidden');
@@ -193,7 +247,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     window.copyPix = function() {
         const code = document.getElementById('pix-copy-paste').textContent;
-        navigator.clipboard.writeText(code).then(() => alert("✅ Código copiado!"));
+        navigator.clipboard.writeText(code).then(() => window.showNotification("Código PIX copiado!", "success"));
     };
 
     // CONTRATO
@@ -209,7 +263,7 @@ document.addEventListener('DOMContentLoaded', () => {
     window.clearSignature = function() { if(signaturePad) signaturePad.clear(); };
 
     window.signContract = async function() {
-        if(!signaturePad || signaturePad.isEmpty()) return alert("Por favor, assine antes de continuar.");
+        if(!signaturePad || signaturePad.isEmpty()) return window.showNotification("Por favor, realize sua assinatura antes de continuar.", "error");
         
         const dataURL = signaturePad.toDataURL();
         const { jsPDF } = window.jspdf;
@@ -233,19 +287,22 @@ document.addEventListener('DOMContentLoaded', () => {
         
         await supabase.from('contracts').upsert({ 
             project_id: currentProjectId, 
-            signed_client: true, 
-            signed_at: new Date().toISOString(),
-            signature_data: dataURL 
+            signature_data: dataURL,
+            signed_at: new Date().toISOString()
         }, { onConflict: 'project_id' });
         
+        // Atualiza status do projeto
+        await supabase.from('projects').update({ signed_client: true }).eq('id', currentProjectId);
+        
         document.getElementById('contract-signed-msg').classList.remove('hidden');
+        window.showNotification("Contrato assinado e PDF gerado!", "success");
         window.loadAdminDashboard();
     };
 
     // SUPORTE
     window.sendSupportMessage = async function() {
-        const msg = document.getElementById('support-msg').value;
-        if(!msg) return;
+        const msg = document.getElementById('support-msg').value.trim();
+        if(!msg) return window.showNotification("Escreva uma mensagem antes de enviar.", "error");
 
         const { error } = await supabase.from('requests').insert([{
             project_id: currentProjectId,
@@ -254,20 +311,16 @@ document.addEventListener('DOMContentLoaded', () => {
             created_at: new Date().toISOString()
         }]);
 
-        if(error) alert("Erro ao enviar: " + error.message);
+        if(error) window.showNotification("Erro ao enviar mensagem: " + error.message, "error");
         else {
             document.getElementById('support-msg').value = '';
             window.loadSupportMessages();
-            alert("✅ Solicitação enviada!");
+            window.showNotification("Solicitação enviada ao administrador!", "success");
         }
     };
 
     window.loadSupportMessages = async function() {
-        const { data } = await supabase.from('requests')
-            .select('*')
-            .eq('project_id', currentProjectId)
-            .order('created_at', { ascending: true });
-        
+        const { data } = await supabase.from('requests').select('*').eq('project_id', currentProjectId).order('created_at', { ascending: true });
         const history = document.getElementById('support-history');
         history.innerHTML = '';
         
@@ -284,7 +337,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // INICIALIZAÇÃO AUTOMÁTICA
     if(sessionStorage.getItem('silven_admin')) window.navigate('admin-dash');
-    else if(new URLSearchParams(window.location.search).get('token')) window.checkClientAccess();
+    else if(new URLSearchParams(window.location.search).get('token')) window.loadClientArea(new URLSearchParams(window.location.search).get('token'));
     else window.navigate('home');
 
 });
