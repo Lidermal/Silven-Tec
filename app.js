@@ -44,7 +44,6 @@ document.addEventListener('DOMContentLoaded', () => {
         const input = document.getElementById('token-input').value.trim().toUpperCase();
         if(!input) return window.showNotification("Por favor, insira um token válido.", "error");
         
-        // Aceita tanto o token puro quanto a URL completa
         const cleanToken = input.includes('token=') ? input.split('token=')[1].split('&')[0] : input;
         window.closeModal('modal-token');
         window.loadClientArea(cleanToken);
@@ -56,9 +55,7 @@ document.addEventListener('DOMContentLoaded', () => {
     // ==========================================
     function generateSmartToken(clientName) {
         const prefix = "ST";
-        // Pega as primeiras 4 letras do nome, remove espaços e acentos
         const namePart = clientName.normalize("NFD").replace(/[\u0300-\u036f]/g, "").replace(/[^a-zA-Z]/g, "").substring(0, 4).toUpperCase().padEnd(4, 'X');
-        // Gera 4 caracteres alfanuméricos únicos
         const uniquePart = Math.random().toString(36).substring(2, 6).toUpperCase();
         return `${prefix}-${namePart}-${uniquePart}`;
     }
@@ -87,38 +84,38 @@ document.addEventListener('DOMContentLoaded', () => {
         if(tabName === 'contract') window.initSignaturePad();
     };
 
-    // ADMINISTRAÇÃO COM TABELA USERS
+    // ADMINISTRAÇÃO (CORRIGIDO: APENAS SENHA)
     window.loginAdmin = async function() {
-        const user = document.getElementById('admin-user').value.trim();
         const pass = document.getElementById('admin-pass').value;
         const msgEl = document.getElementById('login-msg');
         
-        if(!user || !pass) return window.showNotification("Preencha usuário e senha!", "error");
+        if(!pass) return window.showNotification("Digite a senha mestra!", "error");
 
         try {
-            // Busca usuário na tabela 'users'
-            const { data, error } = await supabase.from('users').select('*').eq('username', user).single();
+            // Busca o hash armazenado no banco (usando system_config como fallback seguro)
+            // Se preferir usar a tabela users, mude para: .from('users').select('password_hash').eq('username', 'janaelson').single();
+            const { data, error } = await supabase.from('system_config').select('config_value').eq('config_key', 'admin_password_hash').single();
             
-            if(error || !data) {
-                msgEl.textContent = "Usuário não encontrado!";
-                msgEl.classList.remove('hidden');
-                return;
-            }
+            // Fallback: Se não achar no config, usa o hash direto da nova senha para garantir login imediato
+            const correctHash = '3a7bd3e2360a3d29eea436fcfb7e44c735d117c42d1c1835420b6b9942dd4f1b'; 
+            
+            let storedHash = correctHash;
+            if (!error && data) storedHash = data.config_value;
 
             // Valida hash SHA-256
             const encoder = new TextEncoder();
             const hashBuffer = await crypto.subtle.digest('SHA-256', encoder.encode(pass));
             const hashHex = Array.from(new Uint8Array(hashBuffer)).map(b => b.toString(16).padStart(2, '0')).join('');
 
-            if(hashHex === data.password_hash) {
-                sessionStorage.setItem('silven_admin', JSON.stringify({ username: data.username, role: data.role }));
+            if(hashHex === storedHash) {
+                sessionStorage.setItem('silven_admin', 'true');
                 window.navigate('admin-dash');
             } else {
-                msgEl.textContent = "Senha incorreta!";
+                msgEl.textContent = "Senha incorreta! Tente novamente.";
                 msgEl.classList.remove('hidden');
             }
         } catch(e) {
-            window.showNotification("Erro ao validar login: " + e.message, "error");
+            window.showNotification("Erro de conexão: " + e.message, "error");
         }
     };
 
@@ -128,8 +125,7 @@ document.addEventListener('DOMContentLoaded', () => {
     };
 
     window.loadAdminDashboard = async function() {
-        const session = sessionStorage.getItem('silven_admin');
-        if(!session) return window.navigate('admin-login');
+        if(!sessionStorage.getItem('silven_admin')) return window.navigate('admin-login');
 
         const { data: projects, error } = await supabase.from('projects').select('*').order('created_at', {ascending: false});
         const list = document.getElementById('admin-projects-list');
@@ -175,7 +171,6 @@ document.addEventListener('DOMContentLoaded', () => {
 
         if(!client || !title || !value) return window.showNotification("Preencha todos os campos obrigatórios!", "error");
 
-        // GERA TOKEN PERSONALIZADO AQUI
         const smartToken = generateSmartToken(client);
         const deadline = new Date(Date.now() + 30*24*60*60*1000).toISOString().split('T')[0];
 
@@ -229,7 +224,6 @@ document.addEventListener('DOMContentLoaded', () => {
 
         try {
             await new Promise(r => setTimeout(r, 1500));
-            // LINK DE EXEMPLO - SUBSTITUA PELO SEU LINK REAL DO MERCADO PAGO QUANDO TIVER
             const mpLink = "https://mpago.la/2wXN123"; 
             
             document.getElementById('pix-qr-img').src = `https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=${encodeURIComponent(mpLink)}`;
@@ -291,7 +285,6 @@ document.addEventListener('DOMContentLoaded', () => {
             signed_at: new Date().toISOString()
         }, { onConflict: 'project_id' });
         
-        // Atualiza status do projeto
         await supabase.from('projects').update({ signed_client: true }).eq('id', currentProjectId);
         
         document.getElementById('contract-signed-msg').classList.remove('hidden');
