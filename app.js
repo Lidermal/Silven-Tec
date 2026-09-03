@@ -1,4 +1,4 @@
-/* app.js - Silven Tec Core Logic V6 - Gestão Completa */
+/* app.js - Silven Tec Core Logic V9 - Definitivo */
 
 const SUPABASE_URL = 'https://evwsxwkvtjgexhjwofxh.supabase.co';
 const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImV2d3N4d2t2dGpnZXhoandvZnhoIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODc2ODk0MDEsImV4cCI6MjEwMzI2NTQwMX0.oN_ATHMc7KBHC7NA7O35Q5nS3H4OxSIAXMXvE7xYXCA';
@@ -6,7 +6,6 @@ const db = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
 let currentProject = null;
 let signaturePad = null;
-let renewingProjectId = null;
 
 // ==========================================
 // UTILITÁRIOS
@@ -20,6 +19,19 @@ async function generateSmartToken(name) {
     return `${prefix}-${clean}-${rand}`;
 }
 
+function calculateFinalValue(baseValue, deadlineStr) {
+    const value = Number(baseValue);
+    const today = new Date(); today.setHours(0,0,0,0);
+    const due = new Date(deadlineStr); due.setHours(0,0,0,0);
+    const diffDays = Math.ceil((today - due) / (1000 * 60 * 60 * 24));
+    
+    if (diffDays <= 0) return { final: value, isLate: false, days: 0 };
+    
+    const multa = value * 0.02;
+    const juros = value * (0.00033 * diffDays);
+    return { final: value + multa + juros, isLate: true, days: diffDays };
+}
+
 // ==========================================
 // INDEX / LOGIN
 // ==========================================
@@ -30,63 +42,67 @@ window.acessarCliente = function() {
 };
 
 window.entrarAdmin = async function() {
-    const email = document.getElementById('admin-email')?.value.trim();
     const pass = document.getElementById('admin-pass')?.value;
     const errEl = document.getElementById('admin-error');
     const btn = document.getElementById('btn-admin-login');
     
-    if (!email || !pass) { errEl.textContent = "Preencha todos os campos."; errEl.classList.remove('hidden'); return; }
+    if (!pass) { errEl.textContent = "Digite a senha."; errEl.classList.remove('hidden'); return; }
 
     btn.innerHTML = `Verificando...`; btn.disabled = true; errEl.classList.add('hidden');
 
     try {
-        const { error } = await db.auth.signInWithPassword({ email, password: pass });
-        if (error) throw error;
+        // Validação via banco (usuário janaelson)
+        const { data: user, error } = await db.from('users').select('password_hash').eq('username', 'janaelson').single();
+        if (error || !user) throw new Error("Usuário não encontrado.");
+        if (String(user.password_hash) !== String(pass)) throw new Error("Senha incorreta.");
+        
         sessionStorage.setItem('silven_admin', 'true');
         window.location.href = 'admin.html';
     } catch (err) {
         errEl.textContent = err.message; errEl.classList.remove('hidden');
-        btn.innerHTML = `<i data-lucide="shield-check" size="18"></i> Entrar no Sistema`; btn.disabled = false;
+        btn.innerHTML = `<i data-lucide="shield-check" size="16"></i> Entrar no Sistema`; btn.disabled = false;
         lucide.createIcons();
     }
 };
 
-window.logout = async () => { await db.auth.signOut(); sessionStorage.clear(); window.location.href = 'index.html'; };
+window.logout = () => { sessionStorage.clear(); window.location.href = 'index.html'; };
 
 // ==========================================
-// ADMIN PANEL LOGIC
+// ADMIN PANEL LOGIC (BOTÕES FUNCIONANDO)
 // ==========================================
 async function initAdminPanel() {
     loadDashboardData();
     
-    // Form Novo Projeto
-    document.getElementById('form-new-project')?.addEventListener('submit', async (e) => {
-        e.preventDefault();
-        const btn = e.target.querySelector('button[type="submit"]');
-        btn.disabled = true; btn.textContent = 'Gerando Token e Criando...';
+    // Evento do Formulário de Novo Projeto
+    const form = document.getElementById('form-new-project');
+    if(form) {
+        form.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const btn = e.target.querySelector('button[type="submit"]');
+            btn.disabled = true; btn.textContent = 'Processando...';
 
-        const clientName = document.getElementById('new-client').value;
-        const title = document.getElementById('new-title').value;
-        const value = document.getElementById('new-value').value;
-        const token = await generateSmartToken(clientName);
-        const deadline = new Date(Date.now() + 30*86400000).toISOString().split('T')[0];
+            const clientName = document.getElementById('new-client').value;
+            const title = document.getElementById('new-title').value;
+            const value = document.getElementById('new-value').value;
+            const token = await generateSmartToken(clientName);
+            const deadline = new Date(Date.now() + 30*86400000).toISOString().split('T')[0];
 
-        // Cria Projeto e Cliente (simulado aqui, idealmente teria tabela clients separada)
-        const { error } = await db.from('projects').insert([{
-            client_name: clientName, title, total_value: value, 
-            access_token: token, status: 'em_andamento', deadline, signed_client: false
-        }]);
+            const { error } = await db.from('projects').insert([{
+                client_name: clientName, title, total_value: value, 
+                access_token: token, status: 'em_andamento', deadline, signed_client: false
+            }]);
 
-        if(error) alert('Erro: ' + error.message);
-        else {
-            alert(`Sucesso!\nCliente: ${clientName}\nToken Gerado: ${token}\nEnvie este token ao cliente.`);
-            closeModal('modal-new-project');
-            e.target.reset();
-            loadDashboardData();
-            loadProjectsTable();
-        }
-        btn.disabled = false; btn.textContent = 'Criar e Gerar Token';
-    });
+            if(error) alert('Erro ao criar: ' + error.message);
+            else {
+                alert(`Sucesso!\nToken gerado: ${token}\nEnvie ao cliente.`);
+                closeModal('modal-new-project');
+                e.target.reset();
+                loadDashboardData();
+                loadProjectsTable();
+            }
+            btn.disabled = false; btn.textContent = 'Criar e Gerar Token';
+        });
+    }
 }
 
 window.switchAdminView = function(viewName) {
@@ -96,13 +112,10 @@ window.switchAdminView = function(viewName) {
     document.getElementById(`view-${viewName}`).classList.remove('hidden');
     document.getElementById(`nav-${viewName}`).classList.add('active');
     
-    // Carrega dados específicos da view
     if(viewName === 'dashboard') loadDashboardData();
     if(viewName === 'projects') loadProjectsTable();
-    if(viewName === 'contracts') loadContractsTable();
     if(viewName === 'finance') loadFinanceTable();
-    if(viewName === 'clients') loadClientsTable();
-    
+    if(viewName === 'contracts') loadContractsTable();
     lucide.createIcons();
 };
 
@@ -110,23 +123,21 @@ async function loadDashboardData() {
     const { data } = await db.from('projects').select('*').order('created_at', {ascending: false});
     if(!data) return;
 
-    let rev = 0, signed = 0, pending = 0;
+    let rev = 0, signed = 0;
     const tbody = document.getElementById('dash-recent-list');
     tbody.innerHTML = '';
 
     data.forEach(p => {
         rev += Number(p.total_value);
         if(p.signed_client) signed++;
-        if(!p.signed_client || new Date(p.deadline) < new Date()) pending++;
-
         if(tbody.children.length < 5) {
             tbody.innerHTML += `
             <tr>
                 <td>${p.client_name}</td>
                 <td>${p.title}</td>
-                <td><span class="badge ${p.status === 'concluido' ? 'badge-green' : 'badge-cyan'}">${p.status}</span></td>
+                <td style="font-family:monospace; color:var(--cyan);">${p.access_token}</td>
+                <td><span class="badge badge-cyan">${p.status}</span></td>
                 <td>${formatCurrency(p.total_value)}</td>
-                <td><button class="action-btn" onclick="copyToken('${p.access_token}')">Copiar Token</button></td>
             </tr>`;
         }
     });
@@ -134,7 +145,6 @@ async function loadDashboardData() {
     document.getElementById('dash-active-proj').textContent = data.length;
     document.getElementById('dash-revenue').textContent = formatCurrency(rev);
     document.getElementById('dash-signed').textContent = signed;
-    document.getElementById('dash-pending').textContent = pending;
 }
 
 async function loadProjectsTable() {
@@ -148,35 +158,7 @@ async function loadProjectsTable() {
             <td>${p.client_name}</td>
             <td style="font-family:monospace; color:var(--cyan);">${p.access_token}</td>
             <td>${new Date(p.deadline).toLocaleDateString('pt-BR')}</td>
-            <td><span class="badge badge-cyan">${p.status}</span></td>
-            <td>
-                <button class="action-btn" onclick="copyToken('${p.access_token}')">Token</button>
-                <button class="action-btn primary" onclick="prepareRenewal('${p.id}', '${p.total_value}')">Renovar</button>
-            </td>
-        </tr>`;
-    });
-}
-
-async function loadContractsTable() {
-    // Busca projetos e junta com info de contrato
-    const { data: projects } = await db.from('projects').select('*');
-    const { data: contracts } = await db.from('contracts').select('*');
-    
-    const tbody = document.getElementById('contracts-list');
-    tbody.innerHTML = '';
-    
-    projects?.forEach(p => {
-        const contract = contracts?.find(c => c.project_id === p.id);
-        const isSigned = !!contract;
-        tbody.innerHTML += `
-        <tr>
-            <td>${p.title}</td>
-            <td>${p.client_name}</td>
-            <td>${isSigned ? new Date(contract.signed_at).toLocaleDateString('pt-BR') : '-'}</td>
-            <td><span class="badge ${isSigned ? 'badge-green' : 'badge-red'}">${isSigned ? 'Assinado' : 'Pendente'}</span></td>
-            <td>
-                ${!isSigned ? `<button class="action-btn primary" onclick="alert('Envie o link do cliente: client.html?token=${p.access_token}')">Enviar Termo</button>` : '<button class="action-btn">Baixar PDF</button>'}
-            </td>
+            <td><button class="action-btn" onclick="navigator.clipboard.writeText('${p.access_token}');alert('Token copiado!')">Copiar Token</button></td>
         </tr>`;
     });
 }
@@ -185,71 +167,50 @@ async function loadFinanceTable() {
     const { data } = await db.from('projects').select('*');
     const tbody = document.getElementById('finance-list');
     tbody.innerHTML = '';
-    let received = 0, toReceive = 0;
+    let received = 0, pending = 0;
 
     data?.forEach(p => {
-        const isLate = new Date(p.deadline) < new Date();
-        const val = Number(p.total_value);
-        if(!isLate) received += val; else toReceive += val;
+        const finance = calculateFinalValue(p.total_value, p.deadline);
+        if(!finance.isLate) received += Number(p.total_value);
+        else pending += finance.final;
 
         tbody.innerHTML += `
         <tr>
             <td>${p.client_name}</td>
             <td>${p.title}</td>
-            <td>${formatCurrency(val)}</td>
+            <td>${formatCurrency(p.total_value)}</td>
             <td>${new Date(p.deadline).toLocaleDateString('pt-BR')}</td>
-            <td><span class="badge ${isLate ? 'badge-red' : 'badge-green'}">${isLate ? 'Atrasado' : 'Em Dia'}</span></td>
-            <td><button class="action-btn primary" onclick="prepareRenewal('${p.id}', '${val}')">Renovar Contrato</button></td>
+            <td><span class="badge ${finance.isLate ? 'badge-red' : 'badge-green'}">${finance.isLate ? `Atrasado (${finance.days} dias)` : 'Em Dia'}</span></td>
         </tr>`;
     });
 
     document.getElementById('fin-received').textContent = formatCurrency(received);
-    document.getElementById('fin-toreceive').textContent = formatCurrency(toReceive);
+    document.getElementById('fin-pending').textContent = formatCurrency(pending);
 }
 
-async function loadClientsTable() {
-    const { data } = await db.from('projects').select('client_name, created_at').order('created_at', {ascending: false});
-    const tbody = document.getElementById('clients-list');
+async function loadContractsTable() {
+    const { data: projects } = await db.from('projects').select('*');
+    const { data: contracts } = await db.from('contracts').select('*');
+    const tbody = document.getElementById('contracts-list');
     tbody.innerHTML = '';
-    // Agrupa por nome único (simples)
-    const uniqueClients = [...new Set(data?.map(p => p.client_name))];
-    uniqueClients.forEach(name => {
-        const projCount = data.filter(p => p.client_name === name).length;
-        tbody.innerHTML += `<tr><td style="font-weight:600;">${name}</td><td>-</td><td>${projCount}</td><td>-</td><td><button class="action-btn">Ver Histórico</button></td></tr>`;
+    
+    projects?.forEach(p => {
+        const contract = contracts?.find(c => c.project_id === p.id);
+        tbody.innerHTML += `
+        <tr>
+            <td>${p.title}</td>
+            <td>${p.client_name}</td>
+            <td>${contract ? new Date(contract.signed_at).toLocaleDateString('pt-BR') : '-'}</td>
+            <td><span class="badge ${contract ? 'badge-green' : 'badge-red'}">${contract ? 'Assinado' : 'Pendente'}</span></td>
+        </tr>`;
     });
 }
 
-// --- AÇÕES GLOBAIS ---
 window.openModal = (id) => document.getElementById(id).classList.remove('hidden');
 window.closeModal = (id) => document.getElementById(id).classList.add('hidden');
-window.copyToken = (tok) => { navigator.clipboard.writeText(tok); alert('Token copiado: ' + tok); };
-
-window.prepareRenewal = (id, val) => {
-    renewingProjectId = id;
-    document.getElementById('renew-value').value = val;
-    openModal('modal-renew');
-};
-
-window.confirmRenewal = async () => {
-    const newVal = document.getElementById('renew-value').value;
-    const newDeadline = new Date(Date.now() + 30*86400000).toISOString().split('T')[0];
-    
-    // Atualiza projeto e reseta assinatura para forçar novo termo
-    await db.from('projects').update({ 
-        total_value: newVal, deadline: newDeadline, signed_client: false, status: 'em_andamento' 
-    }).eq('id', renewingProjectId);
-    
-    // Remove contrato antigo para obrigar reassinatura
-    await db.from('contracts').delete().eq('project_id', renewingProjectId);
-
-    alert('Contrato renovado! O cliente deverá assinar o novo termo.');
-    closeModal('modal-renew');
-    loadDashboardData();
-    loadFinanceTable();
-};
 
 // ==========================================
-// CLIENT AREA LOGIC (Mantida e Integrada)
+// CLIENT AREA LOGIC
 // ==========================================
 document.addEventListener('DOMContentLoaded', () => {
     if(document.getElementById('proj-title')) {
@@ -269,17 +230,18 @@ async function initClientArea(token) {
     document.getElementById('status-badge').textContent = data.status.toUpperCase();
     document.getElementById('deadline-display').textContent = new Date(data.deadline).toLocaleDateString('pt-BR');
 
-    // Cálculo de multa
-    const today = new Date(); today.setHours(0,0,0,0);
-    const due = new Date(data.deadline); due.setHours(0,0,0,0);
-    const diffDays = Math.ceil((today - due) / (1000 * 60 * 60 * 24));
-    let finalValue = Number(data.total_value);
+    const financeData = calculateFinalValue(data.total_value, data.deadline);
     const valEl = document.getElementById('finance-value');
+    const lateMsg = document.getElementById('late-fee-msg');
     
-    if(diffDays > 0 && valEl) {
-        finalValue += (finalValue * 0.02) + (finalValue * 0.00033 * diffDays);
-        valEl.innerHTML = `${formatCurrency(finalValue)} <span style="font-size:0.85rem; color:#ef4444; display:block; margin-top:0.8rem;">Atraso de ${diffDays} dias (Multa + Juros aplicados)</span>`;
-    } else if(valEl) { valEl.textContent = formatCurrency(finalValue); }
+    valEl.textContent = formatCurrency(financeData.final);
+    
+    if(financeData.isLate) {
+        lateMsg.classList.remove('hidden');
+        lateMsg.innerHTML = `<strong>Atenção:</strong> Atraso de ${financeData.days} dias.<br>Multa (2%) + Juros (0,033%/dia) aplicados.`;
+    } else {
+        lateMsg.classList.add('hidden');
+    }
 
     if(data.signed_client) {
         document.getElementById('sign-area')?.classList.add('hidden');
@@ -309,118 +271,11 @@ window.generatePix = async function() {
     const btn = document.getElementById('btn-pix');
     const load = document.getElementById('pix-loading');
     btn.classList.add('hidden'); load.classList.remove('hidden');
-    try {
-        const { data, error } = await db.functions.invoke('gerar-pix-mp', { body: { transaction_amount: Number(currentProject.total_value), description: `Silven Tec: ${currentProject.title}` } });
-        if (error || data?.error) throw new Error(data?.error || 'Falha no gateway');
-        document.getElementById('qr-img').src = `data:image/jpeg;base64,${data.qr_code_base64}`;
-        document.getElementById('pix-code').textContent = data.qr_code;
-        document.getElementById('pix-result').classList.remove('hidden');
-    } catch(e) { alert("Erro PIX: " + e.message); btn.classList.remove('hidden'); } finally { load.classList.add('hidden'); }
-};
-
-window.copyPix = () => navigator.clipboard.writeText(document.getElementById('pix-code').textContent).then(() => alert('Código copiado!'));
-window.clearSig = () => signaturePad?.clear();
-
-window.signContract = async () => {
-    if(!signaturePad || signaturePad.isEmpty()) return alert('Assine o contrato.');
-    const sigData = signaturePad.toDataURL();
-    const { jsPDF } = window.jspdf;
-    const doc = new jsPDF();
-    
-    doc.setFontSize(24); doc.setTextColor(6, 182, 212); doc.setFont("helvetica", "bold"); doc.text("SILVEN TEC", 20, 25);
-    doc.setFontSize(10); doc.setTextColor(100); doc.setFont("helvetica", "normal"); doc.text("INOVAÇÃO E GESTÃO EM TECNOLOGIA", 20, 32); doc.line(20, 38, 190, 38);
-    doc.setFontSize(16); doc.setTextColor(15, 23, 42); doc.setFont("helvetica", "bold"); doc.text("CONTRATO DIGITAL DE PRESTAÇÃO DE SERVIÇOS", 20, 55);
-    doc.setFontSize(11); doc.setTextColor(51, 65, 85); doc.setFont("helvetica", "normal");
-    doc.text(`CONTRATANTE: ${currentProject.client_name}`, 20, 75);
-    doc.text(`PROJETO: ${currentProject.title}`, 20, 83);
-    doc.text(`VALOR MENSAL: ${formatCurrency(currentProject.total_value)}`, 20, 91);
-    doc.setFontSize(10); doc.setTextColor(100); doc.text("CLÁUSULA DE ATRASO: Multa fixa de 2% + juros de mora de 0,033% ao dia.", 20, 110);
-    doc.addImage(sigData, 'PNG', 20, 150, 80, 40); doc.line(20, 192, 100, 192); doc.text("Assinatura Eletrônica", 20, 198);
-    doc.save(`Contrato_SilvenTec_${currentProject.title}.pdf`);
-
-    await db.from('contracts').upsert({ project_id: currentProject.id, signature_data: sigData, signed_at: new Date().toISOString() }, { onConflict: 'project_id' });
-    await db.from('projects').update({ signed_client: true }).eq('id', currentProject.id);
-    document.getElementById('sign-area').classList.add('hidden');
-    document.getElementById('signed-msg').classList.remove('hidden');
-};
-/* Adicione/Substitua estas funções no seu app.js */
-
-// Função para calcular valor final com multa e juros
-function calculateFinalValue(baseValue, deadlineStr) {
-    const value = Number(baseValue);
-    const today = new Date(); today.setHours(0,0,0,0);
-    const due = new Date(deadlineStr); due.setHours(0,0,0,0);
-    
-    const diffTime = today - due;
-    const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
-    
-    if (diffDays <= 0) {
-        return { final: value, isLate: false, days: 0, msg: '' };
-    }
-
-    // Regras solicitadas:
-    // Multa fixa: 2%
-    const multa = value * 0.02;
-    // Juros de mora: 0,033% ao dia
-    const juros = value * (0.00033 * diffDays);
-    
-    const final = value + multa + juros;
-    
-    return { 
-        final, 
-        isLate: true, 
-        days: diffDays, 
-        msg: `Atraso de ${diffDays} dias. Multa (2%) + Juros (0,033%/dia) aplicados.` 
-    };
-}
-
-// Atualização da função initClientArea para usar o cálculo acima
-async function initClientArea(token) {
-    const { data, error } = await db.from('projects').select('*').eq('access_token', token).single();
-    if(error || !data) { alert('Token inválido.'); window.location.href='index.html'; return; }
-    
-    currentProject = data;
-    document.getElementById('proj-title').textContent = data.title;
-    document.getElementById('client-name').textContent = `Cliente: ${data.client_name}`;
-    document.getElementById('status-badge').textContent = data.status.toUpperCase();
-    document.getElementById('deadline-display').textContent = new Date(data.deadline).toLocaleDateString('pt-BR');
-
-    // Aplica a lógica financeira
-    const financeData = calculateFinalValue(data.total_value, data.deadline);
-    const valEl = document.getElementById('finance-value');
-    const lateMsg = document.getElementById('late-fee-msg');
-    
-    valEl.textContent = formatCurrency(financeData.final);
-    
-    if(financeData.isLate) {
-        lateMsg.classList.remove('hidden');
-        lateMsg.innerHTML = `<strong>Atenção:</strong> ${financeData.msg}<br>Valor original: ${formatCurrency(data.total_value)}`;
-    } else {
-        lateMsg.classList.add('hidden');
-    }
-
-    if(data.signed_client) {
-        document.getElementById('sign-area')?.classList.add('hidden');
-        document.getElementById('signed-msg')?.classList.remove('hidden');
-    }
-}
-
-// Atualização da geração de PIX para enviar o valor CORRETO (com juros)
-window.generatePix = async function() {
-    const btn = document.getElementById('btn-pix');
-    const load = document.getElementById('pix-loading');
-    btn.classList.add('hidden'); load.classList.remove('hidden');
     
     try {
-        // Recalcula o valor na hora do clique para garantir precisão
         const financeData = calculateFinalValue(currentProject.total_value, currentProject.deadline);
-        
-        // Chama sua Edge Function do Supabase (Mercado Pago)
         const { data, error } = await db.functions.invoke('gerar-pix-mp', { 
-            body: { 
-                transaction_amount: Number(financeData.final.toFixed(2)), 
-                description: `Silven Tec: ${currentProject.title} (${financeData.isLate ? 'Atraso' : 'Mensalidade'})` 
-            } 
+            body: { transaction_amount: Number(financeData.final.toFixed(2)), description: `Silven Tec: ${currentProject.title}` } 
         });
 
         if (error || data?.error) throw new Error(data?.error || 'Falha no gateway MP');
@@ -435,4 +290,30 @@ window.generatePix = async function() {
     } finally { 
         load.classList.add('hidden'); 
     }
+};
+
+window.copyPix = () => navigator.clipboard.writeText(document.getElementById('pix-code').textContent).then(() => alert('Código copiado!'));
+window.clearSig = () => signaturePad?.clear();
+
+window.signContract = async () => {
+    if(!signaturePad || signaturePad.isEmpty()) return alert('Assine o contrato.');
+    const sigData = signaturePad.toDataURL();
+    const { jsPDF } = window.jspdf;
+    const doc = new jsPDF();
+    
+    doc.setFontSize(24); doc.setTextColor(6, 182, 212); doc.setFont("helvetica", "bold"); doc.text("SILVEN TEC", 20, 25);
+    doc.setFontSize(10); doc.setTextColor(100); doc.setFont("helvetica", "normal"); doc.text("INOVAÇÃO E GESTÃO", 20, 32); doc.line(20, 38, 190, 38);
+    doc.setFontSize(16); doc.setTextColor(15, 23, 42); doc.setFont("helvetica", "bold"); doc.text("CONTRATO DIGITAL", 20, 55);
+    doc.setFontSize(11); doc.setTextColor(51, 65, 85); doc.setFont("helvetica", "normal");
+    doc.text(`CLIENTE: ${currentProject.client_name}`, 20, 75);
+    doc.text(`PROJETO: ${currentProject.title}`, 20, 83);
+    doc.text(`VALOR: ${formatCurrency(currentProject.total_value)}`, 20, 91);
+    doc.setFontSize(10); doc.setTextColor(100); doc.text("Cláusula: Multa 2% + Juros 0,033%/dia.", 20, 110);
+    doc.addImage(sigData, 'PNG', 20, 150, 80, 40); doc.line(20, 192, 100, 192); doc.text("Assinatura Digital", 20, 198);
+    doc.save(`Contrato_SilvenTec_${currentProject.title}.pdf`);
+
+    await db.from('contracts').upsert({ project_id: currentProject.id, signature_data: sigData, signed_at: new Date().toISOString() }, { onConflict: 'project_id' });
+    await db.from('projects').update({ signed_client: true }).eq('id', currentProject.id);
+    document.getElementById('sign-area').classList.add('hidden');
+    document.getElementById('signed-msg').classList.remove('hidden');
 };
