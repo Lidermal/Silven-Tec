@@ -6,55 +6,63 @@
     <title>Silven Tec | Inovação & Gestão</title>
     <link rel="stylesheet" href="style.css">
     <link rel="icon" type="image/png" href="logost.png">
+    
     <!-- Bibliotecas Externas -->
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script src="https://unpkg.com/lucide@latest"></script>
-    <script src="app.js" defer></script>
 </head>
 <body>
 
-    <header>
-        <img src="logost.png" alt="Silven Tec Logo" class="brand-logo">
-        <div>
-            <h1 class="brand-title">SILVEN TEC</h1>
-            <p class="brand-subtitle">INOVAÇÃO & GESTÃO</p>
-        </div>
+    <!-- Cabeçalho com Logo -->
+    <header class="brand-header">
+        <img src="logost.png" alt="Silven Tec Logo" class="main-logo">
+        <h1 class="brand-title">SILVEN TEC</h1>
+        <p class="brand-subtitle">INOVAÇÃO & GESTÃO</p>
     </header>
 
-    <main class="main-container">
+    <!-- Painel Central de Login -->
+    <main class="login-container">
         <div class="glass-panel">
             
-            <!-- Abas Internas -->
-            <div class="tabs-nav">
-                <button type="button" class="tab-btn active" id="btn-tab-client">ÁREA DO CLIENTE</button>
-                <button type="button" class="tab-btn" id="btn-tab-admin">ADMINISTRAÇÃO</button>
+            <!-- Abas de Navegação -->
+            <div class="tabs-wrapper">
+                <button id="tab-client" class="tab-btn active" onclick="switchTab('client')">ÁREA DO CLIENTE</button>
+                <button id="tab-admin" class="tab-btn" onclick="switchTab('admin')">ADMINISTRAÇÃO</button>
             </div>
 
-            <!-- Formulário Cliente -->
-            <div id="form-client">
+            <!-- Formulário: Cliente -->
+            <div id="form-client" class="form-section">
                 <div class="input-group">
-                    <label class="input-label">Token de Acesso</label>
-                    <input type="text" id="token-input" class="input-field" placeholder="Ex: ST-JOAO-X9P2" style="text-transform: uppercase; letter-spacing: 2px; font-family: 'Orbitron', monospace;">
+                    <label>TOKEN DE ACESSO</label>
+                    <input type="text" id="token-input" placeholder="EX: ST-JOAO-X9P2" style="text-transform: uppercase; letter-spacing: 1px;">
                 </div>
-                <button type="button" id="btn-access-client" class="btn-primary">
-                    <i data-lucide="log-in" size="18"></i> Acessar Projeto
+                <button id="btn-access-client" class="btn-primary full-width">
+                    Acessar Projeto <i data-lucide="arrow-right" size="16"></i>
                 </button>
             </div>
 
-            <!-- Formulário Admin -->
-            <div id="form-admin" class="hidden">
+            <!-- Formulário: Admin -->
+            <div id="form-admin" class="form-section hidden">
                 <div class="input-group">
-                    <label class="input-label">Senha Mestra</label>
-                    <input type="password" id="admin-pass" class="input-field" placeholder="••••••••">
+                    <label>SENHA MESTRA</label>
+                    <input type="password" id="admin-pass" placeholder="••••••••">
                 </div>
-                <button type="button" id="btn-login-admin" class="btn-primary" style="background: linear-gradient(90deg, #334155, #475569);">
-                    <i data-lucide="shield-check" size="18"></i> Entrar no Sistema
+                <button id="btn-login-admin" class="btn-primary full-width btn-dark">
+                    Entrar no Sistema <i data-lucide="shield" size="16"></i>
                 </button>
-                <p id="admin-error" class="text-error hidden"></p>
+                <p id="admin-error" class="error-msg hidden"></p>
             </div>
 
         </div>
     </main>
 
+    <!-- Script Principal -->
+    <script src="app.js"></script>
+    <script>
+        // Inicializa ícones assim que a página carrega
+        document.addEventListener('DOMContentLoaded', () => {
+            if(window.lucide) lucide.createIcons();
+        });
+    </script>
 </body>
 </html>
