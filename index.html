@@ -6,45 +6,52 @@
     <title>Silven Tec | Inovação & Gestão</title>
     <link rel="stylesheet" href="style.css">
     <link rel="icon" type="image/png" href="logost.png">
-    <!-- Dependências Globais -->
+    
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script src="https://unpkg.com/lucide@latest"></script>
 </head>
 <body>
-    <header>
-        <img src="logost.png" alt="Silven Tec Logo" class="brand-logo" onerror="this.style.display='none'">
-        <div>
+    <main class="login-container">
+        <!-- Cabeçalho Centralizado -->
+        <div class="login-header">
+            <img src="logost.png" alt="Silven Tec Logo" class="brand-logo" onerror="this.style.display='none'">
             <h1 class="brand-title">SILVEN TEC</h1>
-            <p class="brand-subtitle">Inovação & Gestão</p>
+            <p class="brand-subtitle">INOVAÇÃO & GESTÃO</p>
         </div>
-    </header>
 
-    <main class="container" style="max-width: 500px; margin-top: 2rem;">
-        
-        <!-- Acesso Cliente -->
-        <div class="glass-panel animate-in" style="margin-bottom: 2rem;">
-            <h2 style="color: var(--cyan-primary); font-family: 'Orbitron', sans-serif; margin-bottom: 1rem; font-size: 1.2rem; text-align: center;">ÁREA DO CLIENTE</h2>
-            <div class="input-group">
-                <label class="input-label">Token do Projeto</label>
-                <input type="text" id="token-input" class="input-field" placeholder="Ex: ST-XXXX-YYYY" style="text-transform: uppercase; text-align: center; letter-spacing: 2px;">
+        <!-- Painel de Autenticação -->
+        <div class="glass-panel login-panel animate-in">
+            
+            <!-- Abas de Navegação -->
+            <div class="auth-tabs">
+                <button id="tab-client" class="auth-tab-btn active">ÁREA DO CLIENTE</button>
+                <button id="tab-admin" class="auth-tab-btn">ADMINISTRAÇÃO</button>
             </div>
-            <button onclick="window.handleClientAccess()" class="btn-primary">Acessar Painel</button>
-        </div>
 
-        <!-- Acesso Admin -->
-        <div id="form-admin" class="glass-panel animate-in" style="animation-delay: 0.1s;">
-            <h2 style="color: white; font-family: 'Orbitron', sans-serif; margin-bottom: 1rem; font-size: 1.2rem; text-align: center;">ACESSO RESTRITO</h2>
-            <div class="input-group">
-                <label class="input-label">Senha Administrativa</label>
-                <input type="password" id="admin-pass" class="input-field" placeholder="••••••••">
+            <!-- Formulário Cliente -->
+            <div id="panel-client" class="auth-content">
+                <div class="input-group">
+                    <label class="input-label" style="text-align: left;">Token do Projeto</label>
+                    <input type="text" id="token-input" class="input-field" placeholder="EX: ST-XXXX-YYYY" style="text-transform: uppercase; text-align: center; letter-spacing: 2px;">
+                </div>
+                <button id="btn-client-access" class="btn-primary" style="margin-top: 1rem;">Acessar Painel</button>
             </div>
-            <p id="admin-error" class="hidden" style="color: #ef4444; font-size: 0.85rem; margin-bottom: 1rem; text-align: center; font-weight: 500;"></p>
-            <button onclick="window.handleAdminLogin()" class="btn-primary" style="background: linear-gradient(90deg, #334155, #1e293b); border: 1px solid #475569;">Entrar no Sistema</button>
-        </div>
 
+            <!-- Formulário Admin -->
+            <div id="panel-admin" class="auth-content hidden">
+                <div class="input-group">
+                    <label class="input-label" style="text-align: left;">Senha Mestra</label>
+                    <input type="password" id="admin-pass" class="input-field" placeholder="••••••••">
+                </div>
+                <p id="admin-error" class="hidden" style="color: #ef4444; font-size: 0.85rem; margin-bottom: 1rem; text-align: center; font-weight: 500;"></p>
+                <button id="btn-admin-login" class="btn-primary" style="margin-top: 1rem; background: linear-gradient(90deg, #334155, #1e293b); border: 1px solid #475569;">
+                    <i data-lucide="shield-check" size="18"></i> Entrar no Sistema
+                </button>
+            </div>
+
+        </div>
     </main>
 
-    <!-- Script Principal -->
     <script src="app.js"></script>
     <script>
         lucide.createIcons();
