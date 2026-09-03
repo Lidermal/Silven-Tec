@@ -1,4 +1,4 @@
-/* app.js - Silven Tec Core Logic (Versão Event Listener) */
+/* app.js - Silven Tec Core Logic (Blindada) */
 
 // ==========================================
 // CONFIGURAÇÃO SUPABASE
@@ -6,43 +6,129 @@
 const SUPABASE_URL = 'https://evwsxwkvtjgexhjwofxh.supabase.co';
 const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImV2d3N4d2t2dGpnZXhoandvZnhoIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODc2ODk0MDEsImV4cCI6MjEwMzI2NTQwMX0.oN_ATHMc7KBHC7NA7O35Q5nS3H4OxSIAXMXvE7xYXCA';
 
-if (typeof window.supabase === 'undefined') {
-    console.error("CRÍTICO: Supabase JS não carregou!");
+let supabase;
+try {
+    if (!window.supabase) throw new Error("Biblioteca Supabase não carregada!");
+    supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+    console.log("✅ Supabase inicializado");
+} catch (e) {
+    console.error("❌ Falha ao iniciar Supabase:", e);
 }
-const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
 let currentProject = null;
 let signaturePad = null;
 let systemConfig = {}; 
 
 // ==========================================
-// INICIALIZAÇÃO GLOBAL (GARANTIA DE EXECUÇÃO)
+// INICIALIZAÇÃO CENTRALIZADA
 // ==========================================
 document.addEventListener('DOMContentLoaded', () => {
-    console.log("App.js inicializado com sucesso.");
+    console.log("🚀 DOM Carregado. Iniciando App...");
     
-    // Atrela eventos apenas se os elementos existirem na página atual
-    const btnAccessClient = document.getElementById('btn-access-client');
-    const btnLoginAdmin = document.getElementById('btn-login-admin');
-    const formNewProject = document.getElementById('form-new-project');
-    const btnPix = document.getElementById('btn-pix');
-    const btnSign = document.querySelector('#sign-area button:last-child'); // Botão Assinar
+    try {
+        // Inicializa ícones
+        if(window.lucide) lucide.createIcons();
 
-    if(btnAccessClient) btnAccessClient.addEventListener('click', handleClientAccess);
-    if(btnLoginAdmin) btnLoginAdmin.addEventListener('click', handleAdminLogin);
-    if(formNewProject) formNewProject.addEventListener('submit', handleCreateProject);
-    if(btnPix) btnPix.addEventListener('click', generatePix);
-    if(btnSign) btnSign.addEventListener('click', signContract);
+        // --- LÓGICA DA INDEX (LOGIN) ---
+        const btnTabClient = document.getElementById('btn-tab-client');
+        const btnTabAdmin = document.getElementById('btn-tab-admin');
+        const formClient = document.getElementById('form-client');
+        const formAdmin = document.getElementById('form-admin');
+        const errEl = document.getElementById('admin-error');
 
-    // Verifica se está em páginas protegidas
-    if(document.getElementById('projects-list')) initAdmin();
-    if(new URLSearchParams(window.location.search).get('token')) {
-        initClient(new URLSearchParams(window.location.search).get('token'));
+        if (btnTabClient && btnTabAdmin) {
+            btnTabClient.addEventListener('click', () => {
+                btnTabClient.classList.add('active');
+                btnTabAdmin.classList.remove('active');
+                formClient.classList.remove('hidden');
+                formAdmin.classList.add('hidden');
+                if(errEl) errEl.classList.add('hidden');
+            });
+
+            btnTabAdmin.addEventListener('click', () => {
+                btnTabAdmin.classList.add('active');
+                btnTabClient.classList.remove('active');
+                formAdmin.classList.remove('hidden');
+                formClient.classList.add('hidden');
+                if(errEl) errEl.classList.add('hidden');
+            });
+        }
+
+        const btnAccessClient = document.getElementById('btn-access-client');
+        if(btnAccessClient) {
+            btnAccessClient.addEventListener('click', handleClientAccess);
+            console.log("✅ Botão Cliente atrelado");
+        }
+
+        const btnLoginAdmin = document.getElementById('btn-login-admin');
+        if(btnLoginAdmin) {
+            btnLoginAdmin.addEventListener('click', handleAdminLogin);
+            console.log("✅ Botão Admin atrelado");
+        }
+
+        // --- LÓGICA DO ADMIN DASHBOARD ---
+        if(document.getElementById('projects-list')) {
+            console.log(" Página Admin detectada");
+            initAdmin();
+            
+            const formNewProj = document.getElementById('form-new-project');
+            if(formNewProj) formNewProj.addEventListener('submit', handleCreateProject);
+        }
+
+        // --- LÓGICA DO CLIENT AREA ---
+        const urlParams = new URLSearchParams(window.location.search);
+        const token = urlParams.get('token');
+        if(token) {
+            console.log("👤 Página Cliente detectada. Token:", token);
+            initClient(token);
+            
+            // Atrela botões do cliente se existirem
+            const btnPix = document.getElementById('btn-pix');
+            if(btnPix) btnPix.addEventListener('click', generatePix);
+            
+            const btnSign = document.querySelector('#sign-area button:last-child');
+            if(btnSign) btnSign.addEventListener('click', signContract);
+
+            // Listener global para abas do cliente
+            document.querySelectorAll('.tab-btn').forEach(btn => {
+                btn.addEventListener('click', (e) => {
+                    const tabName = e.target.innerText.toLowerCase().split(' ')[0];
+                    let targetId = '';
+                    if(tabName.includes('visão')) targetId = 'tab-overview';
+                    else if(tabName.includes('financeiro')) targetId = 'tab-finance';
+                    else if(tabName.includes('contrato')) targetId = 'tab-contract';
+                    
+                    if(targetId) {
+                        document.querySelectorAll('.tab-content').forEach(el => el.classList.add('hidden'));
+                        document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+                        document.getElementById(targetId)?.classList.remove('hidden');
+                        e.target.classList.add('active');
+
+                        if(targetId === 'tab-contract' && !signaturePad && currentProject && !currentProject.signed_client) {
+                            const canvas = document.getElementById('sig-pad');
+                            if(canvas) {
+                                const ratio = Math.max(window.devicePixelRatio || 1, 1);
+                                canvas.width = canvas.offsetWidth * ratio;
+                                canvas.height = canvas.offsetHeight * ratio;
+                                canvas.getContext("2d").scale(ratio, ratio);
+                                signaturePad = new SignaturePad(canvas, { backgroundColor: 'rgb(255, 255, 255)', penColor: '#0f172a' });
+                            }
+                        }
+                    }
+                });
+            });
+        }
+
+        console.log("🎉 App.js inicializado com sucesso!");
+
+    } catch (err) {
+        console.error("💥 ERRO FATAL NA INICIALIZAÇÃO:", err);
+        alert("Erro crítico ao carregar o sistema. Verifique o console (F12).");
     }
 });
 
 // ==========================================
-// FUNÇÕES LÓGICAS
+// FUNÇÕES DE NEGÓCIO
 // ==========================================
 function formatCurrency(val) {
     return new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(val);
@@ -63,52 +149,52 @@ async function generateSmartToken(name) {
 
 // --- LOGIN ADMIN ---
 async function handleAdminLogin() {
-    console.log("Tentativa de login...");
-    const passInput = document.getElementById('admin-pass').value;
+    console.log("🔐 Tentativa de login admin...");
+    const passInput = document.getElementById('admin-pass')?.value;
     const errEl = document.getElementById('admin-error');
     const btn = document.getElementById('btn-login-admin');
     
     if (!passInput) {
-        errEl.textContent = "Digite a senha.";
-        errEl.classList.remove('hidden');
+        if(errEl) { errEl.textContent = "Digite a senha."; errEl.classList.remove('hidden'); }
         return;
     }
 
-    const originalText = btn.innerHTML;
-    btn.innerHTML = `Verificando...`;
-    btn.disabled = true;
-    errEl.classList.add('hidden');
+    if(btn) {
+        const originalText = btn.innerHTML;
+        btn.innerHTML = `Verificando...`;
+        btn.disabled = true;
+        if(errEl) errEl.classList.add('hidden');
 
-    try {
-        const { data: user, error } = await supabase
-            .from('users')
-            .select('password_hash, role')
-            .eq('username', 'janaelson')
-            .single();
+        try {
+            const { data: user, error } = await supabase
+                .from('users')
+                .select('password_hash, role')
+                .eq('username', 'janaelson')
+                .single();
 
-        if (error) throw new Error(`Erro DB: ${error.message}`);
-        if (!user) throw new Error("Usuário não encontrado.");
+            if (error) throw new Error(`Erro DB: ${error.message}`);
+            if (!user) throw new Error("Usuário 'janaelson' não encontrado.");
 
-        // Validação direta conforme seu JSON
-        if (String(user.password_hash) !== String(passInput)) {
-            throw new Error("Senha incorreta.");
+            if (String(user.password_hash) !== String(passInput)) {
+                throw new Error("Senha incorreta.");
+            }
+
+            sessionStorage.setItem('silven_admin', 'true');
+            sessionStorage.setItem('silven_user', JSON.stringify({ username: 'janaelson', role: user.role }));
+            console.log("✅ Login bem-sucedido! Redirecionando...");
+            window.location.href = 'admin.html';
+
+        } catch (err) {
+            console.error("❌ Login falhou:", err);
+            if(errEl) { errEl.textContent = err.message; errEl.classList.remove('hidden'); }
+            btn.innerHTML = originalText;
+            btn.disabled = false;
         }
-
-        sessionStorage.setItem('silven_admin', 'true');
-        sessionStorage.setItem('silven_user', JSON.stringify({ username: 'janaelson', role: user.role }));
-        window.location.href = 'admin.html';
-
-    } catch (err) {
-        console.error("Login falhou:", err);
-        errEl.textContent = err.message;
-        errEl.classList.remove('hidden');
-        btn.innerHTML = originalText;
-        btn.disabled = false;
     }
 }
 
 function handleClientAccess() {
-    const token = document.getElementById('token-input').value.trim().toUpperCase();
+    const token = document.getElementById('token-input')?.value.trim().toUpperCase();
     if (!token) return alert("Insira um token válido.");
     window.location.href = `client.html?token=${token}`;
 }
@@ -121,12 +207,14 @@ async function initAdmin() {
 async function handleCreateProject(e) {
     e.preventDefault();
     const btn = e.target.querySelector('button');
-    btn.disabled = true; btn.textContent = 'Processando...';
+    if(btn) { btn.disabled = true; btn.textContent = 'Processando...'; }
 
-    const client = document.getElementById('new-client').value;
-    const title = document.getElementById('new-title').value;
-    const value = document.getElementById('new-value').value;
+    const client = document.getElementById('new-client')?.value;
+    const title = document.getElementById('new-title')?.value;
+    const value = document.getElementById('new-value')?.value;
     
+    if(!client || !title || !value) { alert("Preencha todos os campos"); return; }
+
     const token = await generateSmartToken(client);
     const deadline = new Date(Date.now() + 30*86400000).toISOString().split('T')[0];
 
@@ -141,12 +229,13 @@ async function handleCreateProject(e) {
         e.target.reset();
         loadAdminStats();
     }
-    btn.disabled = false; btn.textContent = 'Criar Projeto';
+    if(btn) { btn.disabled = false; btn.textContent = 'Criar Projeto'; }
 }
 
 async function loadAdminStats() {
     const { data, error } = await supabase.from('projects').select('*').order('created_at', {ascending: false});
-    if(error || !data) return;
+    if(error) { console.error(error); return; }
+    if(!data) return;
 
     let rev = 0;
     const list = document.getElementById('projects-list');
@@ -191,10 +280,15 @@ async function initClient(token) {
     }
 
     currentProject = data;
-    document.getElementById('proj-title').textContent = data.title;
-    document.getElementById('client-name').textContent = `Cliente: ${data.client_name}`;
-    document.getElementById('status-badge').textContent = data.status.toUpperCase();
-    document.getElementById('deadline-display').textContent = new Date(data.deadline).toLocaleDateString('pt-BR');
+    const projTitle = document.getElementById('proj-title');
+    const clientName = document.getElementById('client-name');
+    const statusBadge = document.getElementById('status-badge');
+    const deadlineDisplay = document.getElementById('deadline-display');
+    
+    if(projTitle) projTitle.textContent = data.title;
+    if(clientName) clientName.textContent = `Cliente: ${data.client_name}`;
+    if(statusBadge) statusBadge.textContent = data.status.toUpperCase();
+    if(deadlineDisplay) deadlineDisplay.textContent = new Date(data.deadline).toLocaleDateString('pt-BR');
     
     const today = new Date(); today.setHours(0,0,0,0);
     const due = new Date(data.deadline); due.setHours(0,0,0,0);
@@ -220,36 +314,6 @@ async function initClient(token) {
     }
 }
 
-// Adiciona listener global para abas (funciona em qualquer página)
-document.addEventListener('click', (e) => {
-    if(e.target.classList.contains('tab-btn')) {
-        const tabName = e.target.getAttribute('data-tab') || e.target.innerText.toLowerCase().split(' ')[0];
-        // Mapeamento simples baseado no texto ou data attribute
-        let targetId = '';
-        if(e.target.innerText.includes('Visão')) targetId = 'tab-overview';
-        else if(e.target.innerText.includes('Financeiro')) targetId = 'tab-finance';
-        else if(e.target.innerText.includes('Contrato')) targetId = 'tab-contract';
-        
-        if(targetId) {
-            document.querySelectorAll('.tab-content').forEach(el => el.classList.add('hidden'));
-            document.querySelectorAll('.tab-btn').forEach(el => el.classList.remove('active'));
-            document.getElementById(targetId)?.classList.remove('hidden');
-            e.target.classList.add('active');
-
-            if(targetId === 'tab-contract' && !signaturePad && currentProject && !currentProject.signed_client) {
-                const canvas = document.getElementById('sig-pad');
-                if(canvas) {
-                    const ratio = Math.max(window.devicePixelRatio || 1, 1);
-                    canvas.width = canvas.offsetWidth * ratio;
-                    canvas.height = canvas.offsetHeight * ratio;
-                    canvas.getContext("2d").scale(ratio, ratio);
-                    signaturePad = new SignaturePad(canvas, { backgroundColor: 'rgb(255, 255, 255)', penColor: '#0f172a' });
-                }
-            }
-        }
-    }
-});
-
 async function generatePix() {
     const btn = document.getElementById('btn-pix');
     const load = document.getElementById('pix-loading');
@@ -262,22 +326,30 @@ async function generatePix() {
         });
         if (error || data?.error) throw new Error(data?.error || 'Falha no gateway');
 
-        document.getElementById('qr-img').src = `data:image/jpeg;base64,${data.qr_code_base64}`;
-        document.getElementById('pix-code').textContent = data.qr_code;
-        document.getElementById('pix-result').classList.remove('hidden');
+        const qrImg = document.getElementById('qr-img');
+        const pixCode = document.getElementById('pix-code');
+        const pixResult = document.getElementById('pix-result');
+        
+        if(qrImg) qrImg.src = `data:image/jpeg;base64,${data.qr_code_base64}`;
+        if(pixCode) pixCode.textContent = data.qr_code;
+        if(pixResult) pixResult.classList.remove('hidden');
     } catch(e) {
         console.warn("PIX Fallback:", e);
-        document.getElementById('qr-img').src = `https://api.qrserver.com/v1/create-qr-code/?size=220x220&data=SIMULACAO_SILVEN_TEC`;
-        document.getElementById('pix-code').textContent = "00020126360014BR.GOV.BCB.PIX... (SIMULAÇÃO)";
-        document.getElementById('pix-result').classList.remove('hidden');
+        const qrImg = document.getElementById('qr-img');
+        const pixCode = document.getElementById('pix-code');
+        const pixResult = document.getElementById('pix-result');
+        
+        if(qrImg) qrImg.src = `https://api.qrserver.com/v1/create-qr-code/?size=220x220&data=SIMULACAO_SILVEN_TEC`;
+        if(pixCode) pixCode.textContent = "00020126360014BR.GOV.BCB.PIX... (SIMULAÇÃO)";
+        if(pixResult) pixResult.classList.remove('hidden');
     } finally {
         if(load) load.classList.add('hidden');
     }
 }
 
 function copyPix() {
-    navigator.clipboard.writeText(document.getElementById('pix-code').textContent)
-        .then(() => alert('Código PIX copiado!'));
+    const code = document.getElementById('pix-code')?.textContent;
+    if(code) navigator.clipboard.writeText(code).then(() => alert('Código PIX copiado!'));
 }
 
 function clearSig() { if(signaturePad) signaturePad.clear(); }
@@ -316,6 +388,8 @@ async function signContract() {
     
     await supabase.from('projects').update({ signed_client: true }).eq('id', currentProject.id);
     
-    document.getElementById('sign-area').classList.add('hidden');
-    document.getElementById('signed-msg').classList.remove('hidden');
+    const signArea = document.getElementById('sign-area');
+    const signedMsg = document.getElementById('signed-msg');
+    if(signArea) signArea.classList.add('hidden');
+    if(signedMsg) signedMsg.classList.remove('hidden');
 }
