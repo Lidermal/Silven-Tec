@@ -5,111 +5,97 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Cliente | Silven Tec</title>
     <link rel="stylesheet" href="style.css">
-    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <link rel="icon" type="image/png" href="logost.png">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/signature_pad@4.0.0/dist/signature_pad.umd.min.js"></script>
     <script src="https://unpkg.com/lucide@latest"></script>
 </head>
-<body class="p-4 md:p-8">
-
-    <nav class="glass-panel rounded-xl px-6 py-4 flex justify-between items-center mb-8 max-w-5xl mx-auto">
-        <div class="flex items-center gap-3">
-            <span class="text-xl font-tech text-cyan-400">SILVEN TEC <span class="text-xs text-slate-500 ml-2 font-inter">| ÁREA DO CLIENTE</span></span>
-        </div>
-        <a href="index.html" class="text-slate-400 hover:text-white text-sm font-bold">SAIR</a>
-    </nav>
-
-    <main class="max-w-5xl mx-auto glass-panel p-6 md:p-8 rounded-2xl animate-fade-in">
-        
-        <!-- Header Projeto -->
-        <div class="border-b border-white/10 pb-6 mb-6 flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+<body>
+    <header style="padding: 1.5rem; flex-direction: row; justify-content: space-between; border-bottom: 1px solid var(--border-color);">
+        <div style="display: flex; align-items: center; gap: 1rem;">
+            <img src="logost.png" alt="Logo" style="width: 40px; height: 40px;">
             <div>
-                <h1 id="proj-title" class="text-2xl md:text-3xl font-tech text-white neon-text">Carregando...</h1>
-                <p id="client-name" class="text-slate-400 mt-1 text-sm">Aguarde...</p>
-            </div>
-            <div class="flex gap-3">
-                <span id="status-badge" class="px-3 py-1 rounded-full bg-slate-800 border border-slate-700 text-xs font-bold text-slate-300">STATUS</span>
+                <h1 style="font-family: 'Orbitron'; font-size: 1.2rem; color: white;">SILVEN TEC</h1>
+                <span style="font-size: 0.7rem; color: var(--cyan-primary); letter-spacing: 2px;">ÁREA DO CLIENTE</span>
             </div>
         </div>
+        <a href="index.html" style="color: var(--text-muted); text-decoration: none; font-size: 0.9rem;">Sair</a>
+    </header>
 
-        <!-- Abas -->
-        <div class="tab-container">
-            <div class="tab-btn active" onclick="switchTab('overview')">Visão Geral</div>
-            <div class="tab-btn" onclick="switchTab('finance')">Financeiro & PIX</div>
-            <div class="tab-btn" onclick="switchTab('contract')">Contrato Digital</div>
-            <div class="tab-btn" onclick="switchTab('support')">Suporte</div>
-        </div>
-
-        <!-- Conteúdo: Visão Geral -->
-        <div id="tab-overview" class="tab-content">
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <div class="bg-slate-900/50 p-6 rounded-xl border border-white/5">
-                    <p class="text-slate-500 text-xs uppercase font-bold mb-2">Próximo Vencimento</p>
-                    <p id="deadline-display" class="text-2xl font-bold text-white">--/--/----</p>
+    <main class="container" style="margin-top: 2rem; max-width: 900px;">
+        <div class="glass-panel animate-in">
+            <!-- Info Projeto -->
+            <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 2rem; border-bottom: 1px solid var(--border-color); padding-bottom: 1.5rem;">
+                <div>
+                    <h1 id="proj-title" style="font-size: 1.8rem; color: white; margin-bottom: 0.5rem;">Carregando...</h1>
+                    <p id="client-name" style="color: var(--text-muted);">Aguarde...</p>
                 </div>
-                <div class="bg-slate-900/50 p-6 rounded-xl border border-white/5">
-                    <p class="text-slate-500 text-xs uppercase font-bold mb-2">Progresso Estimado</p>
-                    <div class="w-full bg-slate-800 rounded-full h-3 mt-3 overflow-hidden">
-                        <div class="bg-cyan-500 h-full rounded-full shadow-[0_0_10px_rgba(6,182,212,0.6)]" style="width: 45%"></div>
+                <span id="status-badge" style="background: rgba(6, 182, 212, 0.1); color: var(--cyan-primary); padding: 0.4rem 1rem; border-radius: 20px; font-size: 0.8rem; font-weight: bold; border: 1px solid rgba(6, 182, 212, 0.3);">STATUS</span>
+            </div>
+
+            <!-- Abas -->
+            <div class="tabs-nav">
+                <div class="tab-btn active" onclick="switchTab('overview')">Visão Geral</div>
+                <div class="tab-btn" onclick="switchTab('finance')">Financeiro</div>
+                <div class="tab-btn" onclick="switchTab('contract')">Contrato</div>
+            </div>
+
+            <!-- Conteúdo -->
+            <div id="tab-overview" class="tab-content">
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem;">
+                    <div style="background: rgba(0,0,0,0.2); padding: 1.5rem; border-radius: 12px;">
+                        <p class="input-label">Próximo Vencimento</p>
+                        <p id="deadline-display" style="font-size: 1.5rem; color: white; font-weight: bold;">--/--/----</p>
                     </div>
-                    <p class="text-right text-xs text-cyan-400 mt-2">Em andamento</p>
+                    <div style="background: rgba(0,0,0,0.2); padding: 1.5rem; border-radius: 12px;">
+                        <p class="input-label">Progresso</p>
+                        <div style="background: rgba(255,255,255,0.1); height: 8px; border-radius: 4px; margin-top: 1rem; overflow: hidden;">
+                            <div style="background: var(--cyan-primary); width: 45%; height: 100%; box-shadow: 0 0 10px var(--cyan-glow);"></div>
+                        </div>
+                    </div>
                 </div>
             </div>
-        </div>
 
-        <!-- Conteúdo: Financeiro -->
-        <div id="tab-finance" class="tab-content hidden">
-            <div class="bg-slate-900/50 p-8 rounded-xl border border-white/5 text-center">
-                <h3 class="text-xl font-bold text-emerald-400 mb-2">Pagamento da Mensalidade</h3>
-                <p id="finance-value" class="text-3xl font-bold text-white my-6">R$ 0,00</p>
-                
-                <button id="btn-pix" onclick="generatePix()" class="btn-primary w-full md:w-auto px-8">
-                    Gerar QR Code PIX
-                </button>
-                <p id="pix-loading" class="hidden text-cyan-400 text-sm mt-4 animate-pulse">Conectando ao gateway seguro...</p>
-
-                <div id="pix-result" class="hidden mt-8 p-6 bg-white rounded-xl inline-block shadow-2xl">
-                    <img id="qr-img" src="" class="w-48 h-48 mx-auto mb-4">
-                    <p id="pix-code" class="text-black text-[10px] font-mono break-all bg-slate-100 p-2 rounded border border-slate-300 select-all cursor-pointer" onclick="copyPix()"></p>
-                    <p class="text-slate-500 text-[10px] mt-2">Toque no código para copiar</p>
+            <div id="tab-finance" class="tab-content hidden">
+                <div style="text-align: center; padding: 2rem; background: rgba(0,0,0,0.2); border-radius: 12px;">
+                    <p class="input-label">Valor da Mensalidade</p>
+                    <h2 id="finance-value" style="font-size: 2.5rem; color: #10b981; margin: 1rem 0;">R$ 0,00</h2>
+                    <button id="btn-pix" onclick="generatePix()" class="btn-primary" style="max-width: 300px; margin: 0 auto;">Gerar QR Code PIX</button>
+                    <p id="pix-loading" class="hidden" style="color: var(--cyan-primary); margin-top: 1rem; font-size: 0.9rem;">Conectando ao gateway seguro...</p>
+                    
+                    <div id="pix-result" class="hidden" style="margin-top: 2rem; background: white; padding: 1.5rem; border-radius: 12px; display: inline-block;">
+                        <img id="qr-img" src="" style="width: 200px; height: 200px; margin-bottom: 1rem;">
+                        <p id="pix-code" style="color: black; font-size: 0.7rem; word-break: break-all; background: #f1f5f9; padding: 0.5rem; border-radius: 4px; cursor: pointer;" onclick="copyPix()">Clique para copiar o código PIX</p>
+                    </div>
                 </div>
             </div>
-        </div>
 
-        <!-- Conteúdo: Contrato -->
-        <div id="tab-contract" class="tab-content hidden">
-            <div id="sign-area" class="bg-slate-900/50 p-6 rounded-xl border border-white/5">
-                <h3 class="font-bold text-cyan-300 mb-2">Assinatura Eletrônica</h3>
-                <p class="text-sm text-slate-400 mb-4">Ao assinar abaixo, você concorda com os termos de prestação de serviços e política de multas por atraso.</p>
-                <canvas id="sig-pad" class="w-full h-40 bg-white rounded-lg border border-slate-700 cursor-crosshair touch-none"></canvas>
-                <div class="flex gap-3 mt-4">
-                    <button onclick="clearSig()" class="px-4 py-2 bg-slate-700 rounded-lg text-sm hover:bg-slate-600">Limpar</button>
-                    <button onclick="signContract()" class="btn-primary flex-grow">Assinar e Baixar PDF</button>
+            <div id="tab-contract" class="tab-content hidden">
+                <div id="sign-area">
+                    <p style="margin-bottom: 1rem; color: var(--text-muted); font-size: 0.9rem;">Assine abaixo para validar o contrato digital.</p>
+                    <canvas id="sig-pad" style="width: 100%; height: 200px; background: white; border-radius: 8px; border: 1px solid var(--border-color);"></canvas>
+                    <div style="display: flex; gap: 1rem; margin-top: 1rem;">
+                        <button onclick="clearSig()" style="background: transparent; border: 1px solid var(--border-color); color: white; padding: 0.8rem 1.5rem; border-radius: 8px; cursor: pointer;">Limpar</button>
+                        <button onclick="signContract()" class="btn-primary" style="flex-grow;">Assinar Contrato</button>
+                    </div>
+                </div>
+                <div id="signed-msg" class="hidden" style="text-align: center; padding: 2rem; color: #10b981; background: rgba(16, 185, 129, 0.1); border-radius: 12px; border: 1px solid rgba(16, 185, 129, 0.3);">
+                    <i data-lucide="check-circle" style="width: 40px; height: 40px; margin-bottom: 1rem;"></i>
+                    <p style="font-weight: bold; font-size: 1.2rem;">Contrato Assinado!</p>
+                    <p style="font-size: 0.9rem; margin-top: 0.5rem;">O PDF foi baixado automaticamente.</p>
                 </div>
             </div>
-            <div id="signed-msg" class="hidden p-6 bg-emerald-900/20 border border-emerald-500/30 rounded-xl text-center text-emerald-400 mt-4">
-                <i data-lucide="check-circle" class="inline mr-2"></i> Contrato assinado com sucesso! O PDF foi baixado.
-            </div>
-        </div>
 
-        <!-- Conteúdo: Suporte -->
-        <div id="tab-support" class="tab-content hidden">
-            <div class="bg-slate-900/50 p-6 rounded-xl border border-white/5 mb-6">
-                <textarea id="support-msg" rows="3" placeholder="Descreva sua solicitação..." class="input-field resize-none"></textarea>
-                <button onclick="sendSupport()" class="btn-primary mt-3 w-full md:w-auto">Enviar Mensagem</button>
-            </div>
-            <div id="support-history" class="space-y-3 max-h-60 overflow-y-auto pr-2 custom-scrollbar"></div>
         </div>
-
     </main>
 
     <script src="app.js"></script>
     <script>
-        // Inicialização segura do cliente
         const params = new URLSearchParams(window.location.search);
         const token = params.get('token');
         if(!token) { alert('Acesso inválido.'); window.location.href='index.html'; }
         else initClient(token);
+        lucide.createIcons();
     </script>
 </body>
 </html>
