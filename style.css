@@ -1,89 +1,84 @@
 /* style.css */
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&family=Orbitron:wght@500;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Orbitron:wght@500;700&display=swap');
 
 :root {
-    --bg-main: #0B0F19;
-    --cyan-primary: #06B6D4;
-    --cyan-glow: rgba(6, 182, 212, 0.4);
-    --text-main: #E2E8F0;
-    --text-muted: #94A3B8;
+    --bg-color: #0B0F19;
+    --cyan: #06B6D4;
+    --cyan-hover: #0891b2;
+    --text-main: #ffffff;
+    --text-muted: #94a3b8;
+    --glass-bg: rgba(15, 23, 42, 0.7);
+    --glass-border: rgba(255, 255, 255, 0.08);
 }
 
 * { box-sizing: border-box; margin: 0; padding: 0; }
 
 body {
-    background-color: var(--bg-main);
+    background-color: var(--bg-color);
     color: var(--text-main);
     font-family: 'Inter', sans-serif;
     min-height: 100vh;
     display: flex;
     flex-direction: column;
     align-items: center;
-    /* Fundo com gradiente sutil no topo */
-    background-image: radial-gradient(circle at 50% 0%, rgba(6, 182, 212, 0.15) 0%, transparent 50%);
+    /* Gradiente sutil no topo */
+    background-image: radial-gradient(circle at 50% 0%, rgba(6, 182, 212, 0.15) 0%, transparent 60%);
     background-attachment: fixed;
 }
 
 /* Header e Logo */
-header {
-    padding: 4rem 1rem 2rem;
+.brand-header {
     text-align: center;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    gap: 1rem;
+    margin-top: 4rem;
+    margin-bottom: 2rem;
     animation: fadeInDown 0.8s ease-out;
 }
 
-.brand-logo {
-    width: 90px;
-    height: 90px;
-    object-fit: contain;
-    filter: drop-shadow(0 0 25px var(--cyan-glow));
+.main-logo {
+    width: 80px;
+    height: 80px;
+    filter: drop-shadow(0 0 20px rgba(6, 182, 212, 0.4));
+    margin-bottom: 1rem;
 }
 
 .brand-title {
     font-family: 'Orbitron', sans-serif;
-    font-size: 2.8rem;
+    font-size: 2.5rem;
     letter-spacing: 4px;
-    color: white;
-    text-transform: uppercase;
+    font-weight: 700;
     text-shadow: 0 0 30px rgba(255,255,255,0.1);
-    margin-top: -0.5rem;
 }
 
 .brand-subtitle {
     font-size: 0.75rem;
     letter-spacing: 6px;
-    color: var(--cyan-primary);
-    text-transform: uppercase;
+    color: var(--cyan);
     font-weight: 600;
-    margin-top: -0.5rem;
+    margin-top: 0.5rem;
 }
 
-/* Painel Principal (Glassmorphism) */
-.main-container {
+/* Painel Central (Glassmorphism) */
+.login-container {
     width: 100%;
-    max-width: 480px;
+    max-width: 450px;
     padding: 0 1.5rem;
-    margin-top: 1rem;
     animation: fadeInUp 0.8s ease-out 0.2s backwards;
 }
 
 .glass-panel {
-    background: rgba(15, 23, 42, 0.6);
+    background: var(--glass-bg);
     backdrop-filter: blur(20px);
     -webkit-backdrop-filter: blur(20px);
-    border: 1px solid rgba(255, 255, 255, 0.08);
+    border: 1px solid var(--glass-border);
     border-radius: 20px;
     padding: 2.5rem;
     box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
 }
 
-/* Abas de Navegação */
-.tabs-nav {
+/* Abas */
+.tabs-wrapper {
     display: flex;
-    background: rgba(0, 0, 0, 0.3);
+    background: rgba(0, 0, 0, 0.4);
     border-radius: 12px;
     padding: 4px;
     margin-bottom: 2rem;
@@ -93,83 +88,88 @@ header {
 .tab-btn {
     flex: 1;
     padding: 0.8rem;
-    text-align: center;
-    border-radius: 8px;
-    font-size: 0.85rem;
-    font-weight: 600;
-    color: var(--text-muted);
-    cursor: pointer;
-    transition: all 0.3s ease;
     border: none;
     background: transparent;
-    letter-spacing: 0.5px;
+    color: var(--text-muted);
+    font-family: 'Inter', sans-serif;
+    font-weight: 600;
+    font-size: 0.85rem;
+    cursor: pointer;
+    border-radius: 8px;
+    transition: all 0.3s ease;
 }
 
 .tab-btn.active {
-    background: var(--cyan-primary);
+    background: var(--cyan);
     color: #0B0F19;
     box-shadow: 0 4px 12px rgba(6, 182, 212, 0.3);
 }
 
-/* Formulários */
+/* Inputs e Botões */
 .input-group { margin-bottom: 1.5rem; }
-.input-label { 
-    display: block; 
-    font-size: 0.8rem; 
-    color: var(--text-muted); 
-    margin-bottom: 0.6rem; 
-    font-weight: 500; 
-    text-transform: uppercase;
+.input-group label {
+    display: block;
+    font-size: 0.75rem;
+    color: var(--text-muted);
+    margin-bottom: 0.6rem;
+    font-weight: 600;
     letter-spacing: 0.5px;
 }
 
-.input-field {
+input {
     width: 100%;
-    padding: 1rem 1.2rem;
+    padding: 1rem;
     background: rgba(0, 0, 0, 0.4);
     border: 1px solid rgba(255, 255, 255, 0.1);
     border-radius: 10px;
     color: white;
     font-family: 'Inter', sans-serif;
     font-size: 1rem;
-    transition: all 0.3s ease;
+    transition: all 0.3s;
 }
 
-.input-field:focus {
+input:focus {
     outline: none;
-    border-color: var(--cyan-primary);
+    border-color: var(--cyan);
     box-shadow: 0 0 0 3px rgba(6, 182, 212, 0.15);
-    background: rgba(0, 0, 0, 0.6);
 }
 
 .btn-primary {
     width: 100%;
     padding: 1rem;
-    background: linear-gradient(90deg, #0891b2, #06b6d4);
-    color: white;
     border: none;
     border-radius: 10px;
     font-weight: 600;
     font-size: 1rem;
     cursor: pointer;
-    transition: all 0.3s ease;
     display: flex;
     align-items: center;
     justify-content: center;
     gap: 0.5rem;
+    transition: all 0.3s;
+}
+
+.full-width { width: 100%; }
+
+/* Botão Cyan (Cliente) */
+.btn-primary:not(.btn-dark) {
+    background: linear-gradient(90deg, #0891b2, #06b6d4);
+    color: white;
     box-shadow: 0 4px 15px rgba(6, 182, 212, 0.3);
 }
+.btn-primary:not(.btn-dark):hover { transform: translateY(-2px); box-shadow: 0 8px 25px rgba(6, 182, 212, 0.5); }
 
-.btn-primary:hover:not(:disabled) {
-    transform: translateY(-2px);
-    box-shadow: 0 8px 25px rgba(6, 182, 212, 0.5);
+/* Botão Escuro (Admin) */
+.btn-dark {
+    background: linear-gradient(90deg, #1e293b, #334155);
+    color: white;
+    border: 1px solid rgba(255,255,255,0.1);
 }
-
-.btn-primary:disabled { opacity: 0.7; cursor: not-allowed; }
+.btn-dark:hover { background: linear-gradient(90deg, #334155, #475569); }
 
 /* Utilitários */
 .hidden { display: none !important; }
-.text-error { color: #ef4444; font-size: 0.85rem; text-align: center; margin-top: 1rem; font-weight: 500; }
+.error-msg { color: #ef4444; font-size: 0.85rem; text-align: center; margin-top: 1rem; font-weight: 500; }
 
 @keyframes fadeInDown { from { opacity: 0; transform: translateY(-20px); } to { opacity: 1; transform: translateY(0); } }
 @keyframes fadeInUp { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
