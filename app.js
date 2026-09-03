@@ -1,13 +1,10 @@
 /* app.js - Silven Tec Core Logic */
 
-// ==========================================
-// CONFIGURAÇÃO SUPABASE
-// ==========================================
 const SUPABASE_URL = 'https://evwsxwkvtjgexhjwofxh.supabase.co';
 const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImV2d3N4d2t2dGpnZXhoandvZnhoIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODc2ODk0MDEsImV4cCI6MjEwMzI2NTQwMX0.oN_ATHMc7KBHC7NA7O35Q5nS3H4OxSIAXMXvE7xYXCA';
 
 if (typeof window.supabase === 'undefined') {
-    alert("Erro de conexão: Não foi possível carregar o banco de dados. Verifique sua internet.");
+    alert("Erro crítico: Falha ao carregar o banco de dados.");
 }
 
 const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
@@ -16,92 +13,101 @@ let currentProject = null;
 let signaturePad = null;
 let systemConfig = {}; 
 
-// ==========================================
-// UTILITÁRIOS
-// ==========================================
 function formatCurrency(val) {
     return new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(val);
 }
 
 async function generateSmartToken(name) {
-    if (!systemConfig.token_prefix) {
-        try {
-            const { data } = await supabase.from('system_config').select('config_value').eq('config_key', 'token_prefix').single();
-            if (data) systemConfig.token_prefix = data.config_value;
-        } catch (e) { console.warn("Falha ao buscar config, usando padrão ST"); }
-    }
-    
-    const prefix = systemConfig.token_prefix || 'ST';
+    const prefix = 'ST';
     const clean = name.normalize("NFD").replace(/[\u0300-\u036f]/g, "").replace(/[^a-zA-Z]/g, "").substring(0, 4).toUpperCase().padEnd(4, 'X');
     const rand = Math.random().toString(36).substring(2, 6).toUpperCase();
     return `${prefix}-${clean}-${rand}`;
 }
 
 // ==========================================
-// LÓGICA DE LOGIN ADMIN (CORRIGIDA)
+// INICIALIZAÇÃO SEGURA DO SISTEMA
 // ==========================================
-window.handleAdminLogin = async function() {
-    const passInput = document.getElementById('admin-pass').value;
-    const errEl = document.getElementById('admin-error');
-    const btn = document.querySelector('#form-admin button');
+document.addEventListener('DOMContentLoaded', () => {
+
+    // 1. LÓGICA DA PÁGINA INICIAL (INDEX)
+    const tabClient = document.getElementById('tab-client');
+    const tabAdmin = document.getElementById('tab-admin');
     
-    if (!passInput) {
-        errEl.textContent = "Digite a senha.";
-        errEl.classList.remove('hidden');
-        return;
+    if (tabClient && tabAdmin) {
+        const panelClient = document.getElementById('panel-client');
+        const panelAdmin = document.getElementById('panel-admin');
+
+        // Alternância de Abas
+        tabClient.addEventListener('click', () => {
+            tabClient.classList.add('active');
+            tabAdmin.classList.remove('active');
+            panelClient.classList.remove('hidden');
+            panelAdmin.classList.add('hidden');
+        });
+
+        tabAdmin.addEventListener('click', () => {
+            tabAdmin.classList.add('active');
+            tabClient.classList.remove('active');
+            panelAdmin.classList.remove('hidden');
+            panelClient.classList.add('hidden');
+        });
+
+        // Login Cliente
+        document.getElementById('btn-client-access').addEventListener('click', () => {
+            const token = document.getElementById('token-input').value.trim().toUpperCase();
+            if (!token) return alert("Insira um token válido.");
+            window.location.href = `client.html?token=${token}`;
+        });
+
+        // Login Admin
+        document.getElementById('btn-admin-login').addEventListener('click', async (e) => {
+            const passInput = document.getElementById('admin-pass').value;
+            const errEl = document.getElementById('admin-error');
+            const btn = e.currentTarget;
+            
+            if (!passInput) {
+                errEl.textContent = "Digite a senha mestra.";
+                errEl.classList.remove('hidden');
+                return;
+            }
+
+            const originalText = btn.innerHTML;
+            btn.innerHTML = `Verificando...`;
+            btn.disabled = true;
+            errEl.classList.add('hidden');
+
+            try {
+                const { data: user, error } = await supabase
+                    .from('users')
+                    .select('password_hash, role')
+                    .eq('username', 'janaelson')
+                    .single();
+
+                if (error || !user) throw new Error("Acesso negado.");
+                if (String(user.password_hash) !== String(passInput)) throw new Error("Senha incorreta.");
+
+                sessionStorage.setItem('silven_admin', 'true');
+                window.location.href = 'admin.html';
+            } catch (err) {
+                errEl.textContent = err.message;
+                errEl.classList.remove('hidden');
+                btn.innerHTML = originalText;
+                btn.disabled = false;
+                if(window.lucide) lucide.createIcons();
+            }
+        });
     }
 
-    const originalText = btn.innerHTML;
-    btn.innerHTML = `Verificando...`;
-    btn.disabled = true;
-    errEl.classList.add('hidden');
-
-    try {
-        const { data: user, error } = await supabase
-            .from('users')
-            .select('password_hash, role')
-            .eq('username', 'janaelson')
-            .single();
-
-        if (error || !user) {
-            throw new Error("Erro de credenciais. Acesso negado.");
+    // 2. LÓGICA DO PAINEL ADMIN
+    if (document.getElementById('stat-projects')) {
+        if(!sessionStorage.getItem('silven_admin')) {
+            window.location.href = 'index.html';
+            return;
         }
 
-        if (String(user.password_hash) !== String(passInput)) {
-            throw new Error("Senha incorreta.");
-        }
+        loadAdminStats();
 
-        sessionStorage.setItem('silven_admin', 'true');
-        sessionStorage.setItem('silven_user', JSON.stringify({ username: 'janaelson', role: user.role }));
-        
-        window.location.href = 'admin.html';
-
-    } catch (err) {
-        errEl.textContent = err.message;
-        errEl.classList.remove('hidden');
-        btn.innerHTML = originalText;
-        btn.disabled = false;
-    }
-};
-
-// ==========================================
-// ACESSO CLIENTE
-// ==========================================
-window.handleClientAccess = function() {
-    const token = document.getElementById('token-input').value.trim().toUpperCase();
-    if (!token) return alert("Insira um token válido.");
-    window.location.href = `client.html?token=${token}`;
-};
-
-// ==========================================
-// ADMIN DASHBOARD LOGIC
-// ==========================================
-window.initAdmin = async function() {
-    window.loadAdminStats();
-    
-    const form = document.getElementById('form-new-project');
-    if(form) {
-        form.addEventListener('submit', async (e) => {
+        document.getElementById('form-new-project')?.addEventListener('submit', async (e) => {
             e.preventDefault();
             const btn = e.target.querySelector('button');
             btn.disabled = true; btn.textContent = 'Processando...';
@@ -109,7 +115,6 @@ window.initAdmin = async function() {
             const client = document.getElementById('new-client').value;
             const title = document.getElementById('new-title').value;
             const value = document.getElementById('new-value').value;
-            
             const token = await generateSmartToken(client);
             const deadline = new Date(Date.now() + 30*86400000).toISOString().split('T')[0];
 
@@ -120,16 +125,136 @@ window.initAdmin = async function() {
 
             if(error) alert('Erro ao criar: ' + error.message);
             else {
-                alert(`Projeto criado com sucesso!\nToken gerado: ${token}`);
+                alert(`Projeto criado!\nToken: ${token}`);
                 e.target.reset();
-                window.loadAdminStats();
+                loadAdminStats();
             }
             btn.disabled = false; btn.textContent = 'Criar Projeto';
         });
-    }
-};
 
-window.loadAdminStats = async function() {
+        // Expor a função logout para o HTML admin.html
+        window.logout = () => {
+            sessionStorage.clear();
+            window.location.href = 'index.html';
+        };
+    }
+
+    // 3. LÓGICA DO PAINEL CLIENTE
+    if (document.getElementById('proj-title')) {
+        const params = new URLSearchParams(window.location.search);
+        const token = params.get('token');
+        
+        if(!token) {
+            alert('Acesso inválido. Redirecionando...'); 
+            window.location.href='index.html';
+            return;
+        }
+
+        initClient(token);
+
+        // Expor funções necessárias para o HTML client.html
+        window.switchTab = function(tabName) {
+            document.querySelectorAll('.tab-content').forEach(el => el.classList.add('hidden'));
+            document.querySelectorAll('.tab-btn').forEach(el => el.classList.remove('active'));
+            
+            const target = document.getElementById(`tab-${tabName}`);
+            if(target) target.classList.remove('hidden');
+            if(event && event.currentTarget) event.currentTarget.classList.add('active');
+
+            if(tabName === 'contract' && !signaturePad && currentProject && !currentProject.signed_client) {
+                const canvas = document.getElementById('sig-pad');
+                if(canvas) {
+                    const ratio = Math.max(window.devicePixelRatio || 1, 1);
+                    canvas.width = canvas.offsetWidth * ratio;
+                    canvas.height = canvas.offsetHeight * ratio;
+                    canvas.getContext("2d").scale(ratio, ratio);
+                    signaturePad = new window.SignaturePad(canvas, { backgroundColor: 'rgb(255, 255, 255)', penColor: '#0f172a' });
+                }
+            }
+        };
+
+        window.generatePix = async function() {
+            const btn = document.getElementById('btn-pix');
+            const load = document.getElementById('pix-loading');
+            if(btn) btn.classList.add('hidden');
+            if(load) load.classList.remove('hidden');
+
+            try {
+                const { data, error } = await supabase.functions.invoke('gerar-pix-mp', {
+                    body: { 
+                        transaction_amount: Number(currentProject.total_value), 
+                        description: `Silven Tec: ${currentProject.title}`
+                    }
+                });
+
+                if (error || data?.error) throw new Error(data?.error || 'Falha no gateway PIX');
+
+                const qrImg = document.getElementById('qr-img');
+                const pixCode = document.getElementById('pix-code');
+                const pixResult = document.getElementById('pix-result');
+                
+                if(qrImg) qrImg.src = `data:image/jpeg;base64,${data.qr_code_base64}`;
+                if(pixCode) pixCode.textContent = data.qr_code;
+                if(pixResult) pixResult.classList.remove('hidden');
+            } catch(e) {
+                alert("Erro ao gerar pagamento: " + e.message);
+                if(btn) btn.classList.remove('hidden');
+            } finally {
+                if(load) load.classList.add('hidden');
+            }
+        };
+
+        window.copyPix = () => {
+            const code = document.getElementById('pix-code').textContent;
+            navigator.clipboard.writeText(code).then(() => alert('Código PIX copiado!'));
+        };
+
+        window.clearSig = () => { if(signaturePad) signaturePad.clear(); };
+
+        window.signContract = async () => {
+            if(!signaturePad || signaturePad.isEmpty()) return alert('Assine o contrato no quadro branco.');
+            
+            const sigData = signaturePad.toDataURL();
+            const { jsPDF } = window.jspdf;
+            const doc = new jsPDF();
+
+            doc.setFontSize(24); doc.setTextColor(6, 182, 212); doc.setFont("helvetica", "bold");
+            doc.text("SILVEN TEC", 20, 25);
+            doc.setFontSize(10); doc.setTextColor(100); doc.setFont("helvetica", "normal");
+            doc.text("INOVAÇÃO E GESTÃO EM TECNOLOGIA", 20, 32);
+            doc.line(20, 38, 190, 38);
+            
+            doc.setFontSize(16); doc.setTextColor(15, 23, 42); doc.setFont("helvetica", "bold");
+            doc.text("CONTRATO DIGITAL DE PRESTAÇÃO DE SERVIÇOS", 20, 55);
+            
+            doc.setFontSize(11); doc.setTextColor(51, 65, 85); doc.setFont("helvetica", "normal");
+            doc.text(`CONTRATANTE: ${currentProject.client_name}`, 20, 75);
+            doc.text(`PROJETO REFERENTE: ${currentProject.title}`, 20, 83);
+            doc.text(`VALOR MENSAL ACORDADO: ${formatCurrency(currentProject.total_value)}`, 20, 91);
+            
+            doc.setFontSize(10); doc.setTextColor(100);
+            doc.text("CLÁUSULA DE ATRASO:", 20, 110);
+            doc.setFontSize(9);
+            doc.text("Em caso de inadimplência, incidirá multa fixa de 2% (dois por cento)", 20, 116);
+            doc.text("sobre o valor da parcela, somada a juros de mora de 0,033% ao dia de atraso.", 20, 121);
+            
+            doc.addImage(sigData, 'PNG', 20, 150, 80, 40);
+            doc.line(20, 192, 100, 192);
+            doc.text("Assinatura Eletrônica do Cliente", 20, 198);
+
+            doc.save(`Contrato_SilvenTec_${currentProject.title.replace(/\s+/g, '_')}.pdf`);
+
+            await supabase.from('contracts').upsert({ project_id: currentProject.id, signature_data: sigData, signed_at: new Date().toISOString() }, { onConflict: 'project_id' });
+            await supabase.from('projects').update({ signed_client: true }).eq('id', currentProject.id);
+            
+            document.getElementById('sign-area').classList.add('hidden');
+            document.getElementById('signed-msg').classList.remove('hidden');
+        };
+    }
+});
+
+// Funções de carregamento (mantidas fora do DOMContentLoaded para organização)
+async function loadAdminStats() {
     const { data, error } = await supabase.from('projects').select('*').order('created_at', {ascending: false});
     if(error) return;
 
@@ -157,23 +282,13 @@ window.loadAdminStats = async function() {
     const statRev = document.getElementById('stat-revenue');
     if(statProj) statProj.textContent = data.length;
     if(statRev) statRev.textContent = formatCurrency(rev);
-};
+}
 
-window.logout = function() {
-    sessionStorage.clear();
-    window.location.href = 'index.html';
-};
-
-// ==========================================
-// CLIENT AREA LOGIC
-// ==========================================
-window.initClient = async function(token) {
+async function initClient(token) {
     const { data, error } = await supabase.from('projects').select('*').eq('access_token', token).single();
     
     if(error || !data) {
-        alert('Projeto não encontrado ou token inválido.');
-        window.location.href = 'index.html';
-        return;
+        alert('Projeto não encontrado.'); window.location.href = 'index.html'; return;
     }
 
     currentProject = data;
@@ -182,7 +297,7 @@ window.initClient = async function(token) {
     document.getElementById('status-badge').textContent = data.status.toUpperCase().replace('_', ' ');
     
     const deadlineDate = new Date(data.deadline);
-    deadlineDate.setDate(deadlineDate.getDate() + 1); // Ajuste de fuso horário simples
+    deadlineDate.setDate(deadlineDate.getDate() + 1);
     document.getElementById('deadline-display').textContent = deadlineDate.toLocaleDateString('pt-BR');
     
     const today = new Date(); today.setHours(0,0,0,0);
@@ -207,111 +322,4 @@ window.initClient = async function(token) {
         if(signArea) signArea.classList.add('hidden');
         if(signedMsg) signedMsg.classList.remove('hidden');
     }
-};
-
-window.switchTab = function(tabName) {
-    document.querySelectorAll('.tab-content').forEach(el => el.classList.add('hidden'));
-    document.querySelectorAll('.tab-btn').forEach(el => el.classList.remove('active'));
-    
-    const target = document.getElementById(`tab-${tabName}`);
-    if(target) target.classList.remove('hidden');
-    
-    // Captura o elemento clicado para ativar a borda inferior
-    const eventElement = event?.currentTarget;
-    if(eventElement) eventElement.classList.add('active');
-
-    if(tabName === 'contract' && !signaturePad && currentProject && !currentProject.signed_client) {
-        const canvas = document.getElementById('sig-pad');
-        if(canvas) {
-            const ratio = Math.max(window.devicePixelRatio || 1, 1);
-            canvas.width = canvas.offsetWidth * ratio;
-            canvas.height = canvas.offsetHeight * ratio;
-            canvas.getContext("2d").scale(ratio, ratio);
-            signaturePad = new window.SignaturePad(canvas, { backgroundColor: 'rgb(255, 255, 255)', penColor: '#0f172a' });
-        }
-    }
-};
-
-window.generatePix = async function() {
-    const btn = document.getElementById('btn-pix');
-    const load = document.getElementById('pix-loading');
-    if(btn) btn.classList.add('hidden');
-    if(load) load.classList.remove('hidden');
-
-    try {
-        const { data, error } = await supabase.functions.invoke('gerar-pix-mp', {
-            body: { 
-                transaction_amount: Number(currentProject.total_value), 
-                description: `Silven Tec: ${currentProject.title}`
-            }
-        });
-
-        if (error || data?.error) throw new Error(data?.error || 'Falha de comunicação com o Mercado Pago');
-
-        const qrImg = document.getElementById('qr-img');
-        const pixCode = document.getElementById('pix-code');
-        const pixResult = document.getElementById('pix-result');
-        
-        if(qrImg) qrImg.src = `data:image/jpeg;base64,${data.qr_code_base64}`;
-        if(pixCode) pixCode.textContent = data.qr_code;
-        if(pixResult) pixResult.classList.remove('hidden');
-        
-    } catch(e) {
-        alert("Erro ao gerar PIX: " + e.message);
-        if(btn) btn.classList.remove('hidden');
-    } finally {
-        if(load) load.classList.add('hidden');
-    }
-};
-
-window.copyPix = function() {
-    const code = document.getElementById('pix-code').textContent;
-    navigator.clipboard.writeText(code).then(() => alert('Código PIX Copia e Cola copiado com sucesso!'));
-};
-
-window.clearSig = function() { 
-    if(signaturePad) signaturePad.clear(); 
-};
-
-window.signContract = async function() {
-    if(!signaturePad || signaturePad.isEmpty()) return alert('Por favor, assine o contrato no quadro branco.');
-    
-    const sigData = signaturePad.toDataURL();
-    const { jsPDF } = window.jspdf;
-    const doc = new jsPDF();
-
-    doc.setFontSize(24); doc.setTextColor(6, 182, 212); doc.setFont("helvetica", "bold");
-    doc.text("SILVEN TEC", 20, 25);
-    doc.setFontSize(10); doc.setTextColor(100); doc.setFont("helvetica", "normal");
-    doc.text("INOVAÇÃO E GESTÃO EM TECNOLOGIA", 20, 32);
-    doc.line(20, 38, 190, 38);
-    
-    doc.setFontSize(16); doc.setTextColor(15, 23, 42); doc.setFont("helvetica", "bold");
-    doc.text("CONTRATO DIGITAL DE PRESTAÇÃO DE SERVIÇOS", 20, 55);
-    
-    doc.setFontSize(11); doc.setTextColor(51, 65, 85); doc.setFont("helvetica", "normal");
-    doc.text(`CONTRATANTE: ${currentProject.client_name}`, 20, 75);
-    doc.text(`PROJETO REFERENTE: ${currentProject.title}`, 20, 83);
-    doc.text(`VALOR MENSAL ACORDADO: ${formatCurrency(currentProject.total_value)}`, 20, 91);
-    
-    doc.setFontSize(10); doc.setTextColor(100);
-    doc.text("CLÁUSULA DE ATRASO:", 20, 110);
-    doc.setFontSize(9);
-    doc.text("Em caso de inadimplência, incidirá multa fixa de 2% (dois por cento)", 20, 116);
-    doc.text("sobre o valor da parcela, somada a juros de mora de 0,033% ao dia de atraso.", 20, 121);
-    
-    doc.addImage(sigData, 'PNG', 20, 150, 80, 40);
-    doc.line(20, 192, 100, 192);
-    doc.text("Assinatura Eletrônica do Cliente", 20, 198);
-
-    doc.save(`Contrato_SilvenTec_${currentProject.title.replace(/\s+/g, '_')}.pdf`);
-
-    await supabase.from('contracts').upsert({ 
-        project_id: currentProject.id, signature_data: sigData, signed_at: new Date().toISOString() 
-    }, { onConflict: 'project_id' });
-    
-    await supabase.from('projects').update({ signed_client: true }).eq('id', currentProject.id);
-    
-    document.getElementById('sign-area').classList.add('hidden');
-    document.getElementById('signed-msg').classList.remove('hidden');
-};
+}
