@@ -343,3 +343,96 @@ window.signContract = async () => {
     document.getElementById('sign-area').classList.add('hidden');
     document.getElementById('signed-msg').classList.remove('hidden');
 };
+/* Adicione/Substitua estas funções no seu app.js */
+
+// Função para calcular valor final com multa e juros
+function calculateFinalValue(baseValue, deadlineStr) {
+    const value = Number(baseValue);
+    const today = new Date(); today.setHours(0,0,0,0);
+    const due = new Date(deadlineStr); due.setHours(0,0,0,0);
+    
+    const diffTime = today - due;
+    const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+    
+    if (diffDays <= 0) {
+        return { final: value, isLate: false, days: 0, msg: '' };
+    }
+
+    // Regras solicitadas:
+    // Multa fixa: 2%
+    const multa = value * 0.02;
+    // Juros de mora: 0,033% ao dia
+    const juros = value * (0.00033 * diffDays);
+    
+    const final = value + multa + juros;
+    
+    return { 
+        final, 
+        isLate: true, 
+        days: diffDays, 
+        msg: `Atraso de ${diffDays} dias. Multa (2%) + Juros (0,033%/dia) aplicados.` 
+    };
+}
+
+// Atualização da função initClientArea para usar o cálculo acima
+async function initClientArea(token) {
+    const { data, error } = await db.from('projects').select('*').eq('access_token', token).single();
+    if(error || !data) { alert('Token inválido.'); window.location.href='index.html'; return; }
+    
+    currentProject = data;
+    document.getElementById('proj-title').textContent = data.title;
+    document.getElementById('client-name').textContent = `Cliente: ${data.client_name}`;
+    document.getElementById('status-badge').textContent = data.status.toUpperCase();
+    document.getElementById('deadline-display').textContent = new Date(data.deadline).toLocaleDateString('pt-BR');
+
+    // Aplica a lógica financeira
+    const financeData = calculateFinalValue(data.total_value, data.deadline);
+    const valEl = document.getElementById('finance-value');
+    const lateMsg = document.getElementById('late-fee-msg');
+    
+    valEl.textContent = formatCurrency(financeData.final);
+    
+    if(financeData.isLate) {
+        lateMsg.classList.remove('hidden');
+        lateMsg.innerHTML = `<strong>Atenção:</strong> ${financeData.msg}<br>Valor original: ${formatCurrency(data.total_value)}`;
+    } else {
+        lateMsg.classList.add('hidden');
+    }
+
+    if(data.signed_client) {
+        document.getElementById('sign-area')?.classList.add('hidden');
+        document.getElementById('signed-msg')?.classList.remove('hidden');
+    }
+}
+
+// Atualização da geração de PIX para enviar o valor CORRETO (com juros)
+window.generatePix = async function() {
+    const btn = document.getElementById('btn-pix');
+    const load = document.getElementById('pix-loading');
+    btn.classList.add('hidden'); load.classList.remove('hidden');
+    
+    try {
+        // Recalcula o valor na hora do clique para garantir precisão
+        const financeData = calculateFinalValue(currentProject.total_value, currentProject.deadline);
+        
+        // Chama sua Edge Function do Supabase (Mercado Pago)
+        const { data, error } = await db.functions.invoke('gerar-pix-mp', { 
+            body: { 
+                transaction_amount: Number(financeData.final.toFixed(2)), 
+                description: `Silven Tec: ${currentProject.title} (${financeData.isLate ? 'Atraso' : 'Mensalidade'})` 
+            } 
+        });
+
+        if (error || data?.error) throw new Error(data?.error || 'Falha no gateway MP');
+        
+        document.getElementById('qr-img').src = `data:image/jpeg;base64,${data.qr_code_base64}`;
+        document.getElementById('pix-code').textContent = data.qr_code;
+        document.getElementById('pix-result').classList.remove('hidden');
+        
+    } catch(e) { 
+        alert("Erro ao gerar PIX: " + e.message); 
+        btn.classList.remove('hidden'); 
+    } finally { 
+        load.classList.add('hidden'); 
+    }
+};
