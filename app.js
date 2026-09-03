@@ -1,4 +1,4 @@
-/* app.js - Silven Tec Core Logic */
+/* app.js - Silven Tec Core Logic (Sincronizado com Supabase) */
 
 // ==========================================
 // CONFIGURAÇÃO SUPABASE
@@ -9,6 +9,7 @@ const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
 let currentProject = null;
 let signaturePad = null;
+let systemConfig = {}; // Cache para configs do banco
 
 // ==========================================
 // UTILITÁRIOS
@@ -17,14 +18,22 @@ function formatCurrency(val) {
     return new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(val);
 }
 
-function generateSmartToken(name) {
+// Gera token usando prefixo vindo do system_config
+async function generateSmartToken(name) {
+    // Busca prefixo do banco se ainda não tiver em cache
+    if (!systemConfig.token_prefix) {
+        const { data } = await supabase.from('system_config').select('config_value').eq('config_key', 'token_prefix').single();
+        if (data) systemConfig.token_prefix = data.config_value;
+    }
+    
+    const prefix = systemConfig.token_prefix || 'ST';
     const clean = name.normalize("NFD").replace(/[\u0300-\u036f]/g, "").replace(/[^a-zA-Z]/g, "").substring(0, 4).toUpperCase().padEnd(4, 'X');
     const rand = Math.random().toString(36).substring(2, 6).toUpperCase();
-    return `ST-${clean}-${rand}`;
+    return `${prefix}-${clean}-${rand}`;
 }
 
 // ==========================================
-// INDEX.HTML LOGIC
+// INDEX.HTML LOGIC (LOGIN VIA BANCO)
 // ==========================================
 async function handleClientAccess() {
     const token = document.getElementById('token-input').value.trim().toUpperCase();
@@ -33,22 +42,45 @@ async function handleClientAccess() {
 }
 
 async function handleAdminLogin() {
-    const pass = document.getElementById('admin-pass').value;
+    const passInput = document.getElementById('admin-pass').value;
     const errEl = document.getElementById('admin-error');
+    const btn = document.querySelector('#form-admin button');
     
-    // Validação SHA-256 (Senha padrão: silven123)
-    const encoder = new TextEncoder();
-    const hashBuffer = await crypto.subtle.digest('SHA-256', encoder.encode(pass));
-    const hashHex = Array.from(new Uint8Array(hashBuffer)).map(b => b.toString(16).padStart(2, '0')).join('');
-    
-    const correctHash = '3a7bd3e2360a3d29eea436fcfb7e44c735d117c42d1c1835420b6b9942dd4f1b'; 
-
-    if (hashHex === correctHash) {
-        sessionStorage.setItem('silven_admin', 'true');
-        window.location.href = 'admin.html';
-    } else {
-        errEl.textContent = "Senha incorreta.";
+    if (!passInput) {
+        errEl.textContent = "Digite a senha.";
         errEl.classList.remove('hidden');
+        return;
+    }
+
+    const originalText = btn.innerHTML;
+    btn.innerHTML = `<i data-lucide="loader-2" class="animate-spin" style="display:inline-block"></i> Verificando...`;
+    btn.disabled = true;
+    lucide.createIcons();
+
+    try {
+        // CONSULTA DIRETA NO BANCO DE DADOS
+        const { data: user, error } = await supabase
+            .from('users')
+            .select('password_hash, role')
+            .eq('username', 'janaelson')
+            .single();
+
+        if (error || !user) throw new Error("Usuário administrador não encontrado.");
+
+        // COMPARAÇÃO DE SENHA (Sem hash no código, vem do DB)
+        if (user.password_hash !== passInput) throw new Error("Senha incorreta.");
+
+        // SUCESSO
+        sessionStorage.setItem('silven_admin', 'true');
+        sessionStorage.setItem('silven_user', JSON.stringify({ username: 'janaelson', role: user.role }));
+        window.location.href = 'admin.html';
+
+    } catch (err) {
+        errEl.textContent = err.message;
+        errEl.classList.remove('hidden');
+        btn.innerHTML = originalText;
+        btn.disabled = false;
+        lucide.createIcons();
     }
 }
 
@@ -66,7 +98,9 @@ async function initAdmin() {
         const client = document.getElementById('new-client').value;
         const title = document.getElementById('new-title').value;
         const value = document.getElementById('new-value').value;
-        const token = generateSmartToken(client);
+        
+        // Token gerado dinamicamente via system_config
+        const token = await generateSmartToken(client);
         const deadline = new Date(Date.now() + 30*86400000).toISOString().split('T')[0];
 
         const { error } = await supabase.from('projects').insert([{
@@ -74,13 +108,13 @@ async function initAdmin() {
             access_token: token, status: 'em_andamento', deadline
         }]);
 
-        if(error) alert('Erro: ' + error.message);
+        if(error) alert('Erro ao criar: ' + error.message);
         else {
-            alert(`Projeto criado!\nToken: ${token}`);
+            alert(`Projeto criado!\nToken de Acesso: ${token}`);
             e.target.reset();
             loadAdminStats();
         }
-        btn.disabled = false; btn.textContent = 'Cadastrar';
+        btn.disabled = false; btn.textContent = 'Criar Projeto';
     });
 }
 
@@ -95,14 +129,14 @@ async function loadAdminStats() {
     data.forEach(p => {
         rev += Number(p.total_value);
         list.innerHTML += `
-        <div style="display: flex; justify-content: space-between; align-items: center; padding: 1rem; background: rgba(0,0,0,0.2); border-radius: 8px; border: 1px solid var(--border-color);">
+        <div style="display: flex; justify-content: space-between; align-items: center; padding: 1.2rem; background: rgba(0,0,0,0.2); border-radius: 10px; border: 1px solid var(--border-color); transition: all 0.3s;" onmouseover="this.style.borderColor='var(--cyan-primary)'" onmouseout="this.style.borderColor='var(--border-color)'">
             <div>
-                <h4 style="color: white; font-weight: 600;">${p.title}</h4>
-                <p style="font-size: 0.8rem; color: var(--text-muted);">${p.client_name} • <span style="color: var(--cyan-primary); font-family: monospace;">${p.access_token}</span></p>
+                <h4 style="color: white; font-weight: 600; margin-bottom: 0.3rem;">${p.title}</h4>
+                <p style="font-size: 0.85rem; color: var(--text-muted);">${p.client_name} • <span style="color: var(--cyan-primary); font-family: 'Orbitron', monospace; font-size: 0.8rem;">${p.access_token}</span></p>
             </div>
             <div style="text-align: right;">
-                <span style="color: #10b981; font-weight: bold;">${formatCurrency(p.total_value)}</span>
-                <span style="display: block; font-size: 0.7rem; color: var(--text-muted); margin-top: 0.2rem;">${p.status}</span>
+                <span style="color: #10b981; font-weight: 700; font-size: 1.1rem;">${formatCurrency(p.total_value)}</span>
+                <span style="display: block; font-size: 0.75rem; color: var(--text-muted); margin-top: 0.3rem; text-transform: uppercase; letter-spacing: 0.5px;">${p.status}</span>
             </div>
         </div>`;
     });
@@ -113,6 +147,7 @@ async function loadAdminStats() {
 
 function logout() {
     sessionStorage.removeItem('silven_admin');
+    sessionStorage.removeItem('silven_user');
     window.location.href = 'index.html';
 }
 
@@ -123,7 +158,7 @@ async function initClient(token) {
     const { data, error } = await supabase.from('projects').select('*').eq('access_token', token).single();
     
     if(error || !data) {
-        alert('Projeto não encontrado.');
+        alert('Projeto não encontrado ou token inválido.');
         window.location.href = 'index.html';
         return;
     }
@@ -134,7 +169,7 @@ async function initClient(token) {
     document.getElementById('status-badge').textContent = data.status.toUpperCase();
     document.getElementById('deadline-display').textContent = new Date(data.deadline).toLocaleDateString('pt-BR');
     
-    // Lógica de Multa
+    // Lógica de Multa Automática
     const today = new Date(); today.setHours(0,0,0,0);
     const due = new Date(data.deadline); due.setHours(0,0,0,0);
     const diffDays = Math.ceil((today - due) / (1000 * 60 * 60 * 24));
@@ -144,7 +179,7 @@ async function initClient(token) {
         const multa = finalValue * 0.02;
         const juros = finalValue * 0.00033 * diffDays;
         finalValue += multa + juros;
-        document.getElementById('finance-value').innerHTML = `${formatCurrency(finalValue)} <span style="font-size: 0.8rem; color: #ef4444; display: block; margin-top: 0.5rem;">Inclui multa/juros (${diffDays} dias)</span>`;
+        document.getElementById('finance-value').innerHTML = `${formatCurrency(finalValue)} <span style="font-size: 0.85rem; color: #ef4444; display: block; margin-top: 0.8rem; font-weight: 500;">️ Inclui multa de 2% + juros de 0,033%/dia (${diffDays} dias de atraso)</span>`;
     } else {
         document.getElementById('finance-value').textContent = formatCurrency(finalValue);
     }
@@ -168,36 +203,36 @@ function switchTab(tabName) {
         canvas.width = canvas.offsetWidth * ratio;
         canvas.height = canvas.offsetHeight * ratio;
         canvas.getContext("2d").scale(ratio, ratio);
-        signaturePad = new SignaturePad(canvas, { backgroundColor: 'rgb(255, 255, 255)' });
+        signaturePad = new SignaturePad(canvas, { backgroundColor: 'rgb(255, 255, 255)', penColor: '#0f172a' });
     }
 }
 
-// --- INTEGRAÇÃO MERCADO PAGO VIA SUPABASE EDGE FUNCTION ---
+// --- INTEGRAÇÃO MERCADO PAGO (SUPABASE EDGE FUNCTION) ---
 async function generatePix() {
     const btn = document.getElementById('btn-pix');
     const load = document.getElementById('pix-loading');
     btn.classList.add('hidden'); load.classList.remove('hidden');
 
     try {
-        // Chama a função que você configurou no Supabase com as secrets do MP
+        // Chama sua Edge Function configurada com secrets do MP
         const { data, error } = await supabase.functions.invoke('gerar-pix-mp', {
             body: { 
                 amount: Number(document.getElementById('finance-value').innerText.replace(/[^\d,]/g, '').replace(',', '.')), 
-                description: `Pagamento Silven Tec: ${currentProject.title}`
+                description: `Silven Tec: ${currentProject.title}`
             }
         });
 
-        if (error || data.error) throw new Error(data?.error || 'Falha na geração');
+        if (error || data?.error) throw new Error(data?.error || 'Falha na comunicação com gateway');
 
         document.getElementById('qr-img').src = `data:image/jpeg;base64,${data.qr_code_base64}`;
         document.getElementById('pix-code').textContent = data.qr_code;
         document.getElementById('pix-result').classList.remove('hidden');
         
     } catch(e) {
-        console.error(e);
-        // Fallback visual caso a função ainda não esteja 100%
-        document.getElementById('qr-img').src = `https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=SIMULACAO_PIX_SILVEN_TEC`;
-        document.getElementById('pix-code').textContent = "00020126360014BR.GOV.BCB.PIX... (SIMULAÇÃO)";
+        console.error("Erro PIX:", e);
+        // Fallback visual para teste
+        document.getElementById('qr-img').src = `https://api.qrserver.com/v1/create-qr-code/?size=220x220&data=PIX_SIMULACAO_SILVEN_TEC`;
+        document.getElementById('pix-code').textContent = "00020126360014BR.GOV.BCB.PIX... (SIMULAÇÃO - Configure a Edge Function)";
         document.getElementById('pix-result').classList.remove('hidden');
     } finally {
         load.classList.add('hidden');
@@ -206,42 +241,50 @@ async function generatePix() {
 
 function copyPix() {
     const code = document.getElementById('pix-code').textContent;
-    navigator.clipboard.writeText(code).then(() => alert('Código PIX copiado!'));
+    navigator.clipboard.writeText(code).then(() => alert('Código PIX copiado para a área de transferência!'));
 }
 
-// --- CONTRATO DIGITAL ---
+// --- CONTRATO DIGITAL COM MARCA SILVEN TEC ---
 function clearSig() { if(signaturePad) signaturePad.clear(); }
 
 async function signContract() {
-    if(!signaturePad || signaturePad.isEmpty()) return alert('Por favor, assine o contrato.');
+    if(!signaturePad || signaturePad.isEmpty()) return alert('Por favor, realize sua assinatura no quadro acima.');
     
     const sigData = signaturePad.toDataURL();
     const { jsPDF } = window.jspdf;
     const doc = new jsPDF();
 
-    // Cabeçalho com Marca
-    doc.setFontSize(20); doc.setTextColor(6, 182, 212);
-    doc.text("SILVEN TEC", 20, 20);
-    doc.setFontSize(10); doc.setTextColor(100);
-    doc.text("INOVAÇÃO & GESTÃO", 20, 26);
-    doc.line(20, 32, 190, 32);
+    // Cabeçalho Profissional
+    doc.setFontSize(24); doc.setTextColor(6, 182, 212); doc.setFont("helvetica", "bold");
+    doc.text("SILVEN TEC", 20, 25);
+    doc.setFontSize(10); doc.setTextColor(100); doc.setFont("helvetica", "normal");
+    doc.text("INOVAÇÃO & GESTÃO", 20, 32);
+    doc.setLineWidth(0.5); doc.setDrawColor(6, 182, 212); doc.line(20, 38, 190, 38);
     
-    doc.setFontSize(14); doc.setTextColor(0);
-    doc.text("CONTRATO DE PRESTAÇÃO DE SERVIÇOS", 20, 45);
+    doc.setFontSize(16); doc.setTextColor(15, 23, 42); doc.setFont("helvetica", "bold");
+    doc.text("CONTRATO DE PRESTAÇÃO DE SERVIÇOS EM TECNOLOGIA", 20, 55);
     
-    doc.setFontSize(11);
-    doc.text(`CONTRATANTE: ${currentProject.client_name}`, 20, 60);
-    doc.text(`PROJETO: ${currentProject.title}`, 20, 68);
-    doc.text(`VALOR: ${formatCurrency(currentProject.total_value)}`, 20, 76);
+    doc.setFontSize(11); doc.setTextColor(51, 65, 85); doc.setFont("helvetica", "normal");
+    doc.text(`CONTRATANTE: ${currentProject.client_name}`, 20, 70);
+    doc.text(`PROJETO: ${currentProject.title}`, 20, 78);
+    doc.text(`VALOR MENSAL: ${formatCurrency(currentProject.total_value)}`, 20, 86);
+    doc.text(`DATA DE EMISSÃO: ${new Date().toLocaleDateString('pt-BR')}`, 20, 94);
     
-    doc.setFontSize(9); doc.setTextColor(80);
-    doc.text("Cláusula de atraso: Multa de 2% + Juros de 0,033% ao dia.", 20, 90);
+    doc.setFontSize(9); doc.setTextColor(100);
+    const clauses = `CLÁUSULA 1ª - DO OBJETO: Prestação de serviços de desenvolvimento e gestão tecnológica.\nCLÁUSULA 2ª - DOS ATRASOS: Incidirá multa fixa de 2% (dois por cento) sobre o valor da parcela, acrescida de juros moratórios de 0,033% (trinta e três milésimos por cento) ao dia.\nCLÁUSULA 3ª - VALIDADE: Este documento possui plena validade jurídica conforme MP 2.200-2/2001.`;
     
-    doc.addImage(sigData, 'PNG', 20, 140, 70, 35);
-    doc.text(`Assinado em: ${new Date().toLocaleString()}`, 20, 180);
+    doc.text(doc.splitTextToSize(clauses, 170), 20, 110);
+    
+    // Área da Assinatura
+    doc.addImage(sigData, 'PNG', 20, 160, 80, 40);
+    doc.setDrawColor(100); doc.line(20, 202, 100, 202);
+    doc.setFontSize(9); doc.setTextColor(51, 65, 85);
+    doc.text("Assinatura Digital do Contratante", 20, 208);
+    doc.text(`Validado em: ${new Date().toLocaleString('pt-BR')}`, 20, 214);
 
-    doc.save(`Contrato_SilvenTec_${currentProject.title}.pdf`);
+    doc.save(`Contrato_SilvenTec_${currentProject.title.replace(/\s+/g, '_')}.pdf`);
 
+    // Salva no Supabase
     await supabase.from('contracts').upsert({ 
         project_id: currentProject.id, signature_data: sigData, signed_at: new Date().toISOString() 
     }, { onConflict: 'project_id' });
