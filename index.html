@@ -7,21 +7,22 @@
     <link rel="stylesheet" href="style.css">
     <link rel="icon" type="image/png" href="logost.png">
     
+    <!-- Bibliotecas Externas -->
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script src="https://unpkg.com/lucide@latest"></script>
 </head>
 <body>
-    <main class="login-container">
-        <!-- Cabeçalho Centralizado -->
-        <div class="login-header">
-            <img src="logost.png" alt="Silven Tec Logo" class="brand-logo" onerror="this.style.display='none'">
-            <h1 class="brand-title">SILVEN TEC</h1>
-            <p class="brand-subtitle">INOVAÇÃO & GESTÃO</p>
-        </div>
 
-        <!-- Painel de Autenticação -->
+    <div class="login-wrapper">
         <div class="glass-panel login-panel animate-in">
             
+            <!-- Logo e Título DENTRO do Painel -->
+            <div class="brand-header">
+                <img src="logost.png" alt="Silven Tec Logo" class="brand-logo">
+                <h1 class="brand-title">SILVEN TEC</h1>
+                <p class="brand-subtitle">INOVAÇÃO & GESTÃO</p>
+            </div>
+
             <!-- Abas de Navegação -->
             <div class="auth-tabs">
                 <button id="tab-client" class="auth-tab-btn active">ÁREA DO CLIENTE</button>
@@ -31,39 +32,39 @@
             <!-- Formulário Cliente -->
             <div id="panel-client" class="auth-content">
                 <div class="input-group">
-                    <label class="input-label" style="text-align: left;">Token do Projeto</label>
+                    <label class="input-label">Token do Projeto</label>
                     <input type="text" id="token-input" class="input-field" placeholder="EX: ST-XXXX-YYYY" style="text-transform: uppercase; text-align: center; letter-spacing: 2px;">
                 </div>
-                <!-- Botão conectado diretamente à função -->
-                <button id="btn-client-access" onclick="window.acessarCliente()" class="btn-primary" style="margin-top: 1rem;">Acessar Painel</button>
+                <button id="btn-client-access" onclick="window.acessarCliente()" class="btn-primary" style="margin-top: 1rem;">
+                    Acessar Painel <i data-lucide="arrow-right" size="16"></i>
+                </button>
             </div>
 
             <!-- Formulário Admin -->
             <div id="panel-admin" class="auth-content hidden">
                 <div class="input-group">
-                    <label class="input-label" style="text-align: left;">E-mail Administrativo</label>
+                    <label class="input-label">E-mail Administrativo</label>
                     <input type="email" id="admin-email" class="input-field" placeholder="seu@email.com">
                 </div>
                 <div class="input-group">
-                    <label class="input-label" style="text-align: left;">Senha Mestra</label>
+                    <label class="input-label">Senha Mestra</label>
                     <input type="password" id="admin-pass" class="input-field" placeholder="••••••••">
                 </div>
                 <p id="admin-error" class="hidden" style="color: #ef4444; font-size: 0.85rem; margin-bottom: 1rem; text-align: center; font-weight: 500;"></p>
-                <!-- Botão conectado diretamente à função -->
-                <button id="btn-admin-login" onclick="window.entrarAdmin()" class="btn-primary" style="margin-top: 1rem; background: linear-gradient(90deg, #334155, #1e293b); border: 1px solid #475569;">
+                <button id="btn-admin-login" onclick="window.entrarAdmin()" class="btn-primary btn-dark" style="margin-top: 1rem;">
                     <i data-lucide="shield-check" size="18"></i> Entrar no Sistema
                 </button>
             </div>
 
         </div>
-    </main>
+    </div>
 
-    <!-- Versão 4 para forçar a atualização da Vercel -->
-    <script src="app.js?v=5"></script>
+    <!-- Script Principal -->
+    <script src="app.js?v=8"></script>
     <script>
         lucide.createIcons();
 
-        // Controle isolado das abas (Garante que a interface visual não dependa do banco de dados para trocar de aba)
+        // Controle das abas (Mantido simples para garantir funcionamento)
         const tabClient = document.getElementById('tab-client');
         const tabAdmin = document.getElementById('tab-admin');
         const panelClient = document.getElementById('panel-client');
