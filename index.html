@@ -6,8 +6,11 @@
     <title>Silven Tec | Inovação & Gestão</title>
     <link rel="stylesheet" href="style.css">
     <link rel="icon" type="image/png" href="logost.png">
+    <!-- Supabase e Lucide -->
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script src="https://unpkg.com/lucide@latest"></script>
+    <!-- Script com DEFER para garantir carregamento após DOM -->
+    <script src="app.js" defer></script>
 </head>
 <body>
 
@@ -53,16 +56,27 @@
         </div>
     </main>
 
-    <script src="app.js"></script>
     <script>
-        lucide.createIcons();
+        // Inicializa ícones assim que disponível
+        document.addEventListener('DOMContentLoaded', () => {
+            if(window.lucide) lucide.createIcons();
+        });
+
         function switchTab(type) {
-            document.getElementById('tab-client').classList.toggle('active', type === 'client');
-            document.getElementById('tab-admin').classList.toggle('active', type === 'admin');
-            document.getElementById('form-client').classList.toggle('hidden', type !== 'client');
-            document.getElementById('form-admin').classList.toggle('hidden', type !== 'admin');
-            // Limpa erros ao trocar de aba
-            document.getElementById('admin-error').classList.add('hidden');
+            const tabC = document.getElementById('tab-client');
+            const tabA = document.getElementById('tab-admin');
+            const formC = document.getElementById('form-client');
+            const formA = document.getElementById('form-admin');
+            const errEl = document.getElementById('admin-error');
+
+            if (type === 'client') {
+                tabC.classList.add('active'); tabA.classList.remove('active');
+                formC.classList.remove('hidden'); formA.classList.add('hidden');
+            } else {
+                tabA.classList.add('active'); tabC.classList.remove('active');
+                formA.classList.remove('hidden'); formC.classList.add('hidden');
+            }
+            if(errEl) errEl.classList.add('hidden');
         }
     </script>
 </body>
