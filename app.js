@@ -11,7 +11,6 @@ const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
 let currentProject = null;
 let signaturePad = null;
-let systemConfig = {}; 
 
 function formatCurrency(val) {
     return new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(val);
@@ -24,49 +23,33 @@ async function generateSmartToken(name) {
     return `${prefix}-${clean}-${rand}`;
 }
 
-// ==========================================
-// INICIALIZAÇÃO SEGURA DO SISTEMA
-// ==========================================
 document.addEventListener('DOMContentLoaded', () => {
 
+    // ==========================================
     // 1. LÓGICA DA PÁGINA INICIAL (INDEX)
-    const tabClient = document.getElementById('tab-client');
-    const tabAdmin = document.getElementById('tab-admin');
-    
-    if (tabClient && tabAdmin) {
-        const panelClient = document.getElementById('panel-client');
-        const panelAdmin = document.getElementById('panel-admin');
+    // ==========================================
+    const btnClientAccess = document.getElementById('btn-client-access');
+    const btnAdminLogin = document.getElementById('btn-admin-login');
 
-        // Alternância de Abas
-        tabClient.addEventListener('click', () => {
-            tabClient.classList.add('active');
-            tabAdmin.classList.remove('active');
-            panelClient.classList.remove('hidden');
-            panelAdmin.classList.add('hidden');
-        });
-
-        tabAdmin.addEventListener('click', () => {
-            tabAdmin.classList.add('active');
-            tabClient.classList.remove('active');
-            panelAdmin.classList.remove('hidden');
-            panelClient.classList.add('hidden');
-        });
-
-        // Login Cliente
-        document.getElementById('btn-client-access').addEventListener('click', () => {
+    // Acesso do Cliente (Token)
+    if (btnClientAccess) {
+        btnClientAccess.addEventListener('click', () => {
             const token = document.getElementById('token-input').value.trim().toUpperCase();
             if (!token) return alert("Insira um token válido.");
             window.location.href = `client.html?token=${token}`;
         });
+    }
 
-        // Login Admin
-        document.getElementById('btn-admin-login').addEventListener('click', async (e) => {
+    // Acesso Administrativo (E-mail e Senha)
+    if (btnAdminLogin) {
+        btnAdminLogin.addEventListener('click', async (e) => {
+            const emailInput = document.getElementById('admin-email').value.trim();
             const passInput = document.getElementById('admin-pass').value;
             const errEl = document.getElementById('admin-error');
             const btn = e.currentTarget;
             
-            if (!passInput) {
-                errEl.textContent = "Digite a senha mestra.";
+            if (!emailInput || !passInput) {
+                errEl.textContent = "Preencha o e-mail e a senha.";
                 errEl.classList.remove('hidden');
                 return;
             }
@@ -77,14 +60,13 @@ document.addEventListener('DOMContentLoaded', () => {
             errEl.classList.add('hidden');
 
             try {
-                const { data: user, error } = await supabase
-                    .from('users')
-                    .select('password_hash, role')
-                    .eq('username', 'janaelson')
-                    .single();
+                // Autenticação OFICIAL do Supabase (Passa pelo RLS)
+                const { data, error } = await supabase.auth.signInWithPassword({
+                    email: emailInput,
+                    password: passInput
+                });
 
-                if (error || !user) throw new Error("Acesso negado.");
-                if (String(user.password_hash) !== String(passInput)) throw new Error("Senha incorreta.");
+                if (error) throw new Error("Credenciais inválidas. Verifique seu e-mail e senha.");
 
                 sessionStorage.setItem('silven_admin', 'true');
                 window.location.href = 'admin.html';
@@ -98,7 +80,9 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
+    // ==========================================
     // 2. LÓGICA DO PAINEL ADMIN
+    // ==========================================
     if (document.getElementById('stat-projects')) {
         if(!sessionStorage.getItem('silven_admin')) {
             window.location.href = 'index.html';
@@ -132,14 +116,17 @@ document.addEventListener('DOMContentLoaded', () => {
             btn.disabled = false; btn.textContent = 'Criar Projeto';
         });
 
-        // Expor a função logout para o HTML admin.html
-        window.logout = () => {
+        // Função segura de Logout
+        window.logout = async () => {
+            await supabase.auth.signOut();
             sessionStorage.clear();
             window.location.href = 'index.html';
         };
     }
 
+    // ==========================================
     // 3. LÓGICA DO PAINEL CLIENTE
+    // ==========================================
     if (document.getElementById('proj-title')) {
         const params = new URLSearchParams(window.location.search);
         const token = params.get('token');
@@ -152,7 +139,6 @@ document.addEventListener('DOMContentLoaded', () => {
 
         initClient(token);
 
-        // Expor funções necessárias para o HTML client.html
         window.switchTab = function(tabName) {
             document.querySelectorAll('.tab-content').forEach(el => el.classList.add('hidden'));
             document.querySelectorAll('.tab-btn').forEach(el => el.classList.remove('active'));
@@ -253,7 +239,7 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 });
 
-// Funções de carregamento (mantidas fora do DOMContentLoaded para organização)
+// Funções de carregamento do banco de dados
 async function loadAdminStats() {
     const { data, error } = await supabase.from('projects').select('*').order('created_at', {ascending: false});
     if(error) return;
