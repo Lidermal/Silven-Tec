@@ -1,4 +1,4 @@
-/* app.js - Silven Tec Core Logic V9 - Definitivo */
+/* app.js - Silven Tec Core Logic V10 - Com Auth RLS */
 
 const SUPABASE_URL = 'https://evwsxwkvtjgexhjwofxh.supabase.co';
 const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImV2d3N4d2t2dGpnZXhoandvZnhoIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODc2ODk0MDEsImV4cCI6MjEwMzI2NTQwMX0.oN_ATHMc7KBHC7NA7O35Q5nS3H4OxSIAXMXvE7xYXCA';
@@ -33,7 +33,7 @@ function calculateFinalValue(baseValue, deadlineStr) {
 }
 
 // ==========================================
-// INDEX / LOGIN
+// INDEX / LOGIN (COM EMAIL E SENHA)
 // ==========================================
 window.acessarCliente = function() {
     const token = document.getElementById('token-input')?.value.trim().toUpperCase();
@@ -42,38 +42,56 @@ window.acessarCliente = function() {
 };
 
 window.entrarAdmin = async function() {
+    const email = document.getElementById('admin-email')?.value.trim();
     const pass = document.getElementById('admin-pass')?.value;
     const errEl = document.getElementById('admin-error');
     const btn = document.getElementById('btn-admin-login');
     
-    if (!pass) { errEl.textContent = "Digite a senha."; errEl.classList.remove('hidden'); return; }
+    if (!email || !pass) { 
+        errEl.textContent = "Preencha e-mail e senha."; 
+        errEl.classList.remove('hidden'); 
+        return; 
+    }
 
-    btn.innerHTML = `Verificando...`; btn.disabled = true; errEl.classList.add('hidden');
+    btn.innerHTML = `Verificando...`; 
+    btn.disabled = true; 
+    errEl.classList.add('hidden');
 
     try {
-        // Validação via banco (usuário janaelson)
-        const { data: user, error } = await db.from('users').select('password_hash').eq('username', 'janaelson').single();
-        if (error || !user) throw new Error("Usuário não encontrado.");
-        if (String(user.password_hash) !== String(pass)) throw new Error("Senha incorreta.");
-        
+        // Autenticação via Supabase Auth (Necessário para RLS)
+        const { data, error } = await db.auth.signInWithPassword({
+            email: email,
+            password: pass
+        });
+
+        if (error) throw new Error("Credenciais inválidas. Verifique seu e-mail e senha.");
+
+        // Salva sessão localmente
         sessionStorage.setItem('silven_admin', 'true');
+        sessionStorage.setItem('silven_user_email', email);
+        
         window.location.href = 'admin.html';
     } catch (err) {
-        errEl.textContent = err.message; errEl.classList.remove('hidden');
-        btn.innerHTML = `<i data-lucide="shield-check" size="16"></i> Entrar no Sistema`; btn.disabled = false;
+        errEl.textContent = err.message; 
+        errEl.classList.remove('hidden');
+        btn.innerHTML = `<i data-lucide="shield-check" size="16"></i> Entrar no Sistema`; 
+        btn.disabled = false;
         lucide.createIcons();
     }
 };
 
-window.logout = () => { sessionStorage.clear(); window.location.href = 'index.html'; };
+window.logout = async () => { 
+    await db.auth.signOut(); 
+    sessionStorage.clear(); 
+    window.location.href = 'index.html'; 
+};
 
 // ==========================================
-// ADMIN PANEL LOGIC (BOTÕES FUNCIONANDO)
+// ADMIN PANEL LOGIC
 // ==========================================
 async function initAdminPanel() {
     loadDashboardData();
     
-    // Evento do Formulário de Novo Projeto
     const form = document.getElementById('form-new-project');
     if(form) {
         form.addEventListener('submit', async (e) => {
