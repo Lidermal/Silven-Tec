@@ -6,63 +6,54 @@
     <title>Silven Tec | Inovação & Gestão</title>
     <link rel="stylesheet" href="style.css">
     <link rel="icon" type="image/png" href="logost.png">
-    
-    <!-- Bibliotecas Externas -->
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script src="https://unpkg.com/lucide@latest"></script>
+    <script src="app.js" defer></script>
 </head>
 <body>
 
-    <!-- Cabeçalho com Logo -->
-    <header class="brand-header">
-        <img src="logost.png" alt="Silven Tec Logo" class="main-logo">
-        <h1 class="brand-title">SILVEN TEC</h1>
-        <p class="brand-subtitle">INOVAÇÃO & GESTÃO</p>
+    <header class="animate-in">
+        <img src="logost.png" alt="Silven Tec Logo" class="brand-logo">
+        <div>
+            <h1 class="brand-title">SILVEN TEC</h1>
+            <p class="brand-subtitle">INOVAÇÃO & GESTÃO</p>
+        </div>
     </header>
 
-    <!-- Painel Central de Login -->
-    <main class="login-container">
-        <div class="glass-panel">
+    <main class="container animate-in" style="animation-delay: 0.1s;">
+        <div class="glass-panel" style="max-width: 460px; margin: 0 auto;">
             
-            <!-- Abas de Navegação -->
-            <div class="tabs-wrapper">
-                <button id="tab-client" class="tab-btn active" onclick="switchTab('client')">ÁREA DO CLIENTE</button>
-                <button id="tab-admin" class="tab-btn" onclick="switchTab('admin')">ADMINISTRAÇÃO</button>
+            <!-- Abas -->
+            <div class="tabs-nav" style="justify-content: center; margin-bottom: 2rem;">
+                <button type="button" class="tab-btn active" id="btn-tab-client">ÁREA DO CLIENTE</button>
+                <button type="button" class="tab-btn" id="btn-tab-admin">ADMINISTRAÇÃO</button>
             </div>
 
-            <!-- Formulário: Cliente -->
-            <div id="form-client" class="form-section">
+            <!-- Form Cliente -->
+            <div id="form-client">
                 <div class="input-group">
-                    <label>TOKEN DE ACESSO</label>
-                    <input type="text" id="token-input" placeholder="EX: ST-JOAO-X9P2" style="text-transform: uppercase; letter-spacing: 1px;">
+                    <label class="input-label">Token de Acesso</label>
+                    <input type="text" id="token-input" class="input-field" placeholder="Ex: ST-JOAO-X9P2" style="text-transform: uppercase; letter-spacing: 2px; font-family: 'Orbitron', monospace;">
                 </div>
-                <button id="btn-access-client" class="btn-primary full-width">
-                    Acessar Projeto <i data-lucide="arrow-right" size="16"></i>
+                <button type="button" id="btn-access-client" class="btn-primary">
+                    <i data-lucide="log-in" size="18"></i> Acessar Projeto
                 </button>
             </div>
 
-            <!-- Formulário: Admin -->
-            <div id="form-admin" class="form-section hidden">
+            <!-- Form Admin -->
+            <div id="form-admin" class="hidden">
                 <div class="input-group">
-                    <label>SENHA MESTRA</label>
-                    <input type="password" id="admin-pass" placeholder="••••••••">
+                    <label class="input-label">Senha Mestra</label>
+                    <input type="password" id="admin-pass" class="input-field" placeholder="••••••••">
                 </div>
-                <button id="btn-login-admin" class="btn-primary full-width btn-dark">
-                    Entrar no Sistema <i data-lucide="shield" size="16"></i>
+                <button type="button" id="btn-login-admin" class="btn-primary" style="background: linear-gradient(90deg, #1e293b, #334155);">
+                    <i data-lucide="shield-check" size="18"></i> Entrar no Sistema
                 </button>
-                <p id="admin-error" class="error-msg hidden"></p>
+                <p id="admin-error" class="hidden" style="color: #ef4444; font-size: 0.85rem; margin-top: 1rem; text-align: center; font-weight: 500;"></p>
             </div>
 
         </div>
     </main>
 
-    <!-- Script Principal -->
-    <script src="app.js"></script>
-    <script>
-        // Inicializa ícones assim que a página carrega
-        document.addEventListener('DOMContentLoaded', () => {
-            if(window.lucide) lucide.createIcons();
-        });
-    </script>
 </body>
 </html>
