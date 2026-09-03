@@ -15,74 +15,63 @@
     <aside class="sidebar">
         <div class="sidebar-brand">
             <img src="logost.png" alt="Logo">
-            <div>
-                <h1>SILVEN TEC</h1>
-                <span style="font-size: 0.6rem; color: var(--cyan); letter-spacing: 2px;">PAINEL ADMIN</span>
-            </div>
+            <div><h1>SILVEN TEC</h1><span style="font-size:0.6rem; color:var(--cyan); letter-spacing:2px;">PAINEL ADMIN</span></div>
         </div>
-        
-        <nav style="display: flex; flex-direction: column; gap: 0.3rem;">
+        <nav style="display:flex; flex-direction:column; gap:0.3rem;">
             <a onclick="switchAdminView('dashboard')" class="nav-item active" id="nav-dashboard"><i data-lucide="layout-dashboard" size="18"></i> Dashboard</a>
             <a onclick="switchAdminView('projects')" class="nav-item" id="nav-projects"><i data-lucide="folder-kanban" size="18"></i> Projetos</a>
             <a onclick="switchAdminView('finance')" class="nav-item" id="nav-finance"><i data-lucide="wallet" size="18"></i> Financeiro</a>
             <a onclick="switchAdminView('contracts')" class="nav-item" id="nav-contracts"><i data-lucide="file-signature" size="18"></i> Contratos</a>
         </nav>
-
-        <div style="margin-top: auto; padding-top: 1rem; border-top: 1px solid var(--border);">
-            <button onclick="window.logout()" class="nav-item" style="width: 100%; border: none; background: transparent;"><i data-lucide="log-out" size="18"></i> Sair do Sistema</button>
+        <div style="margin-top:auto; padding-top:1rem; border-top:1px solid var(--border);">
+            <button onclick="window.logout()" class="nav-item" style="width:100%; border:none; background:transparent;"><i data-lucide="log-out" size="18"></i> Sair</button>
         </div>
     </aside>
 
     <!-- MAIN CONTENT -->
     <main class="main-content">
-        
+        <!-- Notificação Realtime -->
+        <div id="realtime-toast" class="hidden" style="position:fixed; top:20px; right:20px; background:#10b981; color:white; padding:10px 20px; border-radius:8px; z-index:999; box-shadow:0 4px 12px rgba(0,0,0,0.3); font-weight:600; display:flex; align-items:center; gap:8px;">
+            <i data-lucide="refresh-cw" class="animate-spin" size="16"></i> Dados atualizados em tempo real
+        </div>
+
         <!-- VIEW: DASHBOARD -->
         <div id="view-dashboard" class="admin-view">
-            <h2 style="font-size: 1.5rem; margin-bottom: 2rem; color: white;">Visão Geral</h2>
+            <h2 style="font-size:1.5rem; margin-bottom:2rem; color:white;">Visão Geral</h2>
             <div class="stats-grid">
                 <div class="stat-card"><div class="stat-label">Projetos Ativos</div><div class="stat-value" id="dash-active-proj">-</div></div>
-                <div class="stat-card" style="--cyan: #10b981;"><div class="stat-label">Receita Mensal</div><div class="stat-value" id="dash-revenue">R$ 0,00</div></div>
-                <div class="stat-card" style="--cyan: #8b5cf6;"><div class="stat-label">Contratos Assinados</div><div class="stat-value" id="dash-signed">-</div></div>
+                <div class="stat-card" style="--cyan:#10b981;"><div class="stat-label">Receita Mensal</div><div class="stat-value" id="dash-revenue">R$ 0,00</div></div>
+                <div class="stat-card" style="--cyan:#8b5cf6;"><div class="stat-label">Contratos Assinados</div><div class="stat-value" id="dash-signed">-</div></div>
             </div>
-
             <div class="data-table-container">
                 <div class="table-header">
                     <div class="table-title"><i data-lucide="activity" size="18"></i> Projetos Recentes</div>
                     <button onclick="openModal('modal-new-project')" class="action-btn primary">+ Novo Projeto</button>
                 </div>
-                <table>
-                    <thead><tr><th>Cliente</th><th>Projeto</th><th>Token</th><th>Status</th><th>Valor</th></tr></thead>
-                    <tbody id="dash-recent-list"></tbody>
-                </table>
+                <table><thead><tr><th>Cliente</th><th>Projeto</th><th>Token</th><th>Status</th><th>Valor</th></tr></thead><tbody id="dash-recent-list"></tbody></table>
             </div>
         </div>
 
         <!-- VIEW: PROJETOS -->
         <div id="view-projects" class="admin-view hidden">
-            <div class="table-header" style="background: #111827; border-radius: 12px; margin-bottom: 1.5rem; border: 1px solid var(--border);">
+            <div class="table-header" style="background:#111827; border-radius:12px; margin-bottom:1.5rem; border:1px solid var(--border);">
                 <div class="table-title"><i data-lucide="plus-circle" size="18"></i> Gerenciar Projetos</div>
                 <button onclick="openModal('modal-new-project')" class="action-btn primary">Criar Novo</button>
             </div>
             <div class="data-table-container">
-                <table>
-                    <thead><tr><th>Título</th><th>Cliente</th><th>Token</th><th>Vencimento</th><th>Ações</th></tr></thead>
-                    <tbody id="projects-list"></tbody>
-                </table>
+                <table><thead><tr><th>Título</th><th>Cliente</th><th>Vigência</th><th>Ações</th></tr></thead><tbody id="projects-list"></tbody></table>
             </div>
         </div>
 
         <!-- VIEW: FINANCEIRO -->
         <div id="view-finance" class="admin-view hidden">
             <div class="stats-grid">
-                <div class="stat-card" style="--cyan: #10b981;"><div class="stat-label">Recebido este Mês</div><div class="stat-value" id="fin-received">R$ 0,00</div></div>
-                <div class="stat-card" style="--cyan: #eab308;"><div class="stat-label">Pendências / Atrasos</div><div class="stat-value" id="fin-pending">R$ 0,00</div></div>
+                <div class="stat-card" style="--cyan:#10b981;"><div class="stat-label">Recebido este Mês</div><div class="stat-value" id="fin-received">R$ 0,00</div></div>
+                <div class="stat-card" style="--cyan:#eab308;"><div class="stat-label">Pendências</div><div class="stat-value" id="fin-pending">R$ 0,00</div></div>
             </div>
             <div class="data-table-container">
-                <div class="table-header"><div class="table-title"><i data-lucide="credit-card" size="18"></i> Mensalidades</div></div>
-                <table>
-                    <thead><tr><th>Cliente</th><th>Projeto</th><th>Valor Base</th><th>Vencimento</th><th>Status</th></tr></thead>
-                    <tbody id="finance-list"></tbody>
-                </table>
+                <div class="table-header"><div class="table-title"><i data-lucide="credit-card" size="18"></i> Parcelas & Pagamentos</div></div>
+                <table><thead><tr><th>Cliente</th><th>Parcela</th><th>Vencimento</th><th>Valor</th><th>Status</th></tr></thead><tbody id="finance-list"></tbody></table>
             </div>
         </div>
 
@@ -90,32 +79,46 @@
         <div id="view-contracts" class="admin-view hidden">
             <div class="data-table-container">
                 <div class="table-header"><div class="table-title"><i data-lucide="file-check" size="18"></i> Status Jurídico</div></div>
-                <table>
-                    <thead><tr><th>Projeto</th><th>Cliente</th><th>Data Assinatura</th><th>Status</th></tr></thead>
-                    <tbody id="contracts-list"></tbody>
-                </table>
+                <table><thead><tr><th>Projeto</th><th>Cliente</th><th>Assinado em</th><th>Status</th></tr></thead><tbody id="contracts-list"></tbody></table>
             </div>
         </div>
-
     </main>
 
-    <!-- MODAL DE CRIAÇÃO (Funcional) -->
+    <!-- MODAL DE CRIAÇÃO COMPLETO -->
     <div id="modal-new-project" class="modal-overlay hidden">
         <div class="modal-content">
-            <h3 style="color:white; margin-bottom:1.5rem; font-family:'Orbitron'; font-size:1.2rem;">Novo Projeto</h3>
+            <h3 style="color:white; margin-bottom:1.5rem; font-family:'Orbitron'; font-size:1.2rem;">Novo Contrato & Projeto</h3>
             <form id="form-new-project">
                 <div class="input-group"><label class="input-label">Nome do Cliente</label><input id="new-client" class="input-field" required></div>
                 <div class="input-group"><label class="input-label">Título do Projeto</label><input id="new-title" class="input-field" required></div>
-                <div class="input-group"><label class="input-label">Valor Mensal (R$)</label><input id="new-value" type="number" step="0.01" class="input-field" required></div>
+                
+                <div style="display:grid; grid-template-columns: 1fr 1fr; gap:1rem;">
+                    <div class="input-group"><label class="input-label">Valor Mensal (R$)</label><input id="new-value" type="number" step="0.01" class="input-field" required></div>
+                    <div class="input-group"><label class="input-label">Duração (Meses)</label><input id="new-months" type="number" min="1" value="12" class="input-field" required></div>
+                </div>
+
+                <div class="input-group">
+                    <label class="input-label">Tipo de Suporte</label>
+                    <select id="new-support" class="input-field" style="appearance:auto;">
+                        <option value="com_suporte">Com Suporte Técnico Incluso</option>
+                        <option value="sem_suporte">Sem Suporte (Apenas Desenvolvimento)</option>
+                    </select>
+                </div>
+
+                <div style="display:grid; grid-template-columns: 1fr 1fr; gap:1rem;">
+                    <div class="input-group"><label class="input-label">Início da Vigência</label><input id="new-start" type="date" class="input-field" required></div>
+                    <div class="input-group"><label class="input-label">1º Vencimento</label><input id="new-due" type="date" class="input-field" required></div>
+                </div>
+
                 <div style="display:flex; gap:1rem; margin-top:2rem;">
                     <button type="button" onclick="closeModal('modal-new-project')" class="action-btn" style="flex:1;">Cancelar</button>
-                    <button type="submit" class="btn-primary" style="flex:1;">Criar e Gerar Token</button>
+                    <button type="submit" class="btn-primary" style="flex:1;">Gerar Contrato e Token</button>
                 </div>
             </form>
         </div>
     </div>
 
-    <script src="app.js?v=9"></script>
+    <script src="app.js?v=11"></script>
     <script>
         if(!sessionStorage.getItem('silven_admin')) window.location.href = 'index.html';
         else initAdminPanel();
