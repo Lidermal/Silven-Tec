@@ -1,19 +1,10 @@
-/* app.js - Silven Tec Core Logic - V4 */
+/* app.js - Silven Tec Core Logic - V5 */
 
 const SUPABASE_URL = 'https://evwsxwkvtjgexhjwofxh.supabase.co';
 const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImV2d3N4d2t2dGpnZXhoandvZnhoIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODc2ODk0MDEsImV4cCI6MjEwMzI2NTQwMX0.oN_ATHMc7KBHC7NA7O35Q5nS3H4OxSIAXMXvE7xYXCA';
 
-// CONEXÃO SEGURA COM SUPABASE
-let supabase;
-try {
-    if (typeof window.supabase === 'undefined') {
-        console.error("Erro: A biblioteca do Supabase não foi carregada no HTML.");
-    } else {
-        supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
-    }
-} catch (error) {
-    console.error("Erro fatal ao conectar com o Supabase:", error);
-}
+// Usamos 'dbClient' para evitar qualquer conflito com a palavra 'supabase'
+const dbClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
 let currentProject = null;
 let signaturePad = null;
@@ -59,9 +50,7 @@ window.entrarAdmin = async function() {
     errEl.classList.add('hidden');
 
     try {
-        if (!supabase) throw new Error("Falha na conexão com o servidor. Recarregue a página.");
-
-        const { data, error } = await supabase.auth.signInWithPassword({
+        const { data, error } = await dbClient.auth.signInWithPassword({
             email: emailInput,
             password: passInput
         });
@@ -104,7 +93,7 @@ document.addEventListener('DOMContentLoaded', () => {
             const token = await generateSmartToken(client);
             const deadline = new Date(Date.now() + 30*86400000).toISOString().split('T')[0];
 
-            const { error } = await supabase.from('projects').insert([{
+            const { error } = await dbClient.from('projects').insert([{
                 client_name: client, title, total_value: value, 
                 access_token: token, status: 'em_andamento', deadline
             }]);
@@ -119,7 +108,7 @@ document.addEventListener('DOMContentLoaded', () => {
         });
 
         window.logout = async () => {
-            if (supabase) await supabase.auth.signOut();
+            await dbClient.auth.signOut();
             sessionStorage.clear();
             window.location.href = 'index.html';
         };
@@ -165,7 +154,7 @@ document.addEventListener('DOMContentLoaded', () => {
             if(load) load.classList.remove('hidden');
 
             try {
-                const { data, error } = await supabase.functions.invoke('gerar-pix-mp', {
+                const { data, error } = await dbClient.functions.invoke('gerar-pix-mp', {
                     body: { 
                         transaction_amount: Number(currentProject.total_value), 
                         description: `Silven Tec: ${currentProject.title}`
@@ -229,8 +218,8 @@ document.addEventListener('DOMContentLoaded', () => {
 
             doc.save(`Contrato_SilvenTec_${currentProject.title.replace(/\s+/g, '_')}.pdf`);
 
-            await supabase.from('contracts').upsert({ project_id: currentProject.id, signature_data: sigData, signed_at: new Date().toISOString() }, { onConflict: 'project_id' });
-            await supabase.from('projects').update({ signed_client: true }).eq('id', currentProject.id);
+            await dbClient.from('contracts').upsert({ project_id: currentProject.id, signature_data: sigData, signed_at: new Date().toISOString() }, { onConflict: 'project_id' });
+            await dbClient.from('projects').update({ signed_client: true }).eq('id', currentProject.id);
             
             document.getElementById('sign-area').classList.add('hidden');
             document.getElementById('signed-msg').classList.remove('hidden');
@@ -239,7 +228,7 @@ document.addEventListener('DOMContentLoaded', () => {
 });
 
 async function loadAdminStats() {
-    const { data, error } = await supabase.from('projects').select('*').order('created_at', {ascending: false});
+    const { data, error } = await dbClient.from('projects').select('*').order('created_at', {ascending: false});
     if(error) return;
 
     let rev = 0;
@@ -269,7 +258,7 @@ async function loadAdminStats() {
 }
 
 async function initClient(token) {
-    const { data, error } = await supabase.from('projects').select('*').eq('access_token', token).single();
+    const { data, error } = await dbClient.from('projects').select('*').eq('access_token', token).single();
     
     if(error || !data) {
         alert('Projeto não encontrado.'); window.location.href = 'index.html'; return;
