@@ -5,77 +5,65 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Silven Tec | Inovação & Gestão</title>
     <link rel="stylesheet" href="style.css">
-    <!-- Favicon SVG Inline -->
-    <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect x='10' y='10' width='80' height='80' rx='20' fill='none' stroke='%2306B6D4' stroke-width='6'/><path d='M35 35h30v10H45v10h20v10H35V35z' fill='%2306B6D4'/><rect x='70' y='20' width='10' height='10' rx='2' fill='%2306B6D4'/></svg>">
-    
-    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <!-- Favicon usando a nova logo -->
+    <link rel="icon" type="image/png" href="logost.png">
     <script src="https://unpkg.com/lucide@latest"></script>
 </head>
-<body class="flex flex-col items-center justify-center min-h-screen p-4">
+<body>
 
-    <!-- Logo Header -->
-    <div class="text-center mb-10 animate-fade-in">
-        <svg width="80" height="80" viewBox="0 0 100 100" fill="none" class="mx-auto mb-4 drop-shadow-[0_0_15px_rgba(6,182,212,0.6)]">
-            <rect x="10" y="10" width="80" height="80" rx="20" stroke="#06B6D4" stroke-width="5"/>
-            <path d="M35 35h30v10H45v10h20v10H35V35z" fill="#06B6D4"/>
-            <rect x="70" y="20" width="10" height="10" rx="2" fill="#06B6D4"/>
-        </svg>
-        <h1 class="text-4xl font-tech neon-text text-white">SILVEN TEC</h1>
-        <p class="text-cyan-400/70 text-sm tracking-[0.3em] mt-2">INOVAÇÃO & GESTÃO</p>
-    </div>
-
-    <!-- Container Principal -->
-    <div class="glass-panel p-8 rounded-2xl w-full max-w-md animate-fade-in relative overflow-hidden">
-        
-        <!-- Toggle Tabs -->
-        <div class="flex bg-slate-900/50 rounded-lg p-1 mb-6 border border-white/5">
-            <button onclick="switchAuthTab('client')" id="tab-client" class="flex-1 py-2 rounded-md text-sm font-bold transition-all bg-cyan-600 text-white shadow-lg">ÁREA DO CLIENTE</button>
-            <button onclick="switchAuthTab('admin')" id="tab-admin" class="flex-1 py-2 rounded-md text-sm font-bold transition-all text-slate-400 hover:text-white">ADMINISTRAÇÃO</button>
+    <header class="animate-in">
+        <!-- Logo Principal -->
+        <img src="logost.png" alt="Silven Tec Logo" class="brand-logo">
+        <div>
+            <h1 class="brand-title">SILVEN TEC</h1>
+            <p class="brand-subtitle">INOVAÇÃO & GESTÃO</p>
         </div>
+    </header>
 
-        <!-- FORM CLIENTE -->
-        <div id="form-client" class="space-y-4">
-            <label class="text-xs text-slate-400 uppercase tracking-wider font-bold">Token de Acesso</label>
-            <input type="text" id="token-input" placeholder="Ex: ST-JOAO-X9P2" class="input-field text-center font-tech tracking-widest uppercase">
-            <button onclick="handleClientAccess()" class="btn-primary w-full flex items-center justify-center gap-2">
-                <i data-lucide="log-in" size="18"></i> Acessar Projeto
-            </button>
+    <main class="container animate-in" style="animation-delay: 0.1s;">
+        <div class="glass-panel" style="max-width: 480px; margin: 0 auto;">
+            
+            <!-- Navegação Interna -->
+            <div class="tabs-nav" style="justify-content: center; margin-bottom: 1.5rem;">
+                <div class="tab-btn active" onclick="switchTab('client')" id="tab-client">ÁREA DO CLIENTE</div>
+                <div class="tab-btn" onclick="switchTab('admin')" id="tab-admin">ADMINISTRAÇÃO</div>
+            </div>
+
+            <!-- Form Cliente -->
+            <div id="form-client">
+                <div class="input-group">
+                    <label class="input-label">Token de Acesso</label>
+                    <input type="text" id="token-input" class="input-field" placeholder="Ex: ST-JOAO-X9P2" style="text-transform: uppercase; letter-spacing: 1px;">
+                </div>
+                <button onclick="handleClientAccess()" class="btn-primary">
+                    <i data-lucide="log-in" size="18"></i> Acessar Projeto
+                </button>
+            </div>
+
+            <!-- Form Admin -->
+            <div id="form-admin" class="hidden">
+                <div class="input-group">
+                    <label class="input-label">Senha Mestra</label>
+                    <input type="password" id="admin-pass" class="input-field" placeholder="••••••••">
+                </div>
+                <button onclick="handleAdminLogin()" class="btn-primary" style="background: linear-gradient(90deg, #334155, #475569);">
+                    <i data-lucide="shield" size="18"></i> Entrar no Sistema
+                </button>
+                <p id="admin-error" class="text-red" style="font-size: 0.8rem; margin-top: 1rem; text-align: center;" class="hidden"></p>
+            </div>
+
         </div>
-
-        <!-- FORM ADMIN -->
-        <div id="form-admin" class="space-y-4 hidden">
-            <label class="text-xs text-slate-400 uppercase tracking-wider font-bold">Senha Mestra</label>
-            <input type="password" id="admin-pass" placeholder="••••••••" class="input-field">
-            <button onclick="handleAdminLogin()" class="btn-outline w-full flex items-center justify-center gap-2">
-                <i data-lucide="shield" size="18"></i> Entrar no Painel
-            </button>
-            <p id="admin-error" class="text-red-400 text-xs text-center hidden mt-2"></p>
-        </div>
-
-    </div>
+    </main>
 
     <script src="app.js"></script>
     <script>
-        // Lógica simples de toggle na index
-        function switchAuthTab(type) {
-            const btnC = document.getElementById('tab-client');
-            const btnA = document.getElementById('tab-admin');
-            const formC = document.getElementById('form-client');
-            const formA = document.getElementById('form-admin');
-
-            if(type === 'client') {
-                btnC.className = "flex-1 py-2 rounded-md text-sm font-bold transition-all bg-cyan-600 text-white shadow-lg";
-                btnA.className = "flex-1 py-2 rounded-md text-sm font-bold transition-all text-slate-400 hover:text-white";
-                formC.classList.remove('hidden');
-                formA.classList.add('hidden');
-            } else {
-                btnA.className = "flex-1 py-2 rounded-md text-sm font-bold transition-all bg-cyan-600 text-white shadow-lg";
-                btnC.className = "flex-1 py-2 rounded-md text-sm font-bold transition-all text-slate-400 hover:text-white";
-                formA.classList.remove('hidden');
-                formC.classList.add('hidden');
-            }
-        }
         lucide.createIcons();
+        function switchTab(type) {
+            document.getElementById('tab-client').classList.toggle('active', type === 'client');
+            document.getElementById('tab-admin').classList.toggle('active', type === 'admin');
+            document.getElementById('form-client').classList.toggle('hidden', type !== 'client');
+            document.getElementById('form-admin').classList.toggle('hidden', type !== 'admin');
+        }
     </script>
 </body>
 </html>
