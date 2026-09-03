@@ -1,4 +1,4 @@
-/* app.js - Silven Tec Core Logic V11 - Realtime & Jurídico */
+/* app.js - Silven Tec Core Logic V12 - Notificações & Schema Fix */
 
 const SUPABASE_URL = 'https://evwsxwkvtjgexhjwofxh.supabase.co';
 const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImV2d3N4d2t2dGpnZXhoandvZnhoIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODc2ODk0MDEsImV4cCI6MjEwMzI2NTQwMX0.oN_ATHMc7KBHC7NA7O35Q5nS3H4OxSIAXMXvE7xYXCA';
@@ -8,10 +8,43 @@ let currentProject = null;
 let signaturePad = null;
 
 // ==========================================
+// SISTEMA DE NOTIFICAÇÕES PERSONALIZADAS
+// ==========================================
+function showToast(message, type = 'info') {
+    const container = document.getElementById('toast-container') || createToastContainer();
+    
+    const toast = document.createElement('div');
+    toast.className = `toast ${type}`;
+    
+    let icon = '<i data-lucide="info" size="20"></i>';
+    if(type === 'success') icon = '<i data-lucide="check-circle" size="20"></i>';
+    if(type === 'error') icon = '<i data-lucide="alert-circle" size="20"></i>';
+    if(type === 'warning') icon = '<i data-lucide="alert-triangle" size="20"></i>';
+
+    toast.innerHTML = `${icon} <span>${message}</span>`;
+    container.appendChild(toast);
+    
+    if(window.lucide) lucide.createIcons({ nodes: [toast] });
+
+    setTimeout(() => {
+        toast.style.opacity = '0';
+        toast.style.transform = 'translateX(100%)';
+        setTimeout(() => toast.remove(), 300);
+    }, 4000);
+}
+
+function createToastContainer() {
+    const div = document.createElement('div');
+    div.id = 'toast-container';
+    document.body.appendChild(div);
+    return div;
+}
+
+// ==========================================
 // UTILITÁRIOS
 // ==========================================
 function formatCurrency(val) { return new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(val); }
-function formatDate(dateStr) { return new Date(dateStr).toLocaleDateString('pt-BR'); }
+function formatDate(dateStr) { return dateStr ? new Date(dateStr).toLocaleDateString('pt-BR') : '-'; }
 
 async function generateSmartToken(name) {
     const prefix = 'ST';
@@ -32,42 +65,18 @@ function calculateFinalValue(baseValue, deadlineStr) {
 }
 
 // ==========================================
-// REALTIME LISTENERS (AO VIVO)
+// REALTIME LISTENERS
 // ==========================================
 function setupRealtime() {
-    // Escuta mudanças em Projects
-    db.channel('public:projects')
-      .on('postgres_changes', { event: '*', schema: 'public', table: 'projects' }, payload => {
-          showRealtimeToast();
-          loadDashboardData(); 
-          loadProjectsTable();
-      })
-      .subscribe();
-
-    // Escuta mudanças em Payments
-    db.channel('public:payments')
-      .on('postgres_changes', { event: '*', schema: 'public', table: 'payments' }, payload => {
-          showRealtimeToast();
-          loadFinanceTable();
-      })
-      .subscribe();
-      
-    // Escuta mudanças em Contracts
-    db.channel('public:contracts')
-      .on('postgres_changes', { event: '*', schema: 'public', table: 'contracts' }, payload => {
-          showRealtimeToast();
-          loadContractsTable();
+    db.channel('public:all')
+      .on('postgres_changes', { event: '*', schema: 'public' }, () => {
+          showToast('Dados atualizados em tempo real', 'success');
           loadDashboardData();
+          loadProjectsTable();
+          loadFinanceTable();
+          loadContractsTable();
       })
       .subscribe();
-}
-
-function showRealtimeToast() {
-    const toast = document.getElementById('realtime-toast');
-    if(toast) {
-        toast.classList.remove('hidden');
-        setTimeout(() => toast.classList.add('hidden'), 3000);
-    }
 }
 
 // ==========================================
@@ -75,7 +84,7 @@ function showRealtimeToast() {
 // ==========================================
 window.acessarCliente = function() {
     const token = document.getElementById('token-input')?.value.trim().toUpperCase();
-    if (!token) return alert("Insira um token válido.");
+    if (!token) return showToast("Insira um token válido.", "warning");
     window.location.href = `client.html?token=${token}`;
 };
 
@@ -85,27 +94,40 @@ window.entrarAdmin = async function() {
     const errEl = document.getElementById('admin-error');
     const btn = document.getElementById('btn-admin-login');
     
-    if (!email || !pass) { errEl.textContent = "Preencha e-mail e senha."; errEl.classList.remove('hidden'); return; }
+    if (!email || !pass) { 
+        errEl.textContent = "Preencha e-mail e senha."; 
+        errEl.classList.remove('hidden'); 
+        return; 
+    }
+
     btn.innerHTML = `Verificando...`; btn.disabled = true; errEl.classList.add('hidden');
 
     try {
         const { error } = await db.auth.signInWithPassword({ email, password: pass });
         if (error) throw error;
         sessionStorage.setItem('silven_admin', 'true');
-        window.location.href = 'admin.html';
+        showToast("Login realizado com sucesso!", "success");
+        setTimeout(() => window.location.href = 'admin.html', 500);
     } catch (err) {
-        errEl.textContent = err.message; errEl.classList.remove('hidden');
-        btn.innerHTML = `<i data-lucide="shield-check" size="16"></i> Entrar no Sistema`; btn.disabled = false;
+        showToast(err.message, "error");
+        btn.innerHTML = `<i data-lucide="shield-check" size="16"></i> Entrar no Sistema`; 
+        btn.disabled = false;
         lucide.createIcons();
     }
 };
-window.logout = async () => { await db.auth.signOut(); sessionStorage.clear(); window.location.href = 'index.html'; };
+
+window.logout = async () => { 
+    await db.auth.signOut(); 
+    sessionStorage.clear(); 
+    showToast("Você saiu do sistema.", "info");
+    setTimeout(() => window.location.href = 'index.html', 500);
+};
 
 // ==========================================
 // ADMIN PANEL LOGIC
 // ==========================================
 async function initAdminPanel() {
-    setupRealtime(); // Inicia realtime
+    setupRealtime();
     loadDashboardData();
     
     // Define datas padrão no modal
@@ -121,59 +143,56 @@ async function initAdminPanel() {
             const btn = e.target.querySelector('button[type="submit"]');
             btn.disabled = true; btn.textContent = 'Gerando Contrato e Parcelas...';
 
-            const clientName = document.getElementById('new-client').value;
-            const title = document.getElementById('new-title').value;
-            const value = Number(document.getElementById('new-value').value);
-            const months = parseInt(document.getElementById('new-months').value);
-            const supportType = document.getElementById('new-support').value;
-            const startDate = document.getElementById('new-start').value;
-            const firstDueDate = document.getElementById('new-due').value;
-            
-            const token = await generateSmartToken(clientName);
+            try {
+                const clientName = document.getElementById('new-client').value;
+                const title = document.getElementById('new-title').value;
+                const value = Number(document.getElementById('new-value').value);
+                const months = parseInt(document.getElementById('new-months').value);
+                const supportType = document.getElementById('new-support').value;
+                const startDate = document.getElementById('new-start').value;
+                const firstDueDate = document.getElementById('new-due').value;
+                
+                const token = await generateSmartToken(clientName);
 
-            // 1. Criar Projeto
-            const { data: projData, error: projError } = await db.from('projects').insert([{
-                client_name: clientName, title, total_value: value, 
-                access_token: token, status: 'em_andamento', 
-                deadline: firstDueDate, signed_client: false,
-                support_type: supportType, start_date: startDate
-            }]).select().single();
+                // 1. Criar Projeto (Usando select() para pegar o ID gerado)
+                const { data: projData, error: projError } = await db.from('projects').insert([{
+                    client_name: clientName, title, total_value: value, 
+                    access_token: token, status: 'em_andamento', 
+                    deadline: firstDueDate, signed_client: false,
+                    support_type: supportType, start_date: startDate
+                }]).select().single();
 
-            if(projError) { alert('Erro: ' + projError.message); btn.disabled=false; return; }
+                if(projError) throw projError;
 
-            // 2. Gerar Parcelas Automáticas
-            const payments = [];
-            for(let i=0; i<months; i++) {
-                let d = new Date(firstDueDate);
-                d.setMonth(d.getMonth() + i);
-                payments.push({
-                    project_id: projData.id,
-                    month_number: i + 1,
-                    due_date: d.toISOString().split('T')[0],
-                    amount: value,
-                    status: 'pending'
-                });
+                // 2. Gerar Parcelas Automáticas
+                const payments = [];
+                for(let i=0; i<months; i++) {
+                    let d = new Date(firstDueDate);
+                    d.setMonth(d.getMonth() + i);
+                    payments.push({
+                        project_id: projData.id,
+                        month_number: i + 1,
+                        due_date: d.toISOString().split('T')[0],
+                        amount: value,
+                        status: 'pending'
+                    });
+                }
+                
+                const { error: payError } = await db.from('payments').insert(payments);
+                if(payError) throw payError;
+
+                showToast(`Projeto criado! Token: ${token}`, "success");
+                closeModal('modal-new-project');
+                e.target.reset();
+                
+            } catch (err) {
+                showToast("Erro ao criar projeto: " + err.message, "error");
+                console.error(err);
+            } finally {
+                btn.disabled = false; btn.textContent = 'Gerar Contrato e Token';
             }
-            await db.from('payments').insert(payments);
-
-            // 3. Gerar PDF do Contrato Automaticamente
-            await generateContractPDF(projData, supportType, months, startDate);
-
-            alert(`Sucesso!\nToken: ${token}\n${months} parcelas geradas.\nContrato PDF criado.`);
-            closeModal('modal-new-project');
-            e.target.reset();
-            btn.disabled = false; btn.textContent = 'Gerar Contrato e Token';
         });
     }
-}
-
-// Função para gerar PDF Jurídico
-async function generateContractPDF(project, supportType, months, startDate) {
-    const { jsPDF } = window.jspdf; // Precisa importar jspdf no admin.html se for usar aqui, ou fazer no client
-    // Nota: Para simplificar, vamos assumir que o admin apenas cria os dados. 
-    // O PDF completo é gerado quando o cliente assina ou podemos gerar um "Pré-contrato" aqui.
-    // Vou deixar a lógica de PDF completa no Client.html para manter o JS enxuto, 
-    // mas aqui salvamos os metadados do contrato.
 }
 
 window.switchAdminView = function(viewName) {
@@ -212,12 +231,11 @@ async function loadProjectsTable() {
     const tbody = document.getElementById('projects-list');
     tbody.innerHTML = '';
     data?.forEach(p => {
-        tbody.innerHTML += `<tr><td style="font-weight:600;">${p.title}</td><td>${p.client_name}</td><td>${formatDate(p.start_date)} até ${formatDate(p.deadline)}</td><td><button class="action-btn" onclick="navigator.clipboard.writeText('${p.access_token}');alert('Token copiado!')">Copiar Token</button></td></tr>`;
+        tbody.innerHTML += `<tr><td style="font-weight:600;">${p.title}</td><td>${p.client_name}</td><td>${formatDate(p.start_date)} até ${formatDate(p.deadline)}</td><td><button class="action-btn" onclick="navigator.clipboard.writeText('${p.access_token}');showToast('Token copiado!', 'success')">Copiar Token</button></td></tr>`;
     });
 }
 
 async function loadFinanceTable() {
-    // Busca pagamentos juntando com projetos
     const { data } = await db.from('payments').select('*, projects(client_name, title)').order('due_date', {ascending: true});
     const tbody = document.getElementById('finance-list');
     tbody.innerHTML = '';
@@ -249,7 +267,7 @@ window.openModal = (id) => document.getElementById(id).classList.remove('hidden'
 window.closeModal = (id) => document.getElementById(id).classList.add('hidden');
 
 // ==========================================
-// CLIENT AREA LOGIC (Com PDF Jurídico Completo)
+// CLIENT AREA LOGIC
 // ==========================================
 document.addEventListener('DOMContentLoaded', () => {
     if(document.getElementById('proj-title')) {
@@ -261,7 +279,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
 async function initClientArea(token) {
     const { data, error } = await db.from('projects').select('*').eq('access_token', token).single();
-    if(error || !data) { alert('Token inválido.'); window.location.href='index.html'; return; }
+    if(error || !data) { showToast('Token inválido.', 'error'); window.location.href='index.html'; return; }
     
     currentProject = data;
     document.getElementById('proj-title').textContent = data.title;
@@ -313,13 +331,23 @@ window.generatePix = async function() {
         document.getElementById('qr-img').src = `data:image/jpeg;base64,${data.qr_code_base64}`;
         document.getElementById('pix-code').textContent = data.qr_code;
         document.getElementById('pix-result').classList.remove('hidden');
-    } catch(e) { alert("Erro ao gerar PIX: " + e.message); btn.classList.remove('hidden'); } finally { load.classList.add('hidden'); }
+        showToast("PIX gerado com sucesso!", "success");
+    } catch(e) { 
+        showToast("Erro ao gerar PIX: " + e.message, "error"); 
+        btn.classList.remove('hidden'); 
+    } finally { load.classList.add('hidden'); }
 };
-window.copyPix = () => navigator.clipboard.writeText(document.getElementById('pix-code').textContent).then(() => alert('Código copiado!'));
+
+window.copyPix = () => {
+    navigator.clipboard.writeText(document.getElementById('pix-code').textContent);
+    showToast("Código PIX copiado!", "success");
+};
+
 window.clearSig = () => signaturePad?.clear();
 
 window.signContract = async () => {
-    if(!signaturePad || signaturePad.isEmpty()) return alert('Assine o contrato.');
+    if(!signaturePad || signaturePad.isEmpty()) return showToast('Por favor, assine o contrato.', 'warning');
+    
     const sigData = signaturePad.toDataURL();
     const { jsPDF } = window.jspdf;
     const doc = new jsPDF();
@@ -334,7 +362,7 @@ window.signContract = async () => {
     
     // DADOS
     doc.setFontSize(10); doc.setFont("helvetica", "normal");
-    doc.text(`CONTRATADA: SILVEN TEC - CNPJ: XX.XXX.XXX/0001-XX`, 20, 55);
+    doc.text(`CONTRATADA: SILVEN TEC`, 20, 55);
     doc.text(`CONTRATANTE: ${currentProject.client_name}`, 20, 62);
     doc.text(`OBJETO: ${currentProject.title}`, 20, 69);
     doc.text(`VIGÊNCIA: De ${formatDate(currentProject.start_date)} a ${formatDate(currentProject.deadline)}`, 20, 76);
@@ -372,4 +400,5 @@ window.signContract = async () => {
     
     document.getElementById('sign-area').classList.add('hidden');
     document.getElementById('signed-msg').classList.remove('hidden');
+    showToast("Contrato assinado e PDF baixado!", "success");
 };
