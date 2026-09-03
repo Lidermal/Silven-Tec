@@ -34,7 +34,8 @@
                     <label class="input-label" style="text-align: left;">Token do Projeto</label>
                     <input type="text" id="token-input" class="input-field" placeholder="EX: ST-XXXX-YYYY" style="text-transform: uppercase; text-align: center; letter-spacing: 2px;">
                 </div>
-                <button id="btn-client-access" class="btn-primary" style="margin-top: 1rem;">Acessar Painel</button>
+                <!-- Botão conectado diretamente à função -->
+                <button id="btn-client-access" onclick="window.acessarCliente()" class="btn-primary" style="margin-top: 1rem;">Acessar Painel</button>
             </div>
 
             <!-- Formulário Admin -->
@@ -48,7 +49,8 @@
                     <input type="password" id="admin-pass" class="input-field" placeholder="••••••••">
                 </div>
                 <p id="admin-error" class="hidden" style="color: #ef4444; font-size: 0.85rem; margin-bottom: 1rem; text-align: center; font-weight: 500;"></p>
-                <button id="btn-admin-login" class="btn-primary" style="margin-top: 1rem; background: linear-gradient(90deg, #334155, #1e293b); border: 1px solid #475569;">
+                <!-- Botão conectado diretamente à função -->
+                <button id="btn-admin-login" onclick="window.entrarAdmin()" class="btn-primary" style="margin-top: 1rem; background: linear-gradient(90deg, #334155, #1e293b); border: 1px solid #475569;">
                     <i data-lucide="shield-check" size="18"></i> Entrar no Sistema
                 </button>
             </div>
@@ -56,11 +58,12 @@
         </div>
     </main>
 
-    <script src="app.js?v=2"></script>
+    <!-- Versão 4 para forçar a atualização da Vercel -->
+    <script src="app.js?v=4"></script>
     <script>
         lucide.createIcons();
 
-        // Controle isolado das abas 
+        // Controle isolado das abas (Garante que a interface visual não dependa do banco de dados para trocar de aba)
         const tabClient = document.getElementById('tab-client');
         const tabAdmin = document.getElementById('tab-admin');
         const panelClient = document.getElementById('panel-client');
