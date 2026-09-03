@@ -1,13 +1,19 @@
-/* app.js - Silven Tec Core Logic */
+/* app.js - Silven Tec Core Logic - V4 */
 
 const SUPABASE_URL = 'https://evwsxwkvtjgexhjwofxh.supabase.co';
 const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImV2d3N4d2t2dGpnZXhoandvZnhoIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODc2ODk0MDEsImV4cCI6MjEwMzI2NTQwMX0.oN_ATHMc7KBHC7NA7O35Q5nS3H4OxSIAXMXvE7xYXCA';
 
-if (typeof window.supabase === 'undefined') {
-    alert("Erro crítico: Falha ao carregar o banco de dados.");
+// CONEXÃO SEGURA COM SUPABASE
+let supabase;
+try {
+    if (typeof window.supabase === 'undefined') {
+        console.error("Erro: A biblioteca do Supabase não foi carregada no HTML.");
+    } else {
+        supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+    }
+} catch (error) {
+    console.error("Erro fatal ao conectar com o Supabase:", error);
 }
-
-const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
 let currentProject = null;
 let signaturePad = null;
@@ -23,66 +29,62 @@ async function generateSmartToken(name) {
     return `${prefix}-${clean}-${rand}`;
 }
 
+// ==========================================
+// FUNÇÕES DE ACESSO (INDEX)
+// ==========================================
+window.acessarCliente = function() {
+    const token = document.getElementById('token-input').value.trim().toUpperCase();
+    if (!token) {
+        alert("Por favor, insira um token válido.");
+        return;
+    }
+    window.location.href = `client.html?token=${token}`;
+};
+
+window.entrarAdmin = async function() {
+    const emailInput = document.getElementById('admin-email').value.trim();
+    const passInput = document.getElementById('admin-pass').value;
+    const errEl = document.getElementById('admin-error');
+    const btn = document.getElementById('btn-admin-login');
+    
+    if (!emailInput || !passInput) {
+        errEl.textContent = "Preencha o e-mail e a senha.";
+        errEl.classList.remove('hidden');
+        return;
+    }
+
+    const originalText = btn.innerHTML;
+    btn.innerHTML = `Verificando...`;
+    btn.disabled = true;
+    errEl.classList.add('hidden');
+
+    try {
+        if (!supabase) throw new Error("Falha na conexão com o servidor. Recarregue a página.");
+
+        const { data, error } = await supabase.auth.signInWithPassword({
+            email: emailInput,
+            password: passInput
+        });
+
+        if (error) throw new Error("Credenciais inválidas. Verifique seu e-mail e senha.");
+
+        sessionStorage.setItem('silven_admin', 'true');
+        window.location.href = 'admin.html';
+    } catch (err) {
+        errEl.textContent = err.message;
+        errEl.classList.remove('hidden');
+        btn.innerHTML = originalText;
+        btn.disabled = false;
+        if (window.lucide) lucide.createIcons();
+    }
+};
+
+// ==========================================
+// FUNÇÕES DOS PAINÉIS (ADMIN E CLIENTE)
+// ==========================================
 document.addEventListener('DOMContentLoaded', () => {
 
-    // ==========================================
-    // 1. LÓGICA DA PÁGINA INICIAL (INDEX)
-    // ==========================================
-    const btnClientAccess = document.getElementById('btn-client-access');
-    const btnAdminLogin = document.getElementById('btn-admin-login');
-
-    // Acesso do Cliente (Token)
-    if (btnClientAccess) {
-        btnClientAccess.addEventListener('click', () => {
-            const token = document.getElementById('token-input').value.trim().toUpperCase();
-            if (!token) return alert("Insira um token válido.");
-            window.location.href = `client.html?token=${token}`;
-        });
-    }
-
-    // Acesso Administrativo (E-mail e Senha)
-    if (btnAdminLogin) {
-        btnAdminLogin.addEventListener('click', async (e) => {
-            const emailInput = document.getElementById('admin-email').value.trim();
-            const passInput = document.getElementById('admin-pass').value;
-            const errEl = document.getElementById('admin-error');
-            const btn = e.currentTarget;
-            
-            if (!emailInput || !passInput) {
-                errEl.textContent = "Preencha o e-mail e a senha.";
-                errEl.classList.remove('hidden');
-                return;
-            }
-
-            const originalText = btn.innerHTML;
-            btn.innerHTML = `Verificando...`;
-            btn.disabled = true;
-            errEl.classList.add('hidden');
-
-            try {
-                // Autenticação OFICIAL do Supabase (Passa pelo RLS)
-                const { data, error } = await supabase.auth.signInWithPassword({
-                    email: emailInput,
-                    password: passInput
-                });
-
-                if (error) throw new Error("Credenciais inválidas. Verifique seu e-mail e senha.");
-
-                sessionStorage.setItem('silven_admin', 'true');
-                window.location.href = 'admin.html';
-            } catch (err) {
-                errEl.textContent = err.message;
-                errEl.classList.remove('hidden');
-                btn.innerHTML = originalText;
-                btn.disabled = false;
-                if(window.lucide) lucide.createIcons();
-            }
-        });
-    }
-
-    // ==========================================
-    // 2. LÓGICA DO PAINEL ADMIN
-    // ==========================================
+    // ADMIN
     if (document.getElementById('stat-projects')) {
         if(!sessionStorage.getItem('silven_admin')) {
             window.location.href = 'index.html';
@@ -116,17 +118,14 @@ document.addEventListener('DOMContentLoaded', () => {
             btn.disabled = false; btn.textContent = 'Criar Projeto';
         });
 
-        // Função segura de Logout
         window.logout = async () => {
-            await supabase.auth.signOut();
+            if (supabase) await supabase.auth.signOut();
             sessionStorage.clear();
             window.location.href = 'index.html';
         };
     }
 
-    // ==========================================
-    // 3. LÓGICA DO PAINEL CLIENTE
-    // ==========================================
+    // CLIENTE
     if (document.getElementById('proj-title')) {
         const params = new URLSearchParams(window.location.search);
         const token = params.get('token');
@@ -239,7 +238,6 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 });
 
-// Funções de carregamento do banco de dados
 async function loadAdminStats() {
     const { data, error } = await supabase.from('projects').select('*').order('created_at', {ascending: false});
     if(error) return;
