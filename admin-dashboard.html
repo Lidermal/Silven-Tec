@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Silven Tec - Painel Admin</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&family=Inter:wght@300;400;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="css/styles.css">
+    
+    <!-- Bibliotecas Necessárias -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+</head>
+<body class="bg-dark text-slate-200 font-inter min-h-screen flex flex-col" style="background-color: #0B0F19;">
+
+    <header class="glass sticky top-0 z-40 px-4 md:px-8 py-4 flex justify-between items-center border-b border-white/10" style="background: rgba(11, 15, 25, 0.85); backdrop-filter: blur(16px);">
+        <div class="flex items-center gap-3">
+            <span class="text-xl font-bold tracking-widest text-cyan-400" style="font-family: 'Orbitron', sans-serif;">SILVEN TEC | ADMIN</span>
+        </div>
+        <button id="logoutBtn" class="px-4 py-2 rounded-lg border border-red-500/30 text-sm font-bold text-red-400 hover:bg-red-500/10 transition">Sair do Sistema</button>
+    </header>
+
+    <main class="flex-grow p-4 md:p-8 max-w-7xl mx-auto w-full">
+        <h2 class="text-3xl text-cyan-400 mb-8" style="font-family: 'Orbitron', sans-serif;">VISÃO GERAL</h2>
+        
+        <!-- Indicadores -->
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+            <div class="p-6 rounded-xl border-l-4 border-cyan-500" style="background: rgba(11, 15, 25, 0.85); border-right: 1px solid #1E293B; border-top: 1px solid #1E293B; border-bottom: 1px solid #1E293B;">
+                <p class="text-slate-400 text-xs uppercase">Projetos Ativos</p>
+                <h3 id="stat-projects" class="text-3xl font-bold text-white mt-2">-</h3>
+            </div>
+            <div class="p-6 rounded-xl border-l-4 border-emerald-500" style="background: rgba(11, 15, 25, 0.85); border-right: 1px solid #1E293B; border-top: 1px solid #1E293B; border-bottom: 1px solid #1E293B;">
+                <p class="text-slate-400 text-xs uppercase">Receita Bruta (Mensal)</p>
+                <h3 id="stat-revenue" class="text-3xl font-bold text-emerald-400 mt-2">R$ 0,00</h3>
+            </div>
+        </div>
+
+        <!-- Formulário de Novo Projeto/Contrato -->
+        <div class="p-6 rounded-xl mb-8 border border-slate-700" style="background: rgba(11, 15, 25, 0.85);">
+            <h3 class="text-xl font-bold mb-4 text-cyan-300">Novo Projeto (Assinatura)</h3>
+            <form id="formNovoProjeto" class="grid grid-cols-1 md:grid-cols-4 gap-4">
+                <input type="text" id="new-client" placeholder="Nome do Cliente" required class="w-full padding-4 bg-slate-900 border border-slate-700 rounded-lg p-3 text-white outline-none focus:border-cyan-500">
+                <input type="text" id="new-title" placeholder="Título do Projeto" required class="w-full padding-4 bg-slate-900 border border-slate-700 rounded-lg p-3 text-white outline-none focus:border-cyan-500">
+                <input type="number" id="new-value" placeholder="Valor Mensal (R$)" step="0.01" required class="w-full padding-4 bg-slate-900 border border-slate-700 rounded-lg p-3 text-white outline-none focus:border-cyan-500">
+                <button type="submit" id="btnSubmitProjeto" class="bg-cyan-600 hover:bg-cyan-500 text-white font-bold rounded-lg p-3 transition">Cadastrar Projeto</button>
+            </form>
+        </div>
+
+        <!-- Lista de Projetos -->
+        <div class="p-6 rounded-xl border border-slate-700" style="background: rgba(11, 15, 25, 0.85);">
+            <h3 class="text-xl font-bold mb-4 text-slate-300">Projetos Recentes</h3>
+            <div id="admin-projects-list" class="space-y-3">
+                <!-- Preenchido via JS -->
+            </div>
+        </div>
+    </main>
+
+    <!-- Scripts de Microserviços -->
+    <script src="js/config/supabaseClient.js"></script>
+    <script src="js/services/contractService.js"></script>
+    <script src="js/admin.js"></script>
+</body>
+</html>
