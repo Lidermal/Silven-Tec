@@ -40,6 +40,10 @@
             <!-- Formulário Admin -->
             <div id="panel-admin" class="auth-content hidden">
                 <div class="input-group">
+                    <label class="input-label" style="text-align: left;">E-mail Administrativo</label>
+                    <input type="email" id="admin-email" class="input-field" placeholder="seu@email.com">
+                </div>
+                <div class="input-group">
                     <label class="input-label" style="text-align: left;">Senha Mestra</label>
                     <input type="password" id="admin-pass" class="input-field" placeholder="••••••••">
                 </div>
@@ -56,7 +60,7 @@
     <script>
         lucide.createIcons();
 
-        // Controle isolado das abas (Garante que a interface sempre funcione)
+        // Controle isolado das abas 
         const tabClient = document.getElementById('tab-client');
         const tabAdmin = document.getElementById('tab-admin');
         const panelClient = document.getElementById('panel-client');
