@@ -4,158 +4,78 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Silven Tec | Inovação & Gestão</title>
-    <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>💠</text></svg>">
-    <script src="https://cdn.tailwindcss.com"></script>
-    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/signature_pad@4.0.0/dist/signature_pad.umd.min.js"></script>
-    <script src="https://unpkg.com/lucide@latest"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&family=Inter:wght@300;400;600&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="style.css">
+    <!-- Favicon SVG Inline -->
+    <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect x='10' y='10' width='80' height='80' rx='20' fill='none' stroke='%2306B6D4' stroke-width='6'/><path d='M35 35h30v10H45v10h20v10H35V35z' fill='%2306B6D4'/><rect x='70' y='20' width='10' height='10' rx='2' fill='%2306B6D4'/></svg>">
+    
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="https://unpkg.com/lucide@latest"></script>
 </head>
-<body class="bg-dark text-slate-200 font-inter min-h-screen flex flex-col">
+<body class="flex flex-col items-center justify-center min-h-screen p-4">
 
-    <!-- NAVBAR -->
-    <nav class="glass sticky top-0 z-40 px-4 md:px-8 py-4 flex justify-between items-center border-b border-white/10">
-        <div class="flex items-center gap-3 cursor-pointer group" onclick="window.navigate('home')">
-            <svg width="40" height="40" viewBox="0 0 100 100" fill="none" class="drop-shadow-[0_0_8px_rgba(6,182,212,0.6)]">
-                <path d="M75 25H35C29.4 25 25 29.4 25 35V45C25 50.5 29.4 55 35 55H65C70.5 55 75 59.4 75 65V75C75 80.5 70.5 85 65 85H25" stroke="#06B6D4" stroke-width="6" stroke-linecap="round"/>
-                <circle cx="75" cy="25" r="5" fill="#06B6D4"/><circle cx="25" cy="85" r="5" fill="#06B6D4"/>
-                <circle cx="25" cy="35" r="4" fill="#0B0F19" stroke="#06B6D4" stroke-width="3"/>
-                <circle cx="65" cy="55" r="4" fill="#0B0F19" stroke="#06B6D4" stroke-width="3"/>
-            </svg>
-            <div class="flex flex-col">
-                <span class="text-xl font-tech tracking-widest text-transparent bg-clip-text bg-gradient-to-r from-cyan-300 to-indigo-400">SILVEN TEC</span>
-                <span class="text-[9px] text-slate-500 tracking-[0.2em] hidden md:block">INOVAÇÃO & GESTÃO</span>
-            </div>
-        </div>
-        <div class="flex gap-2">
-            <button onclick="window.navigate('admin-login')" class="px-4 py-2 rounded-lg border border-cyan-500/30 hover:bg-cyan-500/10 text-sm font-bold text-cyan-300 transition">ADMIN</button>
-            <button onclick="window.openTokenModal()" class="px-4 py-2 rounded-lg bg-gradient-to-r from-cyan-600 to-indigo-600 text-sm font-bold shadow-[0_0_15px_rgba(6,182,212,0.4)] transition">CLIENTE</button>
-        </div>
-    </nav>
+    <!-- Logo Header -->
+    <div class="text-center mb-10 animate-fade-in">
+        <svg width="80" height="80" viewBox="0 0 100 100" fill="none" class="mx-auto mb-4 drop-shadow-[0_0_15px_rgba(6,182,212,0.6)]">
+            <rect x="10" y="10" width="80" height="80" rx="20" stroke="#06B6D4" stroke-width="5"/>
+            <path d="M35 35h30v10H45v10h20v10H35V35z" fill="#06B6D4"/>
+            <rect x="70" y="20" width="10" height="10" rx="2" fill="#06B6D4"/>
+        </svg>
+        <h1 class="text-4xl font-tech neon-text text-white">SILVEN TEC</h1>
+        <p class="text-cyan-400/70 text-sm tracking-[0.3em] mt-2">INOVAÇÃO & GESTÃO</p>
+    </div>
 
-    <main id="app-container" class="flex-grow p-4 md:p-8 max-w-7xl mx-auto w-full relative">
+    <!-- Container Principal -->
+    <div class="glass-panel p-8 rounded-2xl w-full max-w-md animate-fade-in relative overflow-hidden">
         
-        <!-- HOME -->
-        <section id="view-home" class="view-section flex flex-col items-center justify-center min-h-[70vh] text-center space-y-8 animate-fade-in">
-            <div class="p-10 rounded-3xl bg-gradient-to-br from-cyan-900/20 to-indigo-900/20 border border-cyan-500/20 animate-pulse">
-                <svg width="100" height="100" viewBox="0 0 100 100" fill="none" class="drop-shadow-[0_0_20px_rgba(6,182,212,0.8)]">
-                    <path d="M75 25H35C29.4 25 25 29.4 25 35V45C25 50.5 29.4 55 35 55H65C70.5 55 75 59.4 75 65V75C75 80.5 70.5 85 65 85H25" stroke="#06B6D4" stroke-width="5" stroke-linecap="round"/>
-                    <circle cx="75" cy="25" r="6" fill="#06B6D4"/><circle cx="25" cy="85" r="6" fill="#06B6D4"/>
-                </svg>
-            </div>
-            <h1 class="text-5xl md:text-7xl font-tech neon-text-cyan">INOVAÇÃO & GESTÃO</h1>
-            <p class="text-slate-400 max-w-2xl text-lg">Plataforma completa para gerenciamento de projetos tecnológicos e contratos digitais.</p>
-            <button onclick="window.navigate('admin-login')" class="btn-primary mt-8 px-10 py-4 text-lg">Acessar Painel Admin</button>
-        </section>
-
-        <!-- LOGIN ADMIN (APENAS SENHA) -->
-        <section id="view-admin-login" class="view-section hidden max-w-md mx-auto mt-20 animate-slide-up">
-            <div class="glass p-8 rounded-2xl border border-cyan-500/30 shadow-[0_0_30px_rgba(6,182,212,0.1)]">
-                <h2 class="text-2xl font-tech text-center mb-6 text-cyan-300">ACESSO RESTRITO</h2>
-                <input type="password" id="admin-pass" placeholder="Senha Mestra" class="input-field mb-4">
-                <button onclick="window.loginAdmin()" class="btn-primary w-full">ENTRAR NO SISTEMA</button>
-                <p id="login-msg" class="text-red-400 text-center mt-4 text-sm hidden"></p>
-            </div>
-        </section>
-
-        <!-- DASHBOARD ADMIN -->
-        <section id="view-admin-dash" class="view-section hidden space-y-8 animate-fade-in">
-            <div class="flex justify-between items-center">
-                <h2 class="text-3xl font-tech text-cyan-400">PAINEL DE CONTROLE</h2>
-                <button onclick="window.logout()" class="text-red-400 hover:text-red-300 flex items-center gap-2"><i data-lucide="log-out" size="18"></i> Sair</button>
-            </div>
-            <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
-                <div class="glass p-6 rounded-xl border-l-4 border-cyan-500"><p class="text-slate-400 text-xs uppercase">Projetos Ativos</p><h3 id="stat-projects" class="text-3xl font-bold text-white mt-2">-</h3></div>
-                <div class="glass p-6 rounded-xl border-l-4 border-emerald-500"><p class="text-slate-400 text-xs uppercase">Receita Pendente</p><h3 id="stat-revenue" class="text-3xl font-bold text-emerald-400 mt-2">R$ 0,00</h3></div>
-                <div class="glass p-6 rounded-xl border-l-4 border-purple-500"><p class="text-slate-400 text-xs uppercase">Contratos Assinados</p><h3 id="stat-contracts" class="text-3xl font-bold text-purple-400 mt-2">-</h3></div>
-            </div>
-            <div class="glass p-6 rounded-xl">
-                <h3 class="text-xl font-bold mb-4 text-cyan-300 flex items-center gap-2"><i data-lucide="plus-circle"></i> Novo Projeto</h3>
-                <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
-                    <input id="new-client" placeholder="Nome Cliente" class="input-field">
-                    <input id="new-title" placeholder="Título Projeto" class="input-field">
-                    <input id="new-value" type="number" placeholder="Valor (R$)" class="input-field">
-                    <button onclick="window.createProject()" class="btn-success">Cadastrar</button>
-                </div>
-            </div>
-            <div class="glass p-6 rounded-xl"><h3 class="text-xl font-bold mb-4 text-slate-300">Projetos Recentes</h3><div id="admin-projects-list" class="space-y-3"></div></div>
-        </section>
-
-        <!-- ÁREA DO CLIENTE -->
-        <section id="view-client-area" class="view-section hidden max-w-4xl mx-auto space-y-8 animate-fade-in">
-            <div class="glass p-6 md:p-8 rounded-2xl border border-cyan-500/20">
-                <div class="flex justify-between items-start mb-6">
-                    <div><h1 id="client-proj-title" class="text-2xl md:text-3xl font-tech text-cyan-400">Carregando...</h1><p id="client-name-display" class="text-slate-400 mt-1">Bem-vindo à sua área exclusiva.</p></div>
-                    <span id="client-status-badge" class="px-3 py-1 rounded-full bg-slate-800 text-xs font-bold border border-slate-700">STATUS</span>
-                </div>
-                <div class="flex gap-2 mb-6 border-b border-slate-800 pb-2 overflow-x-auto scrollbar-hide">
-                    <button onclick="window.switchClientTab('overview')" class="tab-btn active" data-tab="overview">Visão Geral</button>
-                    <button onclick="window.switchClientTab('finance')" class="tab-btn" data-tab="finance">Financeiro & PIX</button>
-                    <button onclick="window.switchClientTab('contract')" class="tab-btn" data-tab="contract">Contrato Digital</button>
-                    <button onclick="window.switchClientTab('support')" class="tab-btn" data-tab="support">Suporte</button>
-                </div>
-                
-                <div id="tab-overview" class="client-tab-content">
-                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                        <div class="bg-slate-900/50 p-6 rounded-xl border border-slate-800"><h4 class="text-slate-500 text-xs uppercase mb-2">Prazo de Entrega</h4><p id="client-deadline" class="text-2xl font-bold text-white">--/--/----</p></div>
-                        <div class="bg-slate-900/50 p-6 rounded-xl border border-slate-800"><h4 class="text-slate-500 text-xs uppercase mb-2">Progresso Estimado</h4><div class="w-full bg-slate-800 rounded-full h-2.5 mt-3"><div class="bg-cyan-500 h-2.5 rounded-full shadow-[0_0_10px_rgba(6,182,212,0.5)]" style="width: 45%"></div></div></div>
-                    </div>
-                </div>
-
-                <div id="tab-finance" class="client-tab-content hidden">
-                    <div class="bg-slate-900/50 p-6 rounded-xl text-center space-y-4 border border-slate-800">
-                        <h3 class="text-xl font-bold text-emerald-400">Pagamento do Projeto</h3>
-                        <p class="text-slate-400">Valor Total: <span id="client-total-value" class="text-white font-bold text-xl">R$ 0,00</span></p>
-                        <div id="pix-area" class="hidden p-4 bg-white rounded-lg inline-block shadow-lg"><img id="pix-qr-img" src="" alt="QR Code PIX" class="w-48 h-48 mx-auto mb-2"><p class="text-black text-[10px] font-mono break-all px-2 max-w-[200px] mx-auto" id="pix-copy-paste"></p><button onclick="window.copyPix()" class="mt-2 text-xs bg-slate-200 px-3 py-1.5 rounded text-black hover:bg-slate-300 font-bold">Copiar Código</button></div>
-                        <button id="btn-generate-pix" onclick="window.generatePixPayment()" class="btn-primary w-full md:w-auto mt-4"><i data-lucide="qr-code" class="inline mr-2"></i> Gerar PIX Agora</button>
-                        <p id="pix-loading" class="hidden text-cyan-400 text-sm animate-pulse mt-2">Conectando ao gateway seguro...</p>
-                    </div>
-                </div>
-
-                <div id="tab-contract" class="client-tab-content hidden space-y-6">
-                    <div class="bg-slate-900/50 p-6 rounded-xl border border-slate-800">
-                        <h3 class="font-bold mb-4 text-cyan-300">Assinatura Eletrônica</h3>
-                        <canvas id="signature-pad" class="w-full h-40 bg-white rounded-lg border border-slate-700 cursor-crosshair touch-none"></canvas>
-                        <div class="flex gap-2 mt-4"><button onclick="window.clearSignature()" class="px-4 py-2 bg-slate-700 rounded text-sm hover:bg-slate-600 transition">Limpar</button><button onclick="window.signContract()" class="btn-success flex-grow">Assinar Contrato</button></div>
-                    </div>
-                    <div id="contract-signed-msg" class="hidden p-4 bg-emerald-900/30 border border-emerald-500/30 rounded-lg text-emerald-400 text-center animate-fade-in"><i data-lucide="check-circle" class="inline mr-2"></i> Contrato assinado! PDF baixado automaticamente.</div>
-                </div>
-
-                <div id="tab-support" class="client-tab-content hidden">
-                    <div class="bg-slate-900/50 p-6 rounded-xl border border-slate-800">
-                        <h3 class="font-bold mb-4 text-cyan-300">Abrir Solicitação</h3>
-                        <textarea id="support-msg" rows="4" placeholder="Descreva sua dúvida ou solicitação..." class="input-field w-full"></textarea>
-                        <button onclick="window.sendSupportMessage()" class="btn-primary mt-4">Enviar para Admin</button>
-                    </div>
-                    <div class="mt-6"><h4 class="text-sm text-slate-500 uppercase mb-3">Histórico de Mensagens</h4><div id="support-history" class="space-y-3 max-h-60 overflow-y-auto pr-2 custom-scrollbar"></div></div>
-                </div>
-            </div>
-        </section>
-    </main>
-
-    <!-- MODAIS PERSONALIZADOS -->
-    <div id="modal-token" class="fixed inset-0 z-50 hidden flex items-center justify-center bg-black/80 backdrop-blur-sm animate-fade-in">
-        <div class="glass p-8 rounded-2xl border border-cyan-500/30 w-full max-w-md mx-4">
-            <h3 class="text-xl font-tech text-cyan-300 mb-4 text-center">ACESSO DO CLIENTE</h3>
-            <p class="text-slate-400 text-sm mb-4 text-center">Cole seu Link de Acesso ou Token (Ex: ST-LEMO-8X9P):</p>
-            <input type="text" id="token-input" placeholder="ST-XXXX-YYYY" class="input-field mb-6 text-center tracking-widest uppercase font-tech">
-            <div class="flex gap-3">
-                <button onclick="window.closeModal('modal-token')" class="flex-1 py-3 rounded-lg border border-slate-600 hover:bg-slate-800 transition font-bold">Cancelar</button>
-                <button onclick="window.submitToken()" class="flex-1 py-3 rounded-lg bg-cyan-600 hover:bg-cyan-500 transition font-bold shadow-[0_0_15px_rgba(6,182,212,0.4)]">Acessar</button>
-            </div>
+        <!-- Toggle Tabs -->
+        <div class="flex bg-slate-900/50 rounded-lg p-1 mb-6 border border-white/5">
+            <button onclick="switchAuthTab('client')" id="tab-client" class="flex-1 py-2 rounded-md text-sm font-bold transition-all bg-cyan-600 text-white shadow-lg">ÁREA DO CLIENTE</button>
+            <button onclick="switchAuthTab('admin')" id="tab-admin" class="flex-1 py-2 rounded-md text-sm font-bold transition-all text-slate-400 hover:text-white">ADMINISTRAÇÃO</button>
         </div>
+
+        <!-- FORM CLIENTE -->
+        <div id="form-client" class="space-y-4">
+            <label class="text-xs text-slate-400 uppercase tracking-wider font-bold">Token de Acesso</label>
+            <input type="text" id="token-input" placeholder="Ex: ST-JOAO-X9P2" class="input-field text-center font-tech tracking-widest uppercase">
+            <button onclick="handleClientAccess()" class="btn-primary w-full flex items-center justify-center gap-2">
+                <i data-lucide="log-in" size="18"></i> Acessar Projeto
+            </button>
+        </div>
+
+        <!-- FORM ADMIN -->
+        <div id="form-admin" class="space-y-4 hidden">
+            <label class="text-xs text-slate-400 uppercase tracking-wider font-bold">Senha Mestra</label>
+            <input type="password" id="admin-pass" placeholder="••••••••" class="input-field">
+            <button onclick="handleAdminLogin()" class="btn-outline w-full flex items-center justify-center gap-2">
+                <i data-lucide="shield" size="18"></i> Entrar no Painel
+            </button>
+            <p id="admin-error" class="text-red-400 text-xs text-center hidden mt-2"></p>
+        </div>
+
     </div>
 
-    <div id="modal-notification" class="fixed inset-0 z-50 hidden flex items-center justify-center bg-black/80 backdrop-blur-sm animate-fade-in">
-        <div class="glass p-6 rounded-2xl border border-slate-700 w-full max-w-sm mx-4 text-center">
-            <div id="notif-icon" class="mx-auto mb-4 w-12 h-12 rounded-full flex items-center justify-center bg-slate-800"></div>
-            <p id="notif-message" class="text-slate-200 mb-6 font-medium"></p>
-            <button onclick="window.closeModal('modal-notification')" class="w-full py-2 rounded-lg bg-slate-700 hover:bg-slate-600 transition font-bold">Entendido</button>
-        </div>
-    </div>
+    <script src="app.js"></script>
+    <script>
+        // Lógica simples de toggle na index
+        function switchAuthTab(type) {
+            const btnC = document.getElementById('tab-client');
+            const btnA = document.getElementById('tab-admin');
+            const formC = document.getElementById('form-client');
+            const formA = document.getElementById('form-admin');
 
-    <script src="app.js" defer></script>
+            if(type === 'client') {
+                btnC.className = "flex-1 py-2 rounded-md text-sm font-bold transition-all bg-cyan-600 text-white shadow-lg";
+                btnA.className = "flex-1 py-2 rounded-md text-sm font-bold transition-all text-slate-400 hover:text-white";
+                formC.classList.remove('hidden');
+                formA.classList.add('hidden');
+            } else {
+                btnA.className = "flex-1 py-2 rounded-md text-sm font-bold transition-all bg-cyan-600 text-white shadow-lg";
+                btnC.className = "flex-1 py-2 rounded-md text-sm font-bold transition-all text-slate-400 hover:text-white";
+                formA.classList.remove('hidden');
+                formC.classList.add('hidden');
+            }
+        }
+        lucide.createIcons();
+    </script>
 </body>
 </html>
