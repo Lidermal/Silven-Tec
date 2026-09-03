@@ -6,82 +6,69 @@
     <title>Silven Tec | Inovação & Gestão</title>
     <link rel="stylesheet" href="style.css">
     <link rel="icon" type="image/png" href="logost.png">
-    
-    <!-- Bibliotecas Externas -->
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script src="https://unpkg.com/lucide@latest"></script>
 </head>
 <body>
-
     <div class="login-wrapper">
-        <div class="glass-panel login-panel animate-in">
-            
-            <!-- Logo e Título DENTRO do Painel -->
-            <div class="brand-header">
-                <img src="logost.png" alt="Silven Tec Logo" class="brand-logo">
-                <h1 class="brand-title">SILVEN TEC</h1>
-                <p class="brand-subtitle">INOVAÇÃO & GESTÃO</p>
-            </div>
+        
+        <!-- Logo e Título FORA do Painel (Como na foto) -->
+        <div class="brand-header-top">
+            <img src="logost.png" alt="Silven Tec Logo" class="brand-logo-top">
+            <h1 class="brand-title-top">SILVEN TEC</h1>
+            <p class="brand-subtitle-top">INOVAÇÃO & GESTÃO</p>
+        </div>
 
-            <!-- Abas de Navegação -->
+        <!-- Painel Central -->
+        <div class="glass-panel-login">
+            
+            <!-- Abas -->
             <div class="auth-tabs">
                 <button id="tab-client" class="auth-tab-btn active">ÁREA DO CLIENTE</button>
                 <button id="tab-admin" class="auth-tab-btn">ADMINISTRAÇÃO</button>
             </div>
 
-            <!-- Formulário Cliente -->
+            <!-- Form Cliente -->
             <div id="panel-client" class="auth-content">
                 <div class="input-group">
                     <label class="input-label">Token do Projeto</label>
                     <input type="text" id="token-input" class="input-field" placeholder="EX: ST-XXXX-YYYY" style="text-transform: uppercase; text-align: center; letter-spacing: 2px;">
                 </div>
-                <button id="btn-client-access" onclick="window.acessarCliente()" class="btn-primary" style="margin-top: 1rem;">
+                <button id="btn-client-access" onclick="window.acessarCliente()" class="btn-primary">
                     Acessar Painel <i data-lucide="arrow-right" size="16"></i>
                 </button>
             </div>
 
-            <!-- Formulário Admin -->
+            <!-- Form Admin -->
             <div id="panel-admin" class="auth-content hidden">
-                <div class="input-group">
-                    <label class="input-label">E-mail Administrativo</label>
-                    <input type="email" id="admin-email" class="input-field" placeholder="seu@email.com">
-                </div>
                 <div class="input-group">
                     <label class="input-label">Senha Mestra</label>
                     <input type="password" id="admin-pass" class="input-field" placeholder="••••••••">
                 </div>
-                <p id="admin-error" class="hidden" style="color: #ef4444; font-size: 0.85rem; margin-bottom: 1rem; text-align: center; font-weight: 500;"></p>
-                <button id="btn-admin-login" onclick="window.entrarAdmin()" class="btn-primary btn-dark" style="margin-top: 1rem;">
-                    <i data-lucide="shield-check" size="18"></i> Entrar no Sistema
+                <p id="admin-error" class="hidden" style="color: #ef4444; font-size: 0.8rem; margin-bottom: 1rem; text-align: center;"></p>
+                <button id="btn-admin-login" onclick="window.entrarAdmin()" class="btn-primary btn-dark">
+                    <i data-lucide="shield-check" size="16"></i> Entrar no Sistema
                 </button>
             </div>
 
         </div>
     </div>
 
-    <!-- Script Principal -->
-    <script src="app.js?v=8"></script>
+    <script src="app.js?v=9"></script>
     <script>
         lucide.createIcons();
-
-        // Controle das abas (Mantido simples para garantir funcionamento)
-        const tabClient = document.getElementById('tab-client');
-        const tabAdmin = document.getElementById('tab-admin');
-        const panelClient = document.getElementById('panel-client');
-        const panelAdmin = document.getElementById('panel-admin');
-
-        tabClient.addEventListener('click', () => {
-            tabClient.classList.add('active');
-            tabAdmin.classList.remove('active');
-            panelClient.classList.remove('hidden');
-            panelAdmin.classList.add('hidden');
+        // Lógica simples de abas
+        document.getElementById('tab-client').addEventListener('click', () => {
+            document.getElementById('tab-client').classList.add('active');
+            document.getElementById('tab-admin').classList.remove('active');
+            document.getElementById('panel-client').classList.remove('hidden');
+            document.getElementById('panel-admin').classList.add('hidden');
         });
-
-        tabAdmin.addEventListener('click', () => {
-            tabAdmin.classList.add('active');
-            tabClient.classList.remove('active');
-            panelAdmin.classList.remove('hidden');
-            panelClient.classList.add('hidden');
+        document.getElementById('tab-admin').addEventListener('click', () => {
+            document.getElementById('tab-admin').classList.add('active');
+            document.getElementById('tab-client').classList.remove('active');
+            document.getElementById('panel-admin').classList.remove('hidden');
+            document.getElementById('panel-client').classList.add('hidden');
         });
     </script>
 </body>
