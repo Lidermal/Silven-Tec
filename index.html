@@ -55,6 +55,26 @@
     <script src="app.js"></script>
     <script>
         lucide.createIcons();
+
+        // Controle isolado das abas (Garante que a interface sempre funcione)
+        const tabClient = document.getElementById('tab-client');
+        const tabAdmin = document.getElementById('tab-admin');
+        const panelClient = document.getElementById('panel-client');
+        const panelAdmin = document.getElementById('panel-admin');
+
+        tabClient.addEventListener('click', () => {
+            tabClient.classList.add('active');
+            tabAdmin.classList.remove('active');
+            panelClient.classList.remove('hidden');
+            panelAdmin.classList.add('hidden');
+        });
+
+        tabAdmin.addEventListener('click', () => {
+            tabAdmin.classList.add('active');
+            tabClient.classList.remove('active');
+            panelAdmin.classList.remove('hidden');
+            panelClient.classList.add('hidden');
+        });
     </script>
 </body>
 </html>
