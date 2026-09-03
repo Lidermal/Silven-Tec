@@ -6,9 +6,8 @@
 const SUPABASE_URL = 'https://evwsxwkvtjgexhjwofxh.supabase.co';
 const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImV2d3N4d2t2dGpnZXhoandvZnhoIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODc2ODk0MDEsImV4cCI6MjEwMzI2NTQwMX0.oN_ATHMc7KBHC7NA7O35Q5nS3H4OxSIAXMXvE7xYXCA';
 
-// Verifica se o Supabase carregou
 if (typeof window.supabase === 'undefined') {
-    console.error("Erro Crítico: Biblioteca Supabase não carregada!");
+    alert("Erro de conexão: Não foi possível carregar o banco de dados. Verifique sua internet.");
 }
 
 const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
@@ -41,9 +40,7 @@ async function generateSmartToken(name) {
 // ==========================================
 // LÓGICA DE LOGIN ADMIN (CORRIGIDA)
 // ==========================================
-async function handleAdminLogin() {
-    console.log("Tentativa de login iniciada...");
-    
+window.handleAdminLogin = async function() {
     const passInput = document.getElementById('admin-pass').value;
     const errEl = document.getElementById('admin-error');
     const btn = document.querySelector('#form-admin button');
@@ -54,66 +51,53 @@ async function handleAdminLogin() {
         return;
     }
 
-    // UI Feedback
     const originalText = btn.innerHTML;
-    btn.innerHTML = `<span style="display:inline-block; animation: spin 1s linear infinite;"></span> Verificando...`;
+    btn.innerHTML = `Verificando...`;
     btn.disabled = true;
     errEl.classList.add('hidden');
 
     try {
-        // 1. Busca no Banco
         const { data: user, error } = await supabase
             .from('users')
             .select('password_hash, role')
             .eq('username', 'janaelson')
             .single();
 
-        if (error) {
-            console.error("Erro Supabase:", error);
-            throw new Error(`Erro de conexão: ${error.message}`);
+        if (error || !user) {
+            throw new Error("Erro de credenciais. Acesso negado.");
         }
 
-        if (!user) {
-            throw new Error("Usuário 'janaelson' não encontrado na tabela users.");
-        }
-
-        console.log("Usuário encontrado. Validando hash...");
-
-        // 2. Validação Direta (Conforme seu JSON)
         if (String(user.password_hash) !== String(passInput)) {
             throw new Error("Senha incorreta.");
         }
 
-        // 3. Sucesso
-        console.log("Login bem-sucedido!");
         sessionStorage.setItem('silven_admin', 'true');
         sessionStorage.setItem('silven_user', JSON.stringify({ username: 'janaelson', role: user.role }));
         
         window.location.href = 'admin.html';
 
     } catch (err) {
-        console.error("Falha no login:", err);
         errEl.textContent = err.message;
         errEl.classList.remove('hidden');
         btn.innerHTML = originalText;
         btn.disabled = false;
     }
-}
+};
 
 // ==========================================
 // ACESSO CLIENTE
 // ==========================================
-function handleClientAccess() {
+window.handleClientAccess = function() {
     const token = document.getElementById('token-input').value.trim().toUpperCase();
     if (!token) return alert("Insira um token válido.");
     window.location.href = `client.html?token=${token}`;
-}
+};
 
 // ==========================================
 // ADMIN DASHBOARD LOGIC
 // ==========================================
-async function initAdmin() {
-    loadAdminStats();
+window.initAdmin = async function() {
+    window.loadAdminStats();
     
     const form = document.getElementById('form-new-project');
     if(form) {
@@ -136,19 +120,18 @@ async function initAdmin() {
 
             if(error) alert('Erro ao criar: ' + error.message);
             else {
-                alert(`Projeto criado!\nToken: ${token}`);
+                alert(`Projeto criado com sucesso!\nToken gerado: ${token}`);
                 e.target.reset();
-                loadAdminStats();
+                window.loadAdminStats();
             }
             btn.disabled = false; btn.textContent = 'Criar Projeto';
         });
     }
-}
+};
 
-async function loadAdminStats() {
+window.loadAdminStats = async function() {
     const { data, error } = await supabase.from('projects').select('*').order('created_at', {ascending: false});
-    if(error) { console.error(error); return; }
-    if(!data) return;
+    if(error) return;
 
     let rev = 0;
     const list = document.getElementById('projects-list');
@@ -164,7 +147,7 @@ async function loadAdminStats() {
                 </div>
                 <div style="text-align: right;">
                     <span style="color: #10b981; font-weight: 700;">${formatCurrency(p.total_value)}</span>
-                    <span style="display: block; font-size: 0.75rem; color: var(--text-muted); margin-top: 0.3rem;">${p.status}</span>
+                    <span style="display: block; font-size: 0.75rem; color: var(--text-muted); margin-top: 0.3rem; text-transform: uppercase;">${p.status.replace('_', ' ')}</span>
                 </div>
             </div>`;
         });
@@ -174,22 +157,21 @@ async function loadAdminStats() {
     const statRev = document.getElementById('stat-revenue');
     if(statProj) statProj.textContent = data.length;
     if(statRev) statRev.textContent = formatCurrency(rev);
-}
+};
 
-function logout() {
-    sessionStorage.removeItem('silven_admin');
-    sessionStorage.removeItem('silven_user');
+window.logout = function() {
+    sessionStorage.clear();
     window.location.href = 'index.html';
-}
+};
 
 // ==========================================
 // CLIENT AREA LOGIC
 // ==========================================
-async function initClient(token) {
+window.initClient = async function(token) {
     const { data, error } = await supabase.from('projects').select('*').eq('access_token', token).single();
     
     if(error || !data) {
-        alert('Projeto não encontrado.');
+        alert('Projeto não encontrado ou token inválido.');
         window.location.href = 'index.html';
         return;
     }
@@ -197,10 +179,12 @@ async function initClient(token) {
     currentProject = data;
     document.getElementById('proj-title').textContent = data.title;
     document.getElementById('client-name').textContent = `Cliente: ${data.client_name}`;
-    document.getElementById('status-badge').textContent = data.status.toUpperCase();
-    document.getElementById('deadline-display').textContent = new Date(data.deadline).toLocaleDateString('pt-BR');
+    document.getElementById('status-badge').textContent = data.status.toUpperCase().replace('_', ' ');
     
-    // Cálculo de Multa
+    const deadlineDate = new Date(data.deadline);
+    deadlineDate.setDate(deadlineDate.getDate() + 1); // Ajuste de fuso horário simples
+    document.getElementById('deadline-display').textContent = deadlineDate.toLocaleDateString('pt-BR');
+    
     const today = new Date(); today.setHours(0,0,0,0);
     const due = new Date(data.deadline); due.setHours(0,0,0,0);
     const diffDays = Math.ceil((today - due) / (1000 * 60 * 60 * 24));
@@ -212,7 +196,7 @@ async function initClient(token) {
         const multa = finalValue * 0.02;
         const juros = finalValue * 0.00033 * diffDays;
         finalValue += multa + juros;
-        valEl.innerHTML = `${formatCurrency(finalValue)} <span style="font-size: 0.85rem; color: #ef4444; display: block; margin-top: 0.8rem;">Multa + Juros (${diffDays} dias)</span>`;
+        valEl.innerHTML = `${formatCurrency(finalValue)} <span style="font-size: 0.85rem; color: #ef4444; display: block; margin-top: 0.8rem;">Em atraso (${diffDays} dias) • Multa + Juros aplicados</span>`;
     } else if (valEl) {
         valEl.textContent = formatCurrency(finalValue);
     }
@@ -223,15 +207,18 @@ async function initClient(token) {
         if(signArea) signArea.classList.add('hidden');
         if(signedMsg) signedMsg.classList.remove('hidden');
     }
-}
+};
 
-function switchTab(tabName) {
+window.switchTab = function(tabName) {
     document.querySelectorAll('.tab-content').forEach(el => el.classList.add('hidden'));
     document.querySelectorAll('.tab-btn').forEach(el => el.classList.remove('active'));
     
     const target = document.getElementById(`tab-${tabName}`);
     if(target) target.classList.remove('hidden');
-    if(event && event.target) event.target.classList.add('active');
+    
+    // Captura o elemento clicado para ativar a borda inferior
+    const eventElement = event?.currentTarget;
+    if(eventElement) eventElement.classList.add('active');
 
     if(tabName === 'contract' && !signaturePad && currentProject && !currentProject.signed_client) {
         const canvas = document.getElementById('sig-pad');
@@ -240,27 +227,26 @@ function switchTab(tabName) {
             canvas.width = canvas.offsetWidth * ratio;
             canvas.height = canvas.offsetHeight * ratio;
             canvas.getContext("2d").scale(ratio, ratio);
-            signaturePad = new SignaturePad(canvas, { backgroundColor: 'rgb(255, 255, 255)', penColor: '#0f172a' });
+            signaturePad = new window.SignaturePad(canvas, { backgroundColor: 'rgb(255, 255, 255)', penColor: '#0f172a' });
         }
     }
-}
+};
 
-async function generatePix() {
+window.generatePix = async function() {
     const btn = document.getElementById('btn-pix');
     const load = document.getElementById('pix-loading');
     if(btn) btn.classList.add('hidden');
     if(load) load.classList.remove('hidden');
 
     try {
-        // Tenta chamar Edge Function
         const { data, error } = await supabase.functions.invoke('gerar-pix-mp', {
             body: { 
-                amount: Number(currentProject.total_value), 
+                transaction_amount: Number(currentProject.total_value), 
                 description: `Silven Tec: ${currentProject.title}`
             }
         });
 
-        if (error || data?.error) throw new Error(data?.error || 'Falha no gateway');
+        if (error || data?.error) throw new Error(data?.error || 'Falha de comunicação com o Mercado Pago');
 
         const qrImg = document.getElementById('qr-img');
         const pixCode = document.getElementById('pix-code');
@@ -271,29 +257,24 @@ async function generatePix() {
         if(pixResult) pixResult.classList.remove('hidden');
         
     } catch(e) {
-        console.warn("PIX Fallback ativado:", e);
-        // Fallback para teste visual
-        const qrImg = document.getElementById('qr-img');
-        const pixCode = document.getElementById('pix-code');
-        const pixResult = document.getElementById('pix-result');
-        
-        if(qrImg) qrImg.src = `https://api.qrserver.com/v1/create-qr-code/?size=220x220&data=SIMULACAO_SILVEN_TEC`;
-        if(pixCode) pixCode.textContent = "00020126360014BR.GOV.BCB.PIX... (SIMULAÇÃO)";
-        if(pixResult) pixResult.classList.remove('hidden');
+        alert("Erro ao gerar PIX: " + e.message);
+        if(btn) btn.classList.remove('hidden');
     } finally {
         if(load) load.classList.add('hidden');
     }
-}
+};
 
-function copyPix() {
+window.copyPix = function() {
     const code = document.getElementById('pix-code').textContent;
-    navigator.clipboard.writeText(code).then(() => alert('Código PIX copiado!'));
-}
+    navigator.clipboard.writeText(code).then(() => alert('Código PIX Copia e Cola copiado com sucesso!'));
+};
 
-function clearSig() { if(signaturePad) signaturePad.clear(); }
+window.clearSig = function() { 
+    if(signaturePad) signaturePad.clear(); 
+};
 
-async function signContract() {
-    if(!signaturePad || signaturePad.isEmpty()) return alert('Por favor, assine o contrato.');
+window.signContract = async function() {
+    if(!signaturePad || signaturePad.isEmpty()) return alert('Por favor, assine o contrato no quadro branco.');
     
     const sigData = signaturePad.toDataURL();
     const { jsPDF } = window.jspdf;
@@ -302,25 +283,28 @@ async function signContract() {
     doc.setFontSize(24); doc.setTextColor(6, 182, 212); doc.setFont("helvetica", "bold");
     doc.text("SILVEN TEC", 20, 25);
     doc.setFontSize(10); doc.setTextColor(100); doc.setFont("helvetica", "normal");
-    doc.text("INOVAÇÃO & GESTÃO", 20, 32);
+    doc.text("INOVAÇÃO E GESTÃO EM TECNOLOGIA", 20, 32);
     doc.line(20, 38, 190, 38);
     
     doc.setFontSize(16); doc.setTextColor(15, 23, 42); doc.setFont("helvetica", "bold");
-    doc.text("CONTRATO DE PRESTAÇÃO DE SERVIÇOS", 20, 55);
+    doc.text("CONTRATO DIGITAL DE PRESTAÇÃO DE SERVIÇOS", 20, 55);
     
     doc.setFontSize(11); doc.setTextColor(51, 65, 85); doc.setFont("helvetica", "normal");
-    doc.text(`CONTRATANTE: ${currentProject.client_name}`, 20, 70);
-    doc.text(`PROJETO: ${currentProject.title}`, 20, 78);
-    doc.text(`VALOR: ${formatCurrency(currentProject.total_value)}`, 20, 86);
+    doc.text(`CONTRATANTE: ${currentProject.client_name}`, 20, 75);
+    doc.text(`PROJETO REFERENTE: ${currentProject.title}`, 20, 83);
+    doc.text(`VALOR MENSAL ACORDADO: ${formatCurrency(currentProject.total_value)}`, 20, 91);
     
-    doc.setFontSize(9); doc.setTextColor(100);
-    doc.text("Cláusula de atraso: Multa 2% + Juros 0,033%/dia.", 20, 100);
+    doc.setFontSize(10); doc.setTextColor(100);
+    doc.text("CLÁUSULA DE ATRASO:", 20, 110);
+    doc.setFontSize(9);
+    doc.text("Em caso de inadimplência, incidirá multa fixa de 2% (dois por cento)", 20, 116);
+    doc.text("sobre o valor da parcela, somada a juros de mora de 0,033% ao dia de atraso.", 20, 121);
     
-    doc.addImage(sigData, 'PNG', 20, 140, 80, 40);
-    doc.line(20, 182, 100, 182);
-    doc.text("Assinatura Digital", 20, 188);
+    doc.addImage(sigData, 'PNG', 20, 150, 80, 40);
+    doc.line(20, 192, 100, 192);
+    doc.text("Assinatura Eletrônica do Cliente", 20, 198);
 
-    doc.save(`Contrato_SilvenTec_${currentProject.title}.pdf`);
+    doc.save(`Contrato_SilvenTec_${currentProject.title.replace(/\s+/g, '_')}.pdf`);
 
     await supabase.from('contracts').upsert({ 
         project_id: currentProject.id, signature_data: sigData, signed_at: new Date().toISOString() 
@@ -330,4 +314,4 @@ async function signContract() {
     
     document.getElementById('sign-area').classList.add('hidden');
     document.getElementById('signed-msg').classList.remove('hidden');
-}
+};
