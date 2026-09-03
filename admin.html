@@ -12,17 +12,16 @@
 <body>
     <header style="padding: 1.5rem 2rem; flex-direction: row; justify-content: space-between; text-align: left; border-bottom: 1px solid var(--border-color); background: rgba(11,15,25,0.8); backdrop-filter: blur(10px);">
         <div style="display: flex; align-items: center; gap: 1rem;">
-            <img src="logost.png" alt="Logo" style="width: 45px; height: 45px;">
+            <img src="logost.png" alt="Logo" style="width: 45px; height: 45px;" onerror="this.style.display='none'">
             <div>
                 <h1 style="font-family: 'Orbitron'; font-size: 1.3rem; color: white; letter-spacing: 1px;">SILVEN TEC</h1>
                 <span style="font-size: 0.7rem; color: var(--cyan-primary); letter-spacing: 3px; font-weight: 600;">PAINEL ADMIN</span>
             </div>
         </div>
-        <button onclick="logout()" style="background: transparent; border: 1px solid var(--border-color); color: var(--text-muted); padding: 0.6rem 1.2rem; border-radius: 8px; cursor: pointer; font-size: 0.85rem; transition: all 0.3s;" onmouseover="this.style.borderColor='#ef4444'; this.style.color='#ef4444'" onmouseout="this.style.borderColor='var(--border-color)'; this.style.color='var(--text-muted)'">Sair do Sistema</button>
+        <button onclick="window.logout()" style="background: transparent; border: 1px solid var(--border-color); color: var(--text-muted); padding: 0.6rem 1.2rem; border-radius: 8px; cursor: pointer; font-size: 0.85rem; transition: all 0.3s;" onmouseover="this.style.borderColor='#ef4444'; this.style.color='#ef4444'" onmouseout="this.style.borderColor='var(--border-color)'; this.style.color='var(--text-muted)'">Sair do Sistema</button>
     </header>
 
     <main class="container" style="margin-top: 3rem;">
-        <!-- Stats Grid -->
         <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 1.5rem; margin-bottom: 2.5rem;">
             <div class="glass-panel" style="border-left: 4px solid var(--cyan-primary); padding: 1.5rem;">
                 <p class="input-label" style="margin-bottom: 0.5rem;">Projetos Ativos</p>
@@ -34,7 +33,6 @@
             </div>
         </div>
 
-        <!-- Novo Projeto -->
         <div class="glass-panel" style="margin-bottom: 2.5rem;">
             <h3 style="color: var(--cyan-primary); margin-bottom: 1.5rem; display: flex; align-items: center; gap: 0.6rem; font-size: 1.1rem;">
                 <i data-lucide="plus-circle" size="20"></i> Cadastrar Novo Projeto
@@ -47,7 +45,6 @@
             </form>
         </div>
 
-        <!-- Lista de Projetos -->
         <div class="glass-panel">
             <h3 style="color: white; margin-bottom: 1.5rem; font-size: 1.1rem;">Projetos Recentes</h3>
             <div id="projects-list" style="display: flex; flex-direction: column; gap: 1rem;"></div>
@@ -56,8 +53,11 @@
 
     <script src="app.js"></script>
     <script>
-        if(!sessionStorage.getItem('silven_admin')) window.location.href = 'index.html';
-        else initAdmin();
+        if(!sessionStorage.getItem('silven_admin')) {
+            window.location.href = 'index.html';
+        } else {
+            window.initAdmin();
+        }
         lucide.createIcons();
     </script>
 </body>
