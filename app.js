@@ -1070,3 +1070,250 @@ function generatePDFDocument(proj, contract) {
   }
   doc.save(`Contrato_SaaS_SilvenTec_${proj.client_name.replace(/\s/g,'_')}.pdf`);
 }
+
+// ==========================================
+// PREVIEW DO CONTRATO (MOBILE FIRST)
+// ==========================================
+let contractHasBeenRead = false;
+
+window.previewContract = async function() {
+    if (!currentProject || !currentContract) return showToast('Contrato não disponível.', 'error');
+    
+    const modal = document.getElementById('contract-preview-modal');
+    const container = document.getElementById('pdf-container');
+    const loading = document.getElementById('pdf-loading');
+    
+    modal.classList.remove('hidden');
+    container.innerHTML = '';
+    container.appendChild(loading);
+    loading.style.display = 'flex';
+    lucide.createIcons();
+
+    try {
+        // 1. Gera o PDF em memória (blob) sem fazer download
+        const pdfBlob = await generatePDFBlob(currentProject, currentContract);
+        const pdfUrl = URL.createObjectURL(pdfBlob);
+
+        // 2. Carrega o PDF usando pdf.js
+        const pdf = await pdfjsLib.getDocument(pdfUrl).promise;
+        
+        loading.style.display = 'none';
+
+        // 3. Renderiza cada página como canvas (otimizado para mobile)
+        const isMobile = window.innerWidth < 768;
+        const scale = isMobile ? 1.2 : 1.5; // Escala menor para caber na tela mobile
+
+        for (let i = 1; i <= pdf.numPages; i++) {
+            const page = await pdf.getPage(i);
+            const viewport = page.getViewport({ scale });
+            
+            const canvas = document.createElement('canvas');
+            const context = canvas.getContext('2d');
+            
+            // Ajusta tamanho do canvas para alta resolução em mobile
+            const dpr = window.devicePixelRatio || 1;
+            canvas.width = viewport.width * dpr;
+            canvas.height = viewport.height * dpr;
+            canvas.style.width = `${viewport.width}px`;
+            canvas.style.height = `${viewport.height}px`;
+            canvas.style.borderRadius = '8px';
+            canvas.style.boxShadow = '0 4px 20px rgba(0,0,0,0.3)';
+            canvas.style.maxWidth = '100%';
+            
+            context.scale(dpr, dpr);
+            
+            await page.render({
+                canvasContext: context,
+                viewport: viewport
+            }).promise;
+
+            // Indicador de página
+            const pageInfo = document.createElement('div');
+            pageInfo.style.cssText = 'color: var(--text-muted); font-size: 0.7rem; text-align: center; margin-top: -0.5rem; margin-bottom: 0.5rem;';
+            pageInfo.textContent = `Página ${i} de ${pdf.numPages}`;
+
+            container.appendChild(canvas);
+            container.appendChild(pageInfo);
+        }
+
+        URL.revokeObjectURL(pdfUrl);
+
+    } catch (err) {
+        console.error('Erro ao gerar preview:', err);
+        loading.innerHTML = `<span style="color: #ef4444;">Erro ao carregar contrato. Tente baixar o PDF.</span>`;
+        showToast('Erro ao gerar pré-visualização.', 'error');
+    }
+};
+
+window.closeContractPreview = function() {
+    document.getElementById('contract-preview-modal').classList.add('hidden');
+    document.getElementById('pdf-container').innerHTML = '';
+};
+
+window.confirmReadContract = function() {
+    contractHasBeenRead = true;
+    closeContractPreview();
+    
+    // Habilita a área de assinatura
+    const sigSection = document.getElementById('signature-section');
+    if (sigSection) {
+        sigSection.style.opacity = '1';
+        sigSection.style.pointerEvents = 'auto';
+    }
+    
+    // Esconde o aviso de "leia primeiro"
+    const warning = document.getElementById('read-first-warning');
+    if (warning) warning.classList.add('hidden');
+    
+    showToast('✅ Termos aceitos! Agora você pode assinar.', 'success');
+    
+    // Scroll suave até a área de assinatura
+    setTimeout(() => {
+        sigSection?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    }, 300);
+};
+
+// Modifica a função signContract para exigir leitura prévia
+const _originalSignContract = window.signContract;
+window.signContract = async function() {
+    if (!contractHasBeenRead) {
+        showToast('⚠️ Você precisa ler o contrato completo antes de assinar.', 'warning');
+        // Abre o preview automaticamente
+        previewContract();
+        return;
+    }
+    await _originalSignContract();
+};
+
+// Função auxiliar: gera PDF como Blob (sem download)
+// Substitua a função generatePDFDocument existente por esta versão que retorna Blob
+// E crie uma wrapper para manter compatibilidade com o botão de download
+function generatePDFBlob(proj, contract) {
+    return new Promise((resolve) => {
+        const { jsPDF } = window.jspdf;
+        const doc = new jsPDF();
+        const logoBase64 = getLogoBase64();
+
+        // === MESMO CÓDIGO DE GERAÇÃO DO PDF DA V24 ===
+        // (Copie todo o conteúdo da função generatePDFDocument da V24 aqui,
+        //  mas NO FINAL troque doc.save(...) por:)
+        
+        // ... [TODO O CÓDIGO DE GERAÇÃO DO PDF V24 AQUI] ...
+        // Para evitar duplicação, vamos usar uma abordagem diferente:
+        // Vamos modificar a função original para aceitar um parâmetro "returnBlob"
+        
+        _generatePDFInternal(doc, proj, contract, logoBase64);
+        
+        resolve(doc.output('blob'));
+    });
+}
+
+// Wrapper para download (mantém compatibilidade)
+const _origDownload = window.downloadMyContract;
+window.downloadMyContract = function() {
+    const { jsPDF } = window.jspdf;
+    const doc = new jsPDF();
+    const logoBase64 = getLogoBase64();
+    _generatePDFInternal(doc, currentProject, currentContract, logoBase64);
+    doc.save(`Contrato_SaaS_SilvenTec_${currentProject.client_name.replace(/\s/g,'_')}.pdf`);
+};
+
+// Função interna de geração (extraída para reuso entre preview e download)
+function _generatePDFInternal(doc, proj, contract, logoBase64) {
+    if (logoBase64) {
+        const lx=20,ly=15,lw=22,lh=22,lr=4;
+        doc.setFillColor(11,15,25); doc.roundedRect(lx,ly,lw,lh,lr,lr,'F');
+        doc.setDrawColor(6,182,212); doc.setLineWidth(0.8); doc.roundedRect(lx,ly,lw,lh,lr,lr,'S');
+        doc.addImage(logoBase64,'PNG',lx+1.5,ly+1.5,lw-3,lh-3);
+    }
+    doc.setFontSize(22); doc.setTextColor(6,182,212); doc.setFont("helvetica","bold"); doc.text("SILVEN TEC",50,25);
+    doc.setFontSize(9); doc.setTextColor(100); doc.setFont("helvetica","normal"); doc.text("INOVAÇÃO E GESTÃO EM TECNOLOGIA",50,32);
+    doc.setDrawColor(6,182,212); doc.setLineWidth(0.5); doc.line(20,42,190,42);
+    doc.setFontSize(14); doc.setTextColor(0); doc.setFont("helvetica","bold"); doc.text("CONTRATO DE LICENCIAMENTO DE SOFTWARE E PRESTAÇÃO DE SERVIÇOS",20,52);
+    doc.setFontSize(10); doc.setFont("helvetica","normal");
+    doc.text(`CONTRATADA (LICENCIANTE): SILVEN TEC`,20,62);
+    doc.text(`CONTRATANTE (LICENCIADO): ${proj.client_name}`,20,69);
+    doc.text(`OBJETO: ${proj.title}`,20,76);
+    doc.text(`VIGÊNCIA: De ${formatDate(proj.start_date)} a ${formatDate(proj.deadline)} (último dia do mês da última parcela)`,20,83);
+    const supportText = proj.support_type==='com_suporte'?'INCLUSO (Em dias úteis e horário comercial)':'NÃO INCLUSO (Apenas desenvolvimento inicial)';
+    doc.text(`MODALIDADE DE SUPORTE: ${supportText}`,20,90);
+    doc.text(`MODELO DE CONTRATAÇÃO: SaaS (Software as a Service) / Licenciamento por Assinatura Mensal`,20,97);
+
+    const techArray = proj.tech_stack ? proj.tech_stack.split(',').map(t => t.trim()).filter(Boolean) : [];
+    const scopeData = generateScopeText(techArray);
+    let yPos = 107;
+    doc.setFont("helvetica","bold"); doc.setFontSize(11); doc.setTextColor(0); doc.text("ESCOPO TÉCNICO E TECNOLOGIAS:",20,yPos); yPos += 6;
+    doc.setFont("helvetica","normal"); doc.setFontSize(9);
+    const splitIntro = doc.splitTextToSize(scopeData.intro, 170);
+    doc.text(splitIntro, 20, yPos); yPos += (splitIntro.length * 4) + 4;
+
+    if (scopeData.detailedClauses && scopeData.detailedClauses.length > 0) {
+        scopeData.detailedClauses.forEach((clause, idx) => {
+            if (yPos > 250) { doc.addPage(); yPos = 20; }
+            doc.setFont("helvetica","bold"); doc.setFontSize(9); doc.setTextColor(6,182,212);
+            doc.text(`${idx+1}. ${clause.title}`, 20, yPos); yPos += 5;
+            doc.setFont("helvetica","normal"); doc.setFontSize(8); doc.setTextColor(0);
+            const descSplit = doc.splitTextToSize(`Descrição: ${clause.description}`, 170);
+            if (yPos + (descSplit.length * 3.5) > 275) { doc.addPage(); yPos = 20; }
+            doc.text(descSplit, 20, yPos); yPos += (descSplit.length * 3.5) + 2;
+            const rulesSplit = doc.splitTextToSize(`Regras de Negócio: ${clause.rules}`, 170);
+            if (yPos + (rulesSplit.length * 3.5) > 275) { doc.addPage(); yPos = 20; }
+            doc.text(rulesSplit, 20, yPos); yPos += (rulesSplit.length * 3.5) + 2;
+            const obligSplit = doc.splitTextToSize(`Obrigações da CONTRATADA: ${clause.obligations}`, 170);
+            if (yPos + (obligSplit.length * 3.5) > 275) { doc.addPage(); yPos = 20; }
+            doc.text(obligSplit, 20, yPos); yPos += (obligSplit.length * 3.5) + 2;
+            const rightsSplit = doc.splitTextToSize(`Direitos da CONTRATANTE: ${clause.clientRights}`, 170);
+            if (yPos + (rightsSplit.length * 3.5) > 275) { doc.addPage(); yPos = 20; }
+            doc.setTextColor(16,185,129); doc.text(rightsSplit, 20, yPos); yPos += (rightsSplit.length * 3.5) + 5;
+            doc.setTextColor(0);
+        });
+    }
+
+    if (yPos > 240) { doc.addPage(); yPos = 20; }
+    doc.setFont("helvetica","bold"); doc.setFontSize(10); doc.setTextColor(0); doc.text("CLÁUSULAS CONTRATUAIS:",20,yPos); yPos += 7;
+    doc.setFont("helvetica","normal"); doc.setFontSize(9);
+
+    const clauses = [
+        "CLÁUSULA 1 - DO OBJETO E MODELO DE CONTRATAÇÃO: O presente contrato tem por objeto o LICENCIAMENTO DE USO da aplicação de software descrita no escopo técnico acima, desenvolvida e mantida pela CONTRATADA, bem como a prestação de serviços de hospedagem, manutenção, suporte e evolução contínua do sistema. O modelo de contratação é SaaS (Software as a Service) por assinatura mensal, no qual a CONTRATANTE paga pelo DIREITO DE USO do sistema durante a vigência, NÃO havendo transferência de propriedade do código-fonte, da arquitetura ou da infraestrutura para a CONTRATANTE.",
+        `CLÁUSULA 2 - DO PAGAMENTO E RENOVAÇÃO: A CONTRATANTE pagará à CONTRATADA o valor fixo mensal de ${formatCurrency(proj.total_value)}, devido até a data de vencimento de cada parcela. O pagamento poderá ser realizado via PIX (QR Code gerado pelo sistema), boleto bancário ou outro meio acordado. A assinatura é renovada automaticamente ao final do período contratado, salvo manifestação contrária de qualquer das partes com antecedência mínima de 30 (trinta) dias. Enquanto a assinatura estiver ativa e os pagamentos em dia, a CONTRATANTE mantém acesso integral ao sistema.`,
+        "CLÁUSULA 3 - DA MULTA E JUROS DE MORA: O atraso no pagamento sujeitará a CONTRATANTE a multa penal de 2% (dois por cento) sobre o valor do débito, acrescida de juros de mora de 0,033% (zero vírgula zero trinta e três por cento) ao dia, calculados pro rata die desde o vencimento até a efetiva quitação. Em caso de atraso superior a 15 (quinze) dias, a CONTRATADA poderá SUSPENDER temporariamente o acesso ao sistema até a regularização do débito, sem que isso configure rescisão contratual.",
+        "CLÁUSULA 4 - DA PROPRIEDADE INTELECTUAL: Todo o código-fonte, arquitetura, design, layouts, textos, bancos de dados, integrações, documentação técnica e demais ativos intelectuais desenvolvidos pela CONTRATADA no âmbito deste contrato são e permanecem sendo de PROPRIEDADE EXCLUSIVA DA CONTRATADA (Silven Tec). A CONTRATANTE recebe apenas LICENÇA DE USO não exclusiva, intransferível e revogável do sistema durante a vigência da assinatura. É VEDADO à CONTRATANTE: (a) solicitar, copiar, reproduzir ou acessar o código-fonte; (b) realizar engenharia reversa; (c) sublicenciar, revender ou ceder o acesso a terceiros não autorizados; (d) modificar o sistema sem autorização expressa da CONTRATADA.",
+        "CLÁUSULA 5 - DOS DADOS DA CONTRATANTE: Os dados inseridos pela CONTRATANTE no sistema (cadastros, registros, arquivos, configurações) são de PROPRIEDADE DA CONTRATANTE. A CONTRATADA atua como Operadora desses dados nos termos da LGPD. A CONTRATANTE pode solicitar exportação completa dos seus dados em formato aberto (CSV, JSON, SQL dump) a qualquer momento durante a vigência e por até 30 (trinta) dias após o cancelamento. Após esse prazo, os dados são excluídos definitivamente dos servidores da CONTRATADA, conforme política de retenção.",
+        "CLÁUSULA 6 - DO CANCELAMENTO E DESATIVAÇÃO: Qualquer das partes pode cancelar a assinatura mediante aviso prévio por escrito de no mínimo 30 (trinta) dias corridos. Ao final do período pago, a CONTRATADA DESATIVARÁ o acesso da CONTRATANTE ao sistema. Os dados da CONTRATANTE serão mantidos por 30 (trinta) dias adicionais para eventual reativação (mediante quitação de débitos pendentes e pagamento da mensalidade vigente). Após esse prazo de carência, os dados são excluídos definitivamente. Não há reembolso de valores já pagos, salvo em caso de falha grave e comprovada na prestação do serviço por parte da CONTRATADA.",
+        "CLÁUSULA 7 - DAS OBRIGAÇÕES DA CONTRATADA: A CONTRATADA obriga-se a: (a) manter o sistema acessível 24/7 com uptime mínimo de 99% mensal; (b) aplicar correções de bugs sem custo adicional durante a vigência; (c) manter a infraestrutura segura, atualizada e com backups diários; (d) fornecer suporte técnico conforme modalidade contratada; (e) notificar a CONTRATANTE com 48h de antecedência sobre manutenções programadas; (f) cumprir as regras de negócio e obrigações descritas no escopo técnico para cada tecnologia selecionada.",
+        "CLÁUSULA 8 - DAS OBRIGAÇÕES DA CONTRATANTE: A CONTRATANTE obriga-se a: (a) realizar os pagamentos nas datas aprazadas; (b) fornecer informações e acessos necessários para a execução dos serviços; (c) utilizar o sistema conforme boas práticas e dentro da lei; (d) não compartilhar credenciais de acesso com terceiros não autorizados; (e) comunicar imediatamente qualquer suspeita de acesso não autorizado. A ausência de retorno da CONTRATANTE por prazo superior a 5 (cinco) dias úteis para solicitações da CONTRATADA poderá implicar em extensão proporcional do prazo de entrega de novas funcionalidades.",
+        "CLÁUSULA 9 - DO SUPORTE TÉCNICO: " + (proj.support_type==='com_suporte' ? "O suporte técnico está INCLUSO no valor mensal, abrangendo correção de bugs, dúvidas de utilização e pequenos ajustes (até 2 horas/mês de demandas extras), em dias úteis e horário comercial (9h às 18h), com prazo de resposta de até 4 (quatro) horas úteis para chamados críticos (sistema fora do ar) e até 24 (vinte e quatro) horas úteis para chamados não críticos. Demandas de novas funcionalidades ou alterações significativas serão orçadas separadamente." : "O suporte técnico NÃO está incluso no valor mensal, que cobre exclusivamente o licenciamento de uso e hospedagem. Serviços de suporte, correções, manutenções e evoluções poderão ser contratados separadamente mediante orçamento específico."),
+        "CLÁUSULA 10 - DA CONFIDENCIALIDADE: Ambas as partes assumem o compromisso de manter sigilo absoluto sobre dados, informações, credenciais, estratégias de negócio e quaisquer conteúdos compartilhados durante a vigência deste contrato e por prazo indeterminado após seu término, sob pena de responsabilidade civil e criminal.",
+        "CLÁUSULA 11 - DA PROTEÇÃO DE DADOS (LGPD): As partes declaram ciência e compromisso de cumprimento da Lei nº 13.709/2018 (LGPD). A CONTRATADA atuará como Operadora de dados pessoais tratados em nome da CONTRATANTE (Controladora), implementando medidas técnicas e organizacionais adequadas de segurança, e notificando a CONTRATANTE em até 24 (vinte e quatro) horas em caso de incidente de segurança envolvendo dados pessoais.",
+        "CLÁUSULA 12 - DA LIMITAÇÃO DE RESPONSABILIDADE: A CONTRATADA não será responsável por lucros cessantes, danos indiretos, consequenciais ou punitivos decorrentes do uso ou impossibilidade de uso do sistema. A responsabilidade máxima da CONTRATADA, em qualquer hipótese, limita-se ao valor total pago pela CONTRATANTE nos últimos 3 (três) meses anteriores ao evento gerador do dano. Excetuam-se dessa limitação os casos de dolo, culpa grave ou violação de confidencialidade/LGPD comprovados.",
+        "CLÁUSULA 13 - DO FORO: As partes elegem o foro da comarca do domicílio da CONTRATADA para dirimir quaisquer controvérsias oriundas deste contrato, com renúncia expressa a qualquer outro, por mais privilegiado que seja.",
+        "CLÁUSULA 14 - DISPOSIÇÕES GERAIS E ACEITE DIGITAL: As partes reconhecem a validade jurídica plena deste contrato em formato eletrônico, nos termos da Medida Provisória nº 2.200-2/2001. A assinatura digital apostada neste documento, realizada por meio de plataforma eletrônica com registro de data, hora e identificação das partes, comprova a integridade do documento, o aceite irrevogável de todas as cláusulas aqui estipuladas e a autoria das assinaturas, possuindo pleno vigor legal e eficácia probatória para todos os fins de direito, dispensando reconhecimento de firma ou testemunhas presenciais."
+    ];
+
+    clauses.forEach(clause => {
+        const split = doc.splitTextToSize(clause, 170);
+        if (yPos + (split.length * 4) > 275) { doc.addPage(); yPos = 20; }
+        doc.text(split, 20, yPos); yPos += (split.length * 4) + 3;
+    });
+
+    yPos += 15;
+    if (yPos > 240) { doc.addPage(); yPos = 20; }
+    if (contract && contract.admin_signature_data) {
+        doc.addImage(contract.admin_signature_data,'PNG',20,yPos,50,25);
+        doc.setDrawColor(6,182,212); doc.setLineWidth(0.5); doc.line(20,yPos+27,85,yPos+27);
+        doc.setFont("helvetica","bold"); doc.setFontSize(9); doc.setTextColor(0); doc.text("SILVEN TEC (Licenciante / Responsável Técnico)",20,yPos+32);
+        doc.setFont("helvetica","normal"); doc.setFontSize(7); doc.setTextColor(100); doc.text(`Emissão: ${new Date(contract.admin_signed_at).toLocaleString('pt-BR')}`,20,yPos+36);
+    }
+    if (contract && contract.signature_data) {
+        doc.addImage(contract.signature_data,'PNG',115,yPos,50,25);
+        doc.setDrawColor(6,182,212); doc.setLineWidth(0.5); doc.line(115,yPos+27,185,yPos+27);
+        doc.setFont("helvetica","bold"); doc.setFontSize(9); doc.setTextColor(0); doc.text(`CONTRATANTE (Licenciado): ${proj.client_name}`,115,yPos+32);
+        doc.setFont("helvetica","normal"); doc.setFontSize(7); doc.setTextColor(100); doc.text(`Aceite Digital: ${new Date(contract.signed_at).toLocaleString('pt-BR')}`,115,yPos+36);
+    }
+
+    const pageCount = doc.internal.getNumberOfPages();
+    for (let i = 1; i <= pageCount; i++) {
+        doc.setPage(i); doc.setFontSize(7); doc.setTextColor(150);
+        doc.text(`Silven Tec — Inovação & Gestão | Modelo SaaS | Gerado em ${new Date().toLocaleString('pt-BR')} | Página ${i}/${pageCount}`,20,287);
+    }
+}
