@@ -1,4 +1,4 @@
-/* app.js - Silven Tec V23 - FULL REALTIME + GERADOR INTELIGENTE DE ESCOPO TÉCNICO */
+/* app.js - Silven Tec V24 - FULL REALTIME + GERADOR INTELIGENTE SaaS + CHIPS + PIX PRODUÇÃO */
 
 const SUPABASE_URL = 'https://evwsxwkvtjgexhjwofxh.supabase.co';
 const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImV2d3N4d2t2dGpnZXhoandvZnhoIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODc2ODk0MDEsImV4cCI6MjEwMzI2NTQwMX0.oN_ATHMc7KBHC7NA7O35Q5nS3H4OxSIAXMXvE7xYXCA';
@@ -16,422 +16,422 @@ let clientPaymentsChannel = null;
 
 // ==========================================
 // GERADOR INTELIGENTE DE ESCOPO TÉCNICO
-// Cada tecnologia gera: descrição, regras de negócio, obrigações e direitos
+// MODELO: SaaS / LICENCIAMENTO POR ASSINATURA
+// Cliente USA o sistema enquanto paga — NÃO recebe código-fonte
 // ==========================================
 const TECH_SCOPE_DATABASE = {
   'HTML': {
-    description: 'Estruturação semântica das páginas web utilizando HTML5, garantindo acessibilidade (WCAG 2.1), compatibilidade cross-browser e indexação otimizada para mecanismos de busca (SEO técnico).',
-    rules: 'A CONTRATADA compromete-se a utilizar tags semânticas adequadas (header, nav, main, section, article, footer), garantir validação W3C sem erros críticos, e assegurar que o conteúdo seja acessível por leitores de tela.',
-    obligations: 'Entregar código HTML limpo, comentado e organizado. Garantir compatibilidade com Chrome, Firefox, Safari e Edge nas duas últimas versões.',
-    clientRights: 'A CONTRATANTE tem direito a receber o código-fonte completo em HTML ao término do contrato, podendo utilizá-lo livremente.'
+    description: 'Estruturação semântica das páginas da aplicação web utilizando HTML5, garantindo acessibilidade (WCAG 2.1), compatibilidade cross-browser (Chrome, Firefox, Safari, Edge) e indexação otimizada para mecanismos de busca quando aplicável ao modelo de negócio.',
+    rules: 'A CONTRATADA compromete-se a utilizar tags semânticas adequadas (header, nav, main, section, article, footer), garantir validação W3C sem erros críticos, e assegurar que a interface seja acessível e funcional em todos os navegadores suportados durante toda a vigência da assinatura.',
+    obligations: 'Manter a aplicação atualizada, segura e compatível com as versões atuais dos navegadores durante toda a vigência do contrato. Corrigir bugs de renderização ou compatibilidade sem custo adicional dentro do escopo contratado.',
+    clientRights: 'A CONTRATANTE tem direito de ACESSO E USO contínuo da aplicação web durante toda a vigência da assinatura, podendo utilizá-la 24 horas por dia, 7 dias por semana, conforme os termos deste contrato. O código-fonte, a arquitetura e a propriedade intelectual permanecem sendo de titularidade exclusiva da CONTRATADA.'
   },
   'CSS': {
-    description: 'Estilização visual completa da interface utilizando CSS3 moderno, incluindo layout responsivo (mobile-first), animações, transições, variáveis CSS (custom properties) e design system consistente.',
-    rules: 'A interface deve ser 100% responsiva, adaptando-se corretamente a telas de 320px (mobile) até 2560px (desktop 4K). O design deve seguir fielmente o layout aprovado pela CONTRATANTE.',
-    obligations: 'Garantir performance de renderização otimizada (sem layout shifts), utilizar metodologia BEM ou similar para organização, e entregar arquivo CSS organizado e minificado para produção.',
-    clientRights: 'A CONTRATANTE pode solicitar ajustes visuais durante o período de vigência, respeitando o escopo previamente acordado.'
+    description: 'Estilização visual completa da interface da aplicação utilizando CSS3 moderno, incluindo layout responsivo (mobile-first), animações, transições, variáveis CSS (custom properties) e design system consistente proporcionando experiência visual profissional e agradável ao usuário final.',
+    rules: 'A interface da aplicação deve ser 100% responsiva, adaptando-se corretamente a telas de 320px (mobile) até 2560px (desktop 4K). O design implementado segue fielmente o layout aprovado pela CONTRATANTE durante a fase de especificação.',
+    obligations: 'Garantir performance de renderização otimizada (sem layout shifts), manter consistência visual em todas as telas da aplicação, e aplicar melhorias visuais contínuas durante a vigência conforme evolução do produto.',
+    clientRights: 'A CONTRATANTE pode solicitar ajustes visuais razoáveis durante a vigência da assinatura, respeitando o escopo previamente acordado. A identidade visual da aplicação é desenvolvida sob medida para a CONTRATANTE, mas a propriedade do código permanece com a CONTRATADA.'
   },
   'JavaScript': {
-    description: 'Implementação de interatividade, lógica de negócio no frontend, manipulação dinâmica do DOM, consumo de APIs REST/GraphQL, validações de formulários em tempo real e experiência do usuário fluida sem recarregamento de página.',
-    rules: 'O código JavaScript deve seguir padrões ES6+ modernos, ser modular e reutilizável. Todas as interações devem possuir feedback visual imediato (loading states, mensagens de sucesso/erro).',
-    obligations: 'Garantir que nenhuma funcionalidade crítica dependa exclusivamente de JavaScript (progressive enhancement). Tratar todos os erros de forma graciosa sem expor informações sensíveis ao usuário.',
-    clientRights: 'A CONTRATANTE tem direito a relatar bugs de funcionalidade que serão corrigidos sem custo adicional durante a vigência do suporte.'
+    description: 'Implementação de interatividade, lógica de negócio no frontend, manipulação dinâmica do DOM, consumo de APIs internas da aplicação, validações de formulários em tempo real e experiência do usuário fluida sem recarregamento de página, proporcionando uma aplicação moderna e responsiva.',
+    rules: 'O código JavaScript da aplicação segue padrões ES6+ modernos, é modular, testado e mantido pela CONTRATADA. Todas as interações possuem feedback visual imediato (loading states, mensagens de sucesso/erro) garantindo usabilidade.',
+    obligations: 'Garantir que todas as funcionalidades da aplicação operem corretamente durante a vigência. Tratar erros de forma graciosa sem expor informações sensíveis. Aplicar correções e melhorias de performance continuamente.',
+    clientRights: 'A CONTRATANTE tem direito a relatar bugs ou problemas de funcionalidade através dos canais de suporte, que serão corrigidos pela CONTRATADA sem custo adicional durante a vigência da assinatura, conforme SLA definido na cláusula de suporte.'
   },
   'TypeScript': {
-    description: 'Tipagem estática sobre JavaScript, garantindo maior segurança no código, detecção antecipada de erros, autocompletar inteligente e documentação implícita através de interfaces e tipos definidos.',
-    rules: 'Todo o código fonte deve ser escrito em TypeScript strict mode. Interfaces e tipos devem ser definidos para todas as estruturas de dados transitadas entre frontend e backend.',
-    obligations: 'Manter cobertura de tipos em 100% do código (no any explícito sem justificativa documentada). Configurar ESLint + TypeScript para garantir qualidade contínua.',
-    clientRights: 'A CONTRATANTE recebe código tipado e auto-documentado, facilitando futura manutenção por qualquer equipe técnica qualificada.'
+    description: 'Tipagem estática sobre JavaScript utilizada no desenvolvimento da aplicação, garantindo maior segurança no código, detecção antecipada de erros, estabilidade do sistema e facilidade de manutenção evolutiva pela equipe técnica da CONTRATADA durante toda a vigência.',
+    rules: 'Todo o código fonte da aplicação é desenvolvido em TypeScript strict mode pela equipe da CONTRATADA. Interfaces e tipos são definidos para todas as estruturas de dados, garantindo robustez e confiabilidade do sistema.',
+    obligations: 'Manter cobertura de tipos em 100% do código da aplicação. Garantir que atualizações e evoluções do sistema não introduzam regressões graças à tipagem forte. Monitorar e corrigir quaisquer warnings de tipo.',
+    clientRights: 'A CONTRATANTE se beneficia de um sistema mais estável, com menos bugs em produção e maior velocidade na implementação de novas funcionalidades solicitadas, graças à base de código tipada e bem estruturada mantida pela CONTRATADA.'
   },
   'React': {
-    description: 'Desenvolvimento da interface utilizando React.js, biblioteca líder de mercado mantida pela Meta, com arquitetura baseada em componentes reutilizáveis, estado reativo e ecossistema maduro de bibliotecas complementares.',
-    rules: 'A aplicação deve utilizar React 18+ com hooks (useState, useEffect, useContext, useReducer). Componentes devem ser funcionais, seguindo princípios de composição e responsabilidade única.',
-    obligations: 'Implementar code splitting e lazy loading para otimização de performance. Garantir Lighthouse score mínimo de 90 em Performance, Accessibility e Best Practices.',
-    clientRights: 'A CONTRATANTE detém propriedade intelectual total sobre a aplicação desenvolvida, incluindo todos os componentes React criados especificamente para o projeto.'
+    description: 'Desenvolvimento da interface da aplicação utilizando React.js, biblioteca líder de mercado mantida pela Meta, com arquitetura baseada em componentes reutilizáveis, estado reativo e ecossistema maduro, proporcionando experiência de uso rápida e fluida para a CONTRATANTE.',
+    rules: 'A aplicação utiliza React 18+ com hooks e componentes funcionais seguindo princípios de composição e responsabilidade única. A arquitetura é definida e mantida exclusivamente pela CONTRATADA para garantir performance e escalabilidade.',
+    obligations: 'Implementar code splitting e lazy loading para otimização de performance. Garantir Lighthouse score mínimo de 90 em Performance, Accessibility e Best Practices. Manter a aplicação atualizada com patches de segurança do React.',
+    clientRights: 'A CONTRATANTE detém direito de USO da aplicação desenvolvida em React durante a vigência da assinatura. A propriedade intelectual do código, componentes e arquitetura é da CONTRATADA. A CONTRATANTE pode solicitar novas funcionalidades que serão avaliadas e implementadas conforme cronograma acordado.'
   },
   'Next.js': {
-    description: 'Framework full-stack baseado em React com renderização híbrida (SSR/SSG/ISR), roteamento automático, otimização de imagens nativa, API Routes integradas e deploy simplificado em plataformas edge como Vercel.',
-    rules: 'Páginas públicas devem utilizar SSG (Static Site Generation) ou ISR (Incremental Static Regeneration) para máxima performance. Páginas dinâmicas autenticadas devem utilizar SSR (Server-Side Rendering).',
-    obligations: 'Configurar SEO técnico completo (meta tags, Open Graph, structured data JSON-LD, sitemap.xml, robots.txt). Implementar middleware de autenticação quando aplicável.',
-    clientRights: 'A CONTRATANTE pode hospedar a aplicação Next.js em qualquer plataforma compatível (Vercel, AWS, Docker próprio) sem dependência obrigatória da CONTRATADA após a entrega.'
+    description: 'Framework full-stack baseado em React utilizado para desenvolver a aplicação com renderização híbrida (SSR/SSG/ISR), roteamento automático, otimização de imagens nativa e deploy em infraestrutura edge, proporcionando máxima performance e SEO técnico quando aplicável.',
+    rules: 'Páginas públicas da aplicação (se houver) utilizam SSG ou ISR para máxima performance. Páginas dinâmicas autenticadas utilizam SSR. A configuração de infraestrutura e deploy é gerenciada exclusivamente pela CONTRATADA.',
+    obligations: 'Configurar SEO técnico completo quando aplicável ao modelo de negócio. Implementar middleware de autenticação seguro. Manter a aplicação deployada em infraestrutura estável com uptime garantido conforme SLA.',
+    clientRights: 'A CONTRATANTE acessa a aplicação via URL fornecida pela CONTRATADA durante a vigência. Não há necessidade de gerenciar infraestrutura, servidores ou deploy — tudo é mantido pela CONTRATADA como parte do serviço de assinatura.'
   },
   'Vue.js': {
-    description: 'Desenvolvimento da interface utilizando Vue.js 3 com Composition API, oferecendo reatividade granular, componentes single-file (.vue), e curva de aprendizado acessível com performance comparável ao React.',
-    rules: 'Utilizar Vue 3 com Composition API (setup script). Gerenciamento de estado global via Pinia. Roteamento via Vue Router 4 com guards de navegação para rotas protegidas.',
-    obligations: 'Implementar transições e animações suaves entre rotas. Garantir compatibilidade com navegadores modernos (ES2020+).',
-    clientRights: 'A CONTRATANTE recebe o projeto Vue.js completo com instruções de build e deploy documentadas.'
+    description: 'Desenvolvimento da interface da aplicação utilizando Vue.js 3 com Composition API, oferecendo reatividade granular, componentes single-file e performance comparável às melhores soluções do mercado, proporcionando experiência de uso moderna e eficiente.',
+    rules: 'A aplicação utiliza Vue 3 com Composition API, Pinia para estado global e Vue Router 4 com guards de navegação para rotas protegidas. A arquitetura é definida e mantida pela CONTRATADA.',
+    obligations: 'Implementar transições suaves entre rotas. Garantir compatibilidade com navegadores modernos. Manter a aplicação atualizada com patches de segurança e melhorias de performance.',
+    clientRights: 'A CONTRATANTE tem direito de USO contínuo da aplicação durante a vigência da assinatura. A propriedade do código e da arquitetura é da CONTRATADA. Solicitações de novas funcionalidades são atendidas conforme cronograma e escopo acordado.'
   },
   'Angular': {
-    description: 'Framework completo e opinionated mantido pelo Google, com TypeScript nativo, injeção de dependências, RxJS para programação reativa, CLI robusta e arquitetura modular escalável para aplicações enterprise.',
-    rules: 'Seguir Angular Style Guide oficial. Utilizar standalone components (Angular 17+). Implementar interceptors HTTP para tratamento centralizado de autenticação e erros.',
-    obligations: 'Garantir bundle size otimizado com tree-shaking. Implementar lazy loading de módulos por rota. Manter testes unitários com Jasmine/Karma para serviços críticos.',
-    clientRights: 'A CONTRATANTE recebe aplicação Angular production-ready com documentação de arquitetura e guia de contribuição para futuras evoluções.'
+    description: 'Framework completo e enterprise mantido pelo Google utilizado no desenvolvimento da aplicação, com TypeScript nativo, injeção de dependências, programação reativa com RxJS e arquitetura modular escalável, ideal para sistemas corporativos robustos e de longa duração.',
+    rules: 'A aplicação segue Angular Style Guide oficial com standalone components (Angular 17+). Interceptors HTTP centralizam autenticação e tratamento de erros. A arquitetura é gerenciada exclusivamente pela CONTRATADA.',
+    obligations: 'Garantir bundle size otimizado. Implementar lazy loading por rota. Manter testes automatizados para serviços críticos. Aplicar atualizações de segurança do framework durante a vigência.',
+    clientRights: 'A CONTRATANTE utiliza um sistema enterprise-grade estável e escalável durante a vigência da assinatura. A propriedade intelectual é da CONTRATADA. A CONTRATANTE pode solicitar evoluções que serão planejadas e executadas pela equipe técnica da CONTRATADA.'
   },
   'Node.js': {
-    description: 'Ambiente de execução JavaScript server-side baseado no motor V8 do Chrome, permitindo desenvolvimento full-stack em uma única linguagem, com alta performance para I/O assíncrono e ecossistema npm com mais de 2 milhões de pacotes.',
-    rules: 'APIs devem seguir padrão RESTful com verbos HTTP corretos (GET, POST, PUT, PATCH, DELETE). Respostas em JSON com estrutura consistente { success, data, error, metadata }.',
-    obligations: 'Implementar rate limiting, helmet.js para headers de segurança, e validação de input com Joi ou Zod. Logs estruturados com níveis (info, warn, error) e rotação automática.',
-    clientRights: 'A CONTRATANTE tem direito à documentação completa da API (endpoints, parâmetros, respostas) em formato Swagger/OpenAPI 3.0.'
+    description: 'Ambiente de execução JavaScript server-side utilizado no backend da aplicação, permitindo alta performance para operações assíncronas, APIs RESTful robustas e processamento eficiente de requisições, sustentando toda a lógica de negócio do sistema acessado pela CONTRATANTE.',
+    rules: 'As APIs internas da aplicação seguem padrão RESTful com verbos HTTP corretos e respostas JSON estruturadas. Rate limiting, headers de segurança (helmet.js) e validação de input são implementados para proteger o sistema.',
+    obligations: 'Manter o backend operacional 24/7 durante a vigência. Implementar logs estruturados para monitoramento e debugging. Aplicar patches de segurança do Node.js e dependências regularmente. Garantir escalabilidade para atender o uso da CONTRATANTE.',
+    clientRights: 'A CONTRATANTE se beneficia de um backend estável, seguro e performático mantido integralmente pela CONTRATADA. Não há necessidade de gerenciar servidores, APIs ou infraestrutura — tudo faz parte do serviço de assinatura.'
   },
   'Deno': {
-    description: 'Runtime moderno e seguro para JavaScript/TypeScript criado pelo autor original do Node.js, com segurança por padrão (sem acesso a rede/arquivo sem permissão explícita), TypeScript nativo sem configuração e imports via URL.',
-    rules: 'Utilizar Deno 2.x com permissões mínimas necessárias (--allow-net, --allow-env apenas para recursos utilizados). Deploy via Deno Deploy ou container Docker.',
-    obligations: 'Garantir que todas as dependências sejam auditadas quanto a vulnerabilidades conhecidas. Implementar graceful shutdown para SIGTERM/SIGINT.',
-    clientRights: 'A CONTRATANTE pode executar a aplicação Deno em qualquer servidor com Deno instalado, sem licenciamento proprietário.'
+    description: 'Runtime moderno e seguro para JavaScript/TypeScript utilizado em serviços backend da aplicação, com segurança por padrão (permissões explícitas), TypeScript nativo e deploy em edge functions, proporcionando alta performance e segurança para operações críticas do sistema.',
+    rules: 'Os serviços Deno da aplicação utilizam permissões mínimas necessárias. Deploy é realizado em infraestrutura gerenciada pela CONTRATADA (Deno Deploy ou container próprio).',
+    obligations: 'Garantir que todas as dependências sejam auditadas quanto a vulnerabilidades. Implementar graceful shutdown. Manter os serviços operacionais e atualizados durante toda a vigência.',
+    clientRights: 'A CONTRATANTE utiliza funcionalidades powered by Deno sem qualquer preocupação técnica — a CONTRATADA gerencia runtime, deploy, segurança e escalabilidade como parte integrante do serviço de assinatura.'
   },
   'Python': {
-    description: 'Linguagem versátil utilizada para desenvolvimento backend (Django/FastAPI), automações, processamento de dados, inteligência artificial e scripts de integração, reconhecida pela legibilidade e vasta comunidade científica.',
-    rules: 'Código deve seguir PEP 8 (guia de estilo Python). Tipagem com type hints obrigatória em funções públicas. Virtual environment isolado por projeto (venv/poetry).',
-    obligations: 'Implementar testes automatizados com pytest (cobertura mínima 80% para lógica de negócio). Documentação com docstrings em todas as funções e classes públicas.',
-    clientRights: 'A CONTRATANTE recebe código Python completo com requirements.txt/pyproject.toml e instruções de setup reproduzível.'
+    description: 'Linguagem versátil utilizada no backend da aplicação para desenvolvimento de APIs, automações internas, processamento de dados, integrações e eventualmente recursos de inteligência artificial, reconhecida pela robustez e vasta ecosfera de bibliotecas especializadas.',
+    rules: 'O código Python da aplicação segue PEP 8 com tipagem obrigatória em funções públicas. Virtual environments isolados garantem estabilidade. Testes automatizados cobrem a lógica de negócio crítica.',
+    obligations: 'Manter o backend Python operacional e atualizado durante a vigência. Aplicar patches de segurança. Garantir performance adequada para o volume de uso da CONTRATANTE. Documentar internamente a arquitetura para continuidade do serviço.',
+    clientRights: 'A CONTRATANTE se beneficia de funcionalidades avançadas (automações, IA, processamento de dados) desenvolvidas em Python e mantidas pela CONTRATADA. O acesso a essas funcionalidades é contínuo durante a assinatura.'
   },
   'PHP': {
-    description: 'Linguagem server-side madura e amplamente utilizada na web, powering 77% dos sites globais incluindo WordPress, Laravel e Symfony, com hosting acessível e comunidade gigantesca.',
-    rules: 'Utilizar PHP 8.2+ com tipagem estrita (declare(strict_types=1)). Seguir PSR-12 (coding style) e PSR-4 (autoloading). Composer para gerenciamento de dependências.',
-    obligations: 'Proteger contra OWASP Top 10 (SQL injection, XSS, CSRF). Implementar prepared statements em 100% das queries. Sessions seguras com httponly e secure flags.',
-    clientRights: 'A CONTRATANTE pode hospedar a aplicação PHP em qualquer servidor com PHP 8.2+ e banco de dados compatível, sem lock-in com a CONTRATADA.'
+    description: 'Linguagem server-side madura utilizada no backend da aplicação quando apropriado ao escopo, powering funcionalidades web robustas com ampla compatibilidade de infraestrutura e ecosfera rica de frameworks e bibliotecas.',
+    rules: 'A aplicação utiliza PHP 8.2+ com tipagem estrita. Segue PSR-12 e PSR-4. Proteção contra OWASP Top 10 (SQL injection, XSS, CSRF) é implementada em 100% dos endpoints.',
+    obligations: 'Manter o backend PHP seguro e atualizado durante a vigência. Aplicar patches de segurança em até 48h após release. Garantir uptime conforme SLA. Monitorar performance e aplicar otimizações contínuas.',
+    clientRights: 'A CONTRATANTE utiliza o sistema sem preocupação com linguagem, servidor ou manutenção — a CONTRATADA gerencia toda a stack técnica como parte do serviço de assinatura mensal.'
   },
   'Laravel': {
-    description: 'Framework PHP elegante e expressivo com sintaxe clara, ORM Eloquent poderoso, sistema de migrações, filas, eventos, broadcasting em tempo real e ecossistema completo (Forge, Vapor, Nova, Jetstream).',
-    rules: 'Seguir convenções Laravel (controllers resource, form requests para validação, policies para autorização). Rotas organizadas em arquivos por domínio (web.php, api.php).',
-    obligations: 'Implementar migrations versionadas para evolução do schema. Seeds e factories para ambiente de desenvolvimento. Testes Feature e Unit com PHPUnit/Pest.',
-    clientRights: 'A CONTRATANTE recebe aplicação Laravel com .env.example documentado, README de instalação e dump de banco de dados inicial (se aplicável).'
+    description: 'Framework PHP elegante utilizado no backend da aplicação quando apropriado, com ORM Eloquent poderoso, sistema de migrações versionadas, filas para processamento assíncrono, eventos e broadcasting em tempo real, proporcionando robustez e velocidade de evolução do sistema.',
+    rules: 'A aplicação segue convenções Laravel (controllers resource, form requests, policies). Migrações são versionadas e aplicadas pela CONTRATADA em janelas de manutenção. Seeds e factories garantem ambientes consistentes.',
+    obligations: 'Manter o framework e dependências atualizados. Garantir que migrações de banco sejam aplicadas sem downtime. Implementar testes para fluxos críticos. Monitorar filas e jobs para evitar acúmulo.',
+    clientRights: 'A CONTRATANTE se beneficia de um backend Laravel moderno e bem arquitetado, com capacidade de evolução rápida para atender novas necessidades de negócio solicitadas durante a vigência da assinatura.'
   },
   'Supabase': {
-    description: 'Backend-as-a-Service open source alternativo ao Firebase, construído sobre PostgreSQL, oferecendo banco de dados relacional completo, autenticação JWT, storage de arquivos, Edge Functions serverless e Realtime subscriptions nativas via WebSocket.',
-    rules: 'Row Level Security (RLS) deve estar ativado em 100% das tabelas com policies bem definidas. Nunca expor service_role key no frontend. Utilizar anon key + RLS para acesso público controlado.',
-    obligations: 'Configurar backups automáticos diários (nativo do Supabase Pro/Team). Implementar migrations via Supabase CLI para versionamento do schema. Monitorar usage quotas mensalmente.',
-    clientRights: 'A CONTRATANTE é proprietária dos dados armazenados no Supabase. Pode exportar dump completo do PostgreSQL a qualquer momento. Pode migrar para self-hosted Supabase ou outro PostgreSQL se desejar.'
+    description: 'Backend-as-a-Service open source construído sobre PostgreSQL utilizado como infraestrutura principal da aplicação, oferecendo banco de dados relacional completo, autenticação JWT segura, storage de arquivos, Edge Functions serverless e Realtime subscriptions nativas para atualização em tempo real das telas do sistema.',
+    rules: 'Row Level Security (RLS) está ativado em 100% das tabelas com policies restritivas garantindo que cada CONTRATANTE acesse apenas seus próprios dados. A service_role key é usada exclusivamente no backend seguro — nunca exposta ao frontend.',
+    obligations: 'A CONTRATADA gerencia integralmente a infraestrutura Supabase: backups automáticos diários, migrations versionadas, monitoramento de quotas, escalabilidade e segurança. A CONTRATANTE não precisa gerenciar nada técnico.',
+    clientRights: 'A CONTRATANTE tem direito de USO dos dados que insere no sistema durante a vigência. Pode solicitar exportação dos seus dados em formato aberto (CSV, JSON, SQL dump) a qualquer momento mediante solicitação formal. A propriedade da infraestrutura e do schema do banco é da CONTRATADA. Em caso de cancelamento, os dados são mantidos por 30 dias para eventual reativação e depois excluídos definitivamente conforme política de retenção.'
   },
   'Firebase': {
-    description: 'Plataforma Backend-as-a-Service do Google oferecendo Firestore (banco NoSQL em tempo real), Authentication, Cloud Storage, Hosting, Cloud Functions e Analytics integrados em um único console.',
-    rules: 'Regras de segurança do Firestore devem ser restritivas por padrão (deny all) com liberações específicas por coleção/documento. Índices compostos criados conforme necessidade das queries.',
-    obligations: 'Implementar regras de segurança testadas com Firebase Emulator Suite antes de deploy em produção. Monitorar leituras/escritas para evitar custos inesperados.',
-    clientRights: 'A CONTRATANTE é dona do projeto Firebase e pode acessar o console diretamente com permissões de owner transferidas ao final do contrato.'
+    description: 'Plataforma Backend-as-a-Service do Google utilizada como infraestrutura da aplicação quando apropriado, oferecendo Firestore (banco NoSQL em tempo real), Authentication, Cloud Storage, Hosting e Cloud Functions integrados, proporcionando escalabilidade automática e atualização em tempo real.',
+    rules: 'Regras de segurança do Firestore são restritivas por padrão (deny all) com liberações específicas por coleção/documento garantindo isolamento de dados entre clientes. Índices compostos são criados conforme necessidade.',
+    obligations: 'A CONTRATADA gerencia integralmente o projeto Firebase: regras de segurança, índices, monitoramento de custos, backups e escalabilidade. A CONTRATANTE não precisa gerenciar nada técnico.',
+    clientRights: 'A CONTRATANTE utiliza o sistema com garantia de escalabilidade automática (o sistema cresce conforme o uso sem intervenção). Pode solicitar exportação dos seus dados a qualquer momento. A propriedade da infraestrutura é da CONTRATADA.'
   },
   'PostgreSQL': {
-    description: 'Sistema gerenciador de banco de dados relacional objeto-relacional open source mais avançado do mundo, com suporte a ACID, JSON/JSONB, full-text search, extensões (PostGIS, pgvector), particionamento e replicação nativa.',
-    rules: 'Todas as tabelas devem ter primary key, created_at e updated_at (trigger automático). Foreign keys com ON DELETE apropriado (CASCADE/RESTRICT/SET NULL) documentado. Índices em colunas usadas em WHERE/JOIN/ORDER BY.',
-    obligations: 'Normalização até 3FN salvo justificativa técnica documentada para desnormalização. Prepared statements obrigatórios (nunca concatenação de strings em queries). Backup lógico diário com pg_dump.',
-    clientRights: 'A CONTRATANTE pode acessar diretamente o banco PostgreSQL via cliente (pgAdmin, DBeaver, psql) com credenciais fornecidas. Pode exportar dados em qualquer formato (CSV, JSON, SQL dump).'
+    description: 'Sistema gerenciador de banco de dados relacional mais avançado do mundo utilizado como armazenamento principal dos dados da aplicação, com suporte a ACID, JSON/JSONB, full-text search, extensões especializadas e replicação nativa, garantindo integridade, performance e confiabilidade dos dados da CONTRATANTE.',
+    rules: 'Todas as tabelas possuem primary key, created_at e updated_at com triggers automáticos. Foreign keys com ON DELETE apropriado garantem integridade referencial. Índices otimizados em colunas consultadas frequentemente. RLS ou isolamento lógico garante que cada cliente veja apenas seus dados.',
+    obligations: 'A CONTRATADA gerencia integralmente o banco de dados: backups diários com retenção de 30 dias, otimização de queries, aplicação de patches de segurança, monitoramento de performance e escalabilidade. RPO < 24h, RTO < 4h.',
+    clientRights: 'A CONTRATANTE pode solicitar exportação completa dos seus dados em formato SQL dump, CSV ou JSON a qualquer momento durante a vigência e por até 30 dias após o cancelamento. A propriedade do schema, das tabelas e da infraestrutura do banco é da CONTRATADA.'
   },
   'MySQL': {
-    description: 'Sistema gerenciador de banco de dados relacional open source mais popular do mundo, powering WordPress, Facebook e milhares de aplicações, com performance excelente para leituras e ampla compatibilidade de hosting.',
-    rules: 'Engine InnoDB obrigatória (suporte a transações ACID e foreign keys). Charset utf8mb4 para suporte completo a emojis e caracteres Unicode. Collation utf8mb4_unicode_ci.',
-    obligations: 'Índices otimizados com EXPLAIN ANALYZE para queries lentas (>100ms). Configuração de slow query log para identificação de gargalos. Replicação master-slave para ambientes de alta disponibilidade (se contratado).',
-    clientRights: 'A CONTRATANTE recebe dump completo do banco MySQL (.sql) ao término de cada mês e ao final do contrato.'
+    description: 'Sistema gerenciador de banco de dados relacional mais popular do mundo utilizado como armazenamento da aplicação quando apropriado, com performance excelente para leituras, ampla compatibilidade e maturidade comprovada em milhões de aplicações globais.',
+    rules: 'Engine InnoDB obrigatória (transações ACID e foreign keys). Charset utf8mb4 para suporte completo a Unicode. Collation utf8mb4_unicode_ci. Índices otimizados com EXPLAIN ANALYZE para queries lentas.',
+    obligations: 'A CONTRATADA gerencia integralmente o banco MySQL: backups diários, otimização, patches de segurança, monitoramento e escalabilidade. Slow query log ativo para identificação proativa de gargalos.',
+    clientRights: 'A CONTRATANTE pode solicitar exportação dos seus dados em formato .sql ou CSV a qualquer momento. A propriedade da infraestrutura e do schema é da CONTRATADA.'
   },
   'MongoDB': {
-    description: 'Banco de dados NoSQL orientado a documentos (JSON/BSON) com esquema flexível, escalabilidade horizontal nativa (sharding), alta performance para writes e ideal para dados semi-estruturados ou em rápida evolução.',
-    rules: 'Coleções devem ter índices em campos frequentemente consultados. Schema validation ativada para garantir integridade mínima. Replica set com mínimo 3 nós para produção.',
-    obligations: 'Documentar estrutura esperada dos documentos (JSON Schema ou equivalente). Implementar change streams para notificações em tempo real quando aplicável. Backup com mongodump agendado.',
-    clientRights: 'A CONTRATANTE pode exportar dados em JSON/CSV a qualquer momento. Não há lock-in: MongoDB é open source e pode ser self-hosted.'
+    description: 'Banco de dados NoSQL orientado a documentos utilizado quando apropriado ao modelo de dados da aplicação, com esquema flexível, escalabilidade horizontal nativa e alta performance para writes, ideal para dados semi-estruturados ou em rápida evolução.',
+    rules: 'Coleções possuem índices em campos consultados frequentemente. Schema validation ativada para integridade mínima. Replica set com mínimo 3 nós para alta disponibilidade em produção.',
+    obligations: 'A CONTRATADA gerencia integralmente o cluster MongoDB: backups com mongodump agendado, monitoramento, escalabilidade, patches de segurança e otimização de queries.',
+    clientRights: 'A CONTRATANTE pode solicitar exportação dos seus dados em JSON ou CSV a qualquer momento. A propriedade da infraestrutura é da CONTRATADA.'
   },
   'Prisma': {
-    description: 'ORM (Object-Relational Mapper) moderno e type-safe para Node.js/TypeScript com schema declarativo (schema.prisma), migrações versionadas, Prisma Studio (GUI para dados), e geração automática de cliente TypeScript com autocompletar.',
-    rules: 'Schema.prisma é a fonte única de verdade para o modelo de dados. Migrações devem ser aplicadas via prisma migrate deploy em produção (nunca prisma migrate dev).',
-    obligations: 'Manter schema.prisma sincronizado com o banco em todos os ambientes. Seed script para dados iniciais de desenvolvimento. Queries otimizadas com select/include para evitar N+1.',
-    clientRights: 'A CONTRATANTE recebe schema.prisma completo documentado, permitindo que qualquer desenvolvedor Prisma entenda e evolua o modelo de dados.'
+    description: 'ORM moderno e type-safe utilizado pela CONTRATADA para interação segura e eficiente com o banco de dados da aplicação, com schema declarativo, migrações versionadas e geração automática de cliente TypeScript, garantindo robustez e velocidade na evolução do sistema.',
+    rules: 'O schema.prisma é a fonte única de verdade para o modelo de dados. Migrações são aplicadas via prisma migrate deploy em janelas de manutenção controladas pela CONTRATADA. Queries são otimizadas para evitar N+1.',
+    obligations: 'A CONTRATADA mantém o schema sincronizado com o banco em todos os ambientes. Garante que evoluções do modelo de dados não causem downtime. Seed scripts mantêm ambientes de desenvolvimento consistentes.',
+    clientRights: 'A CONTRATANTE se beneficia de um sistema com modelo de dados bem estruturado e evoluído continuamente pela CONTRATADA, permitindo implementação rápida de novas funcionalidades solicitadas durante a assinatura.'
   },
   'Tailwind CSS': {
-    description: 'Framework CSS utility-first que permite construir interfaces customizadas rapidamente sem sair do HTML, com design system configurável (tailwind.config.js), purge automático de classes não utilizadas e compatibilidade com qualquer framework JS.',
-    rules: 'Utilizar classes utilitárias diretamente no markup (não criar classes customizadas desnecessárias). Estender tema via tailwind.config.js para cores, espaçamentos e breakpoints do projeto.',
-    obligations: 'Configurar content paths corretamente para purge funcionar (bundle CSS mínimo em produção). Implementar dark mode se solicitado. Componentes complexos podem usar @apply com moderação.',
-    clientRights: 'A CONTRATANTE recebe tailwind.config.js customizado com o design system do projeto, permitindo evolução visual consistente por qualquer desenvolvedor Tailwind.'
+    description: 'Framework CSS utility-first utilizado na estilização da aplicação, permitindo interface customizada, design system consistente configurável, purge automático de classes não utilizadas (bundle mínimo) e compatibilidade com qualquer framework JS, proporcionando experiência visual moderna e performática.',
+    rules: 'A aplicação utiliza classes utilitárias Tailwind diretamente no markup. O design system (cores, espaçamentos, breakpoints) é configurado via tailwind.config.js específico do projeto da CONTRATANTE.',
+    obligations: 'A CONTRATADA mantém o design system consistente e evolui a interface conforme solicitações razoáveis da CONTRATANTE durante a vigência. Bundle CSS é otimizado automaticamente para performance.',
+    clientRights: 'A CONTRATANTE pode solicitar ajustes visuais e evoluções de interface durante a vigência da assinatura. A identidade visual é desenvolvida sob medida, mas a propriedade do código é da CONTRATADA.'
   },
   'Bootstrap': {
-    description: 'Framework CSS mais popular do mundo com grid system responsivo de 12 colunas, componentes pré-construídos (navbar, modal, carousel, forms), JavaScript plugins opcionais e temática via Sass variables.',
-    rules: 'Utilizar grid system Bootstrap (container, row, col-*) para layout responsivo. Customização via Sass variables (_variables.scss) — nunca sobrescrever CSS core diretamente.',
-    obligations: 'Garantir compatibilidade com navegadores suportados oficialmente pelo Bootstrap 5.x. Remover componentes JavaScript não utilizados para reduzir bundle size.',
-    clientRights: 'A CONTRATANTE pode modificar e estender o tema Bootstrap livremente após a entrega do projeto.'
+    description: 'Framework CSS mais popular do mundo utilizado na estilização da aplicação quando apropriado, com grid system responsivo de 12 colunas, componentes pré-construídos testados em milhões de sites e temática customizável via Sass variables.',
+    rules: 'A aplicação utiliza grid system Bootstrap para layout responsivo. Customização é feita via Sass variables — nunca sobrescrevendo CSS core diretamente. Componentes JS não utilizados são removidos para performance.',
+    obligations: 'A CONTRATADA garante compatibilidade com navegadores suportados oficialmente pelo Bootstrap 5.x. Mantém a interface atualizada e evolui conforme solicitações da CONTRATANTE.',
+    clientRights: 'A CONTRATANTE utiliza uma interface profissional, responsiva e testada em milhões de sites globais, mantida e evoluída pela CONTRATADA durante toda a vigência da assinatura.'
   },
   'SASS': {
-    description: 'Pré-processador CSS que adiciona superpoderes ao CSS: variáveis, aninhamento, mixins, funções, herança (@extend), loops e condicionais, compilando para CSS puro compatível com todos os navegadores.',
-    rules: 'Organização em arquivos parciais (_variables.scss, _mixins.scss, _components.scss) importados em main.scss. Metodologia BEM ou SMACSS para nomenclatura de classes.',
-    obligations: 'Configurar autoprefixer para compatibilidade cross-browser automática. Source maps ativados em desenvolvimento para debugging. Minificação em produção.',
-    clientRights: 'A CONTRATANTE recebe todos os arquivos .scss organizados e documentados, podendo compilar e modificar livremente.'
+    description: 'Pré-processador CSS utilizado pela CONTRATADA para adicionar organização e poder ao CSS da aplicação: variáveis, aninhamento, mixins, funções e loops, compilando para CSS puro compatível com todos os navegadores e facilitando manutenção evolutiva do design.',
+    rules: 'Arquivos organizados em parciais (_variables.scss, _mixins.scss, _components.scss). Metodologia BEM ou SMACSS para nomenclatura. Autoprefixer configurado para compatibilidade cross-browser automática.',
+    obligations: 'A CONTRATADA mantém o código SASS organizado e documentado internamente. Source maps ativados em desenvolvimento. Minificação em produção para performance.',
+    clientRights: 'A CONTRATANTE se beneficia de um CSS bem estruturado que permite evoluções visuais rápidas e consistentes solicitadas durante a vigência da assinatura.'
   },
   'App Mobile': {
-    description: 'Desenvolvimento de aplicativo móvel nativo ou híbrido para smartphones e tablets, distribuível via Google Play Store (Android) e/ou Apple App Store (iOS), com acesso a recursos nativos do dispositivo (câmera, GPS, push notifications, biometria).',
-    rules: 'Seguir guidelines oficiais de design: Material Design 3 (Android) e Human Interface Guidelines (iOS). Suportar no mínimo Android 10 (API 29) e iOS 15. Implementar deep linking se aplicável.',
-    obligations: 'Publicar nas lojas sob conta do desenvolvedor da CONTRATADA durante a vigência, com transferência de propriedade ao final do contrato. Manter compatibilidade com updates do SO durante o suporte.',
-    clientRights: 'A CONTRATANTE é proprietária do aplicativo e do código-fonte. Pode solicitar transferência das contas das lojas (Google Play Console / Apple Developer) mediante pagamento das taxas anuais diretamente.'
+    description: 'Aplicativo móvel desenvolvido e mantido pela CONTRATADA para smartphones e tablets (Android e/ou iOS), distribuível via Google Play Store e/ou Apple App Store, com acesso a recursos nativos do dispositivo (câmera, GPS, push notifications, biometria), proporcionando experiência de uso mobile nativa para a CONTRATANTE e seus usuários finais.',
+    rules: 'A aplicação segue Material Design 3 (Android) e Human Interface Guidelines (iOS). Suporta no mínimo Android 10 e iOS 15. Deep linking implementado quando aplicável. A publicação nas lojas é feita sob conta gerenciada pela CONTRATADA durante a vigência.',
+    obligations: 'A CONTRATADA mantém o app atualizado nas lojas, compatível com updates do SO, e aplica correções de bugs sem custo adicional durante a vigência. Publica updates conforme necessidade (mínimo 1 update/mês para correções, ou conforme demanda de novas features acordadas).',
+    clientRights: 'A CONTRATANTE e seus usuários finais podem baixar e usar o app livremente durante a vigência da assinatura. A propriedade do app, do código e da conta nas lojas é da CONTRATADA. Em caso de cancelamento, o app é removido das lojas ou desativado conforme acordado. A CONTRATANTE pode solicitar transferência da conta das lojas mediante negociação específica e pagamento de taxa administrativa.'
   },
   'React Native': {
-    description: 'Framework da Meta para desenvolvimento mobile multiplataforma (iOS + Android) utilizando React e JavaScript/TypeScript, com componentes nativos renderizados (não WebView), hot reload e compartilhamento de ~90% do código entre plataformas.',
-    rules: 'Utilizar React Native 0.73+ com New Architecture (Fabric + TurboModules) quando possível. Navegação via React Navigation 6+. Gerenciamento de estado com Zustand ou Redux Toolkit.',
-    obligations: 'Testar em dispositivos físicos (não apenas emuladores) de diferentes tamanhos de tela. Implementar handling de permissões nativas (câmera, localização, notificações) com fallback gracioso.',
-    clientRights: 'A CONTRATANTE recebe código-fonte React Native completo, podendo compilar e publicar updates independentemente após a entrega.'
+    description: 'Framework multiplataforma utilizado pela CONTRATADA para desenvolver o aplicativo móvel da aplicação (iOS + Android) com código compartilhado (~90%), componentes nativos renderizados (não WebView), hot reload e performance próxima ao nativo, proporcionando experiência mobile de qualidade com custo otimizado.',
+    rules: 'A aplicação utiliza React Native 0.73+ com New Architecture quando possível. Navegação via React Navigation 6+. Gerenciamento de estado com Zustand ou Redux Toolkit. A arquitetura é definida e mantida pela CONTRATADA.',
+    obligations: 'A CONTRATADA testa em dispositivos físicos de diferentes tamanhos. Implementa handling de permissões nativas com fallback gracioso. Mantém o app atualizado nas lojas durante a vigência.',
+    clientRights: 'A CONTRATANTE utiliza o app mobile durante a vigência da assinatura sem preocupação técnica. A propriedade do código e da infraestrutura é da CONTRATADA. Solicitações de novas funcionalidades mobile são atendidas conforme cronograma acordado.'
   },
   'Flutter': {
-    description: 'SDK da Google para desenvolvimento multiplataforma (iOS, Android, Web, Desktop) utilizando linguagem Dart, com engine de renderização própria (Skia/Impeller) garantindo 60/120fps consistentes e widgets customizáveis pixel-perfect.',
-    rules: 'Utilizar Flutter 3.x com Dart 3.x (null safety obrigatório). Arquitetura recomendada: Clean Architecture + BLoC/Cubit ou Riverpod para state management. Estrutura de pastas por feature.',
-    obligations: 'Garantir performance de 60fps mínimos em dispositivos mid-range. Implementar internacionalização (i18n) se múltiplos idiomas forem necessários. Testes widget e integration tests para fluxos críticos.',
-    clientRights: 'A CONTRATANTE recebe projeto Flutter completo com pubspec.yaml documentado, podendo dar manutenção e evoluir o app com qualquer equipe Flutter qualificada.'
+    description: 'SDK da Google utilizado pela CONTRATADA para desenvolver a aplicação multiplataforma (iOS, Android, Web, Desktop) com linguagem Dart, engine de renderização própria garantindo 60/120fps consistentes e widgets customizáveis pixel-perfect, proporcionando experiência premium em todas as plataformas.',
+    rules: 'A aplicação utiliza Flutter 3.x com Dart 3.x (null safety obrigatório). Arquitetura Clean Architecture + BLoC/Cubit ou Riverpod. Estrutura por feature. A CONTRATADA define e mantém a arquitetura.',
+    obligations: 'A CONTRATADA garante 60fps mínimos em dispositivos mid-range. Implementa internacionalização se necessário. Mantém testes widget e integration tests para fluxos críticos. Atualiza o app nas lojas durante a vigência.',
+    clientRights: 'A CONTRATANTE utiliza uma aplicação Flutter premium em múltiplas plataformas durante a vigência. A propriedade do código é da CONTRATADA. Evoluções são planejadas e executadas pela equipe técnica da CONTRATADA.'
   },
   'iOS': {
-    description: 'Desenvolvimento nativo para dispositivos Apple (iPhone, iPad) utilizando Swift e SwiftUI/UIKit, com acesso completo às APIs do iOS, performance máxima, integração profunda com ecossistema Apple (iCloud, Apple Pay, Siri, Widgets).',
-    rules: 'Swift 5.9+ com SwiftUI preferencial (UIKit para componentes legacy). Seguir Human Interface Guidelines da Apple rigorosamente. Suportar no mínimo iOS 16.',
-    obligations: 'Submeter à App Store seguindo guidelines de revisão da Apple (preparar para possíveis rejeições e ressubmissões). Implementar Universal Links, Handoff e Continuity se aplicável.',
-    clientRights: 'A CONTRATANTE precisa de conta Apple Developer ($99/ano) para publicação. A CONTRATADA auxilia na configuração e submissão. Propriedade do app é da CONTRATANTE.'
+    description: 'Aplicativo nativo para dispositivos Apple (iPhone, iPad) desenvolvido e mantido pela CONTRATADA utilizando Swift e SwiftUI/UIKit, com acesso completo às APIs do iOS, performance máxima e integração profunda com ecossistema Apple (iCloud, Apple Pay, Siri, Widgets).',
+    rules: 'A aplicação utiliza Swift 5.9+ com SwiftUI preferencial. Segue Human Interface Guidelines rigorosamente. Suporta no mínimo iOS 16. A publicação na App Store é gerenciada pela CONTRATADA.',
+    obligations: 'A CONTRATADA submete à App Store seguindo guidelines da Apple (preparando para possíveis rejeições e ressubmissões). Mantém o app compatível com novos iOS releases. Aplica correções e melhorias durante a vigência.',
+    clientRights: 'A CONTRATANTE e seus usuários usam o app iOS durante a vigência. A CONTRATADA gerencia a conta Apple Developer ($99/ano inclusos no serviço ou cobrados separadamente conforme acordado). Propriedade do app é da CONTRATADA.'
   },
   'Android': {
-    description: 'Desenvolvimento nativo para dispositivos Android utilizando Kotlin e Jetpack Compose (UI moderna declarativa), com acesso completo às Google Play Services, Material Design 3, e distribuição via Google Play Store para bilhões de dispositivos.',
-    rules: 'Kotlin 1.9+ com Jetpack Compose preferencial. Seguir Material Design 3 e Android Design Guidelines. Target SDK atualizado conforme exigência do Google Play (atualmente API 34+).',
-    obligations: 'Implementar ProGuard/R8 para ofuscação de código em release. Suportar diferentes densidades de tela (mdpi, hdpi, xhdpi, xxhdpi). Testar em múltiplos fabricantes (Samsung, Xiaomi, Motorola).',
-    clientRights: 'A CONTRATANTE precisa de conta Google Play Developer ($25 taxa única). A CONTRATADA publica e gerencia durante a vigência. Transferência de ownership disponível ao final.'
+    description: 'Aplicativo nativo para dispositivos Android desenvolvido e mantido pela CONTRATADA utilizando Kotlin e Jetpack Compose, com acesso completo às Google Play Services, Material Design 3 e distribuição via Google Play Store para bilhões de dispositivos.',
+    rules: 'A aplicação utiliza Kotlin 1.9+ com Jetpack Compose. Segue Material Design 3. Target SDK atualizado conforme exigência do Google Play. A publicação é gerenciada pela CONTRATADA.',
+    obligations: 'A CONTRATADA implementa ProGuard/R8 para ofuscação. Suporta diferentes densidades de tela. Testa em múltiplos fabricantes (Samsung, Xiaomi, Motorola). Mantém o app atualizado na Play Store durante a vigência.',
+    clientRights: 'A CONTRATANTE e seus usuários usam o app Android durante a vigência. A CONTRATADA gerencia a conta Google Play Developer ($25 taxa única inclusa ou cobrada separadamente). Propriedade do app é da CONTRATADA.'
   },
   'Web App': {
-    description: 'Aplicação web completa acessível via navegador, sem necessidade de instalação, funcionando em qualquer dispositivo com conexão à internet, com URL própria e potencial de indexação em mecanismos de busca.',
-    rules: 'A aplicação deve ser acessível via HTTPS obrigatório. Implementar meta tags Open Graph e Twitter Cards para compartilhamento social. Favicon e manifest.json configurados.',
-    obligations: 'Garantir uptime mínimo de 99% durante a vigência (excluindo manutenções programadas com aviso prévio de 48h). Tempo de carregamento inicial (LCP) inferior a 2.5 segundos em conexão 4G.',
-    clientRights: 'A CONTRATANTE pode acessar a aplicação de qualquer navegador moderno sem instalação. Dados são acessíveis via interface web ou exportação conforme cláusula de portabilidade.'
+    description: 'Aplicação web completa desenvolvida e mantida pela CONTRATADA, acessível via navegador em qualquer dispositivo com conexão à internet, com URL própria, autenticação segura e funcionalidades alinhadas às regras de negócio da CONTRATANTE, proporcionando acesso 24/7 ao sistema sem necessidade de instalação.',
+    rules: 'A aplicação é acessível via HTTPS obrigatório. Meta tags Open Graph configuradas para compartilhamento. Favicon e manifest.json configurados. A URL de acesso é fornecida pela CONTRATADA (subdomínio silventec.com ou domínio personalizado conforme plano).',
+    obligations: 'A CONTRATADA garante uptime mínimo de 99% durante a vigência (excluindo manutenções programadas com aviso prévio de 48h). Tempo de carregamento inicial (LCP) inferior a 2.5 segundos em conexão 4G. Backups diários automáticos.',
+    clientRights: 'A CONTRATANTE pode acessar a aplicação 24/7 via navegador durante a vigência da assinatura. Pode solicitar exportação dos seus dados a qualquer momento. Em caso de cancelamento, o acesso é desativado ao final do período pago e os dados são mantidos por 30 dias para eventual reativação.'
   },
   'PWA': {
-    description: 'Progressive Web App — aplicação web com capacidades de app nativo: instalação na tela inicial, funcionamento offline via Service Workers, push notifications, acesso a hardware do dispositivo e experiência app-like sem passar pelas lojas.',
-    rules: 'Manifest.json válido com ícones em múltiplos tamanhos (192x192, 512x512). Service Worker com estratégia de cache apropriada (cache-first para assets, network-first para API). HTTPS obrigatório.',
-    obligations: 'Garantir installability (critérios do Chrome: manifest + SW + HTTPS). Implementar fallback offline gracioso (não tela branca). Push notifications requerem consentimento explícito do usuário.',
-    clientRights: 'A CONTRATANTE oferece aos usuários finais uma experiência de app sem custo de publicação em lojas. Pode atualizar a PWA instantaneamente sem processo de review das lojas.'
+    description: 'Progressive Web App desenvolvida e mantida pela CONTRATADA — aplicação web com capacidades de app nativo: instalação na tela inicial, funcionamento offline parcial via Service Workers, push notifications e experiência app-like sem passar pelas lojas, proporcionando conveniência máxima para os usuários da CONTRATANTE.',
+    rules: 'Manifest.json válido com ícones em múltiplos tamanhos. Service Worker com estratégia de cache apropriada. HTTPS obrigatório. Installability garantida (critérios do Chrome).',
+    obligations: 'A CONTRATADA garante installability e funcionamento offline gracioso. Push notifications requerem consentimento explícito do usuário. Mantém a PWA atualizada e funcional durante a vigência.',
+    clientRights: 'A CONTRATANTE oferece aos usuários finais experiência de app sem custo de publicação em lojas. Updates são instantâneos (sem review de lojas). A propriedade do código é da CONTRATADA.'
   },
   'API REST': {
-    description: 'Interface de Programação de Aplicações seguindo arquitetura REST (Representational State Transfer), com endpoints HTTP padronizados, comunicação via JSON, stateless e escalável, permitindo integração com qualquer sistema ou frontend.',
-    rules: 'Endpoints devem seguir padrão RESTful: GET (leitura), POST (criação), PUT/PATCH (atualização), DELETE (remoção). Versionamento via URL (/api/v1/) ou header. Paginação obrigatória em listas (>50 itens).',
-    obligations: 'Documentação OpenAPI 3.0 (Swagger) atualizada e acessível. Rate limiting por IP/chave de API. Autenticação via Bearer Token (JWT) ou API Key. CORS configurado restritivamente.',
-    clientRights: 'A CONTRATANTE recebe documentação completa da API e pode integrar sistemas terceiros (ERP, CRM, apps mobile) consumindo os endpoints disponibilizados.'
+    description: 'Interface de Programação de Aplicações interna desenvolvida e mantida pela CONTRATADA, seguindo arquitetura REST com endpoints HTTP padronizados, comunicação via JSON, autenticação segura e escalabilidade, sustentando toda a comunicação entre frontend, backend e integrações da aplicação.',
+    rules: 'Endpoints seguem padrão RESTful. Versionamento via URL (/api/v1/). Paginação obrigatória em listas. Rate limiting por usuário/token. Autenticação via Bearer Token JWT. CORS configurado restritivamente.',
+    obligations: 'A CONTRATADA mantém a API disponível, segura e performática durante a vigência. Documentação interna atualizada. Monitoramento de latência e error rate. Evolução da API conforme novas funcionalidades são implementadas.',
+    clientRights: 'A CONTRATANTE se beneficia de uma API robusta que sustenta todas as funcionalidades do sistema. Se o plano incluir acesso à API para integrações externas, a CONTRATANTE recebe documentação e credenciais específicas para esse fim.'
   },
   'GraphQL': {
-    description: 'Linguagem de query para APIs desenvolvida pelo Facebook, permitindo que o cliente solicite exatamente os dados necessários em uma única requisição, eliminando over-fetching e under-fetching comuns em REST.',
-    rules: 'Schema GraphQL fortemente tipado com types, queries, mutations e subscriptions definidos. Resolver functions otimizadas para evitar N+1 queries (DataLoader pattern).',
-    obligations: 'Implementar playground/Explorer para desenvolvimento (desativado em produção). Query depth limiting e complexity analysis para prevenir abuse. Persisted queries em produção para segurança.',
-    clientRights: 'A CONTRATANTE pode evoluir o schema GraphQL adicionando campos sem quebrar clientes existentes (backward compatibility garantida pelo design do GraphQL).'
+    description: 'Linguagem de query para APIs utilizada pela CONTRATADA quando apropriado, permitindo que o frontend solicite exatamente os dados necessários em uma única requisição, eliminando over-fetching e under-fetching, proporcionando performance otimizada e flexibilidade na evolução das telas do sistema.',
+    rules: 'Schema GraphQL fortemente tipado. Resolver functions otimizadas com DataLoader pattern para evitar N+1. Query depth limiting e complexity analysis para prevenir abuse.',
+    obligations: 'A CONTRATADA mantém o schema evoluindo de forma backward-compatible (nunca quebrando clientes existentes). Playground desativado em produção. Persisted queries para segurança.',
+    clientRights: 'A CONTRATANTE se beneficia de telas mais rápidas e flexíveis graças ao GraphQL. Novas funcionalidades podem ser adicionadas sem impacto nas existentes.'
   },
   'WebSocket': {
-    description: 'Protocolo de comunicação full-duplex sobre TCP permitindo conexão persistente entre cliente e servidor, ideal para chat em tempo real, notificações push, dashboards live, jogos multiplayer e colaboração simultânea.',
-    rules: 'Implementar heartbeat/ping-pong para detectar conexões mortas. Reconexão automática com exponential backoff no cliente. Autenticação no handshake inicial (token JWT no query param ou primeiro message).',
-    obligations: 'Garantir escalabilidade horizontal com sticky sessions ou Redis pub/sub para múltiplas instâncias. Limitar tamanho máximo de mensagem (ex: 1MB). Logs de conexão/desconexão para auditoria.',
-    clientRights: 'A CONTRATANTE oferece funcionalidades em tempo real aos usuários finais sem polling, reduzindo latência e consumo de banda.'
+    description: 'Protocolo de comunicação full-duplex implementado pela CONTRATADA para funcionalidades em tempo real da aplicação (chat, notificações push, dashboards live, colaboração simultânea), permitindo atualização instantânea das telas sem necessidade de recarregar a página.',
+    rules: 'Heartbeat/ping-pong para detectar conexões mortas. Reconexão automática com exponential backoff. Autenticação no handshake inicial via JWT. Tamanho máximo de mensagem limitado (1MB).',
+    obligations: 'A CONTRATADA garante escalabilidade horizontal com Redis pub/sub ou similar. Logs de conexão/desconexão para auditoria. Uptime do serviço WebSocket conforme SLA geral.',
+    clientRights: 'A CONTRATANTE e seus usuários desfrutam de funcionalidades em tempo real (notificações instantâneas, dashboards live, chat) sem polling, proporcionando experiência moderna e responsiva durante a vigência.'
   },
   'Domínio': {
-    description: 'Registro e configuração de nome de domínio personalizado (ex: www.suaempresa.com.br) junto a registradora acreditada pelo NIC.br (para .br) ou ICANN (para .com, .net, etc), incluindo DNS management e propagação global.',
-    rules: 'Domínio deve ser registrado em nome da CONTRATANTE (CPF/CNPJ dela) — nunca em nome da CONTRATADA. Configuração DNS com TTL apropriado (300s para mudanças frequentes, 86400s para estáveis).',
-    obligations: 'Configurar registros DNS necessários (A, CNAME, MX, TXT para SPF/DKIM/DMARC). Renovar domínio antes do vencimento (aviso à CONTRATANTE com 60 dias de antecedência). SSL/TLS configurado (Let\'s Encrypt ou certificado pago).',
-    clientRights: 'A CONTRATANTE é titular legal do domínio. Pode transferir para outra registradora ou provedor de hospedagem a qualquer momento mediante código de transferência (EPP code) fornecido pela CONTRATADA.'
+    description: 'Registro e configuração de nome de domínio personalizado (ex: www.suaempresa.com.br) gerenciado pela CONTRATADA junto a registradora acreditada (NIC.br para .br, ICANN para .com/.net), incluindo DNS management, propagação global e SSL/TLS configurado, proporcionando endereço web profissional e memorável para a aplicação da CONTRATANTE.',
+    rules: 'O domínio pode ser registrado em nome da CONTRATANTE (recomendado) ou em nome da CONTRATADA (com termo de cessão de uso durante a vigência). Configuração DNS com TTL apropriado. SSL/TLS via Let\'s Encrypt ou certificado pago.',
+    obligations: 'A CONTRATADA configura registros DNS necessários (A, CNAME, MX, TXT para SPF/DKIM/DMARC). Renova o domínio antes do vencimento (aviso à CONTRATANTE com 60 dias de antecedência). Mantém SSL válido e renovado automaticamente.',
+    clientRights: 'Se o domínio foi registrado em nome da CONTRATANTE, ela é titular legal e pode transferi-lo a qualquer momento. Se registrado em nome da CONTRATADA, a CONTRATANTE tem direito de uso exclusivo durante a vigência e pode solicitar transferência (com código EPP fornecido) mediante reembolso do custo de registro. Em caso de cancelamento, o domínio registrado em nome da CONTRATADA pode ser transferido à CONTRATANTE mediante solicitação formal e pagamento de taxa administrativa.'
   },
   'Hospedagem': {
-    description: 'Infraestrutura de servidores/cloud para manter a aplicação acessível 24/7 na internet, incluindo compute, storage, rede, balanceamento de carga, CDN para assets estáticos e monitoramento de uptime.',
-    rules: 'Uptime SLA mínimo de 99% mensal. Backups automáticos diários com retenção de 30 dias. Ambiente de staging separado de produção. Variáveis de ambiente via secrets manager (nunca hardcoded).',
-    obligations: 'Monitoramento 24/7 com alertas (email/Slack) para downtime > 5min. Escalabilidade automática (auto-scaling) para picos de tráfego. Logs centralizados com retenção mínima de 90 dias.',
-    clientRights: 'A CONTRATANTE pode solicitar relatório mensal de uptime, tráfego e utilização de recursos. Ao final do contrato, recebe migração assistida para outro provedor se desejar.'
+    description: 'Infraestrutura de servidores/cloud gerenciada integralmente pela CONTRATADA para manter a aplicação acessível 24/7, incluindo compute, storage, rede, balanceamento de carga, CDN para assets estáticos, monitoramento de uptime e escalabilidade automática, sem que a CONTRATANTE precise gerenciar qualquer aspecto técnico.',
+    rules: 'Uptime SLA mínimo de 99% mensal. Backups automáticos diários com retenção de 30 dias. Ambiente de staging separado de produção. Variáveis de ambiente via secrets manager. Criptografia at rest e in transit.',
+    obligations: 'A CONTRATADA monitora 24/7 com alertas para downtime > 5min. Escalabilidade automática para picos de tráfego. Logs centralizados com retenção mínima de 90 dias. Manutenções programadas comunicadas com 48h de antecedência.',
+    clientRights: 'A CONTRATANTE não precisa contratar, configurar ou pagar separadamente por hospedagem — está tudo incluso no valor da assinatura. Pode solicitar relatório mensal de uptime, tráfego e utilização. Em caso de cancelamento, a infraestrutura é desprovisionada após o período pago e os dados exportados conforme solicitado.'
   },
   'Vercel': {
-    description: 'Plataforma de deploy e hosting otimizada para frameworks frontend modernos (Next.js, React, Vue, Svelte), com edge network global (300+ PoPs), preview deployments automáticos por PR, serverless functions e analytics integrados.',
-    rules: 'Deploy via Git integration (push to main = production, pull requests = preview URLs). Environment variables configuradas por ambiente (production, preview, development). Domínio customizado com SSL automático.',
-    obligations: 'Configurar redirects/rewrites no vercel.json quando necessário. Otimizar images via next/image ou vercel/og. Monitorar Serverless Function execution time (limite 10s Hobby, 60s Pro).',
-    clientRights: 'A CONTRATANTE pode acessar o dashboard Vercel com permissões de membro. Pode fazer upgrade de plano diretamente. Código-fonte permanece no Git repository da CONTRATANTE.'
+    description: 'Plataforma de deploy e hosting otimizada para frameworks frontend modernos gerenciada pela CONTRATADA, com edge network global (300+ pontos de presença), preview deployments automáticos, serverless functions e analytics integrados, proporcionando máxima performance global para a aplicação da CONTRATANTE.',
+    rules: 'Deploy via Git integration gerenciado pela CONTRATADA. Environment variables configuradas por ambiente. Domínio customizado com SSL automático. A CONTRATADA gerencia a conta Vercel.',
+    obligations: 'A CONTRATADA configura redirects/rewrites quando necessário. Otimiza images. Monitora Serverless Function execution time. Garante uptime conforme SLA. Custos da plataforma Vercel estão inclusos no valor da assinatura (dentro dos limites do plano contratado pela CONTRATADA).',
+    clientRights: 'A CONTRATANTE acessa a aplicação com performance global máxima sem gerenciar nada técnico. A propriedade da conta Vercel e do deploy é da CONTRATADA. Em caso de cancelamento, o deploy é removido após o período pago.'
   },
   'Netlify': {
-    description: 'Plataforma all-in-one para deploy de sites e aplicações web modernas com CI/CD integrado, serverless functions, form handling nativo, identity/authentication, split testing e edge functions para lógica personalizada.',
-    rules: 'Deploy via Git com branch production configurada. Build commands e publish directory corretamente configurados. Redirects via _redirects file ou netlify.toml.',
-    obligations: 'Configurar deploy previews para review antes de merge. Implementar build plugins necessários (sitemap, minify, etc). Monitorar bandwidth e build minutes do plano.',
-    clientRights: 'A CONTRATANTE pode gerenciar o site diretamente pelo dashboard Netlify após treinamento/handover da CONTRATADA.'
+    description: 'Plataforma all-in-one para deploy de aplicações web modernas gerenciada pela CONTRATADA, com CI/CD integrado, serverless functions, form handling nativo, identity/authentication e edge functions, proporcionando deploy rápido e infraestrutura estável para a aplicação.',
+    rules: 'Deploy via Git gerenciado pela CONTRATADA. Build commands e publish directory configurados. Redirects via netlify.toml. A CONTRATADA gerencia a conta Netlify.',
+    obligations: 'A CONTRATADA configura deploy previews para validação interna. Implementa build plugins necessários. Monitora bandwidth e build minutes. Garante uptime conforme SLA.',
+    clientRights: 'A CONTRATANTE utiliza a aplicação hospedada em infraestrutura Netlify gerenciada pela CONTRATADA, sem preocupação técnica. Custos inclusos no valor da assinatura.'
   },
   'AWS': {
-    description: 'Amazon Web Services — plataforma de cloud computing mais completa do mundo com 200+ serviços incluindo EC2 (compute), S3 (storage), RDS (bancos gerenciados), Lambda (serverless), CloudFront (CDN) e IAM (gestão de identidades).',
-    rules: 'Princípio do menor privilégio em políticas IAM. Recursos taggeados com projeto/ambiente/custo-center. Infraestrutura como código (Terraform/CloudFormation) versionada em Git.',
-    obligations: 'Configurar AWS Budgets com alertas de custo (50%, 80%, 100% do orçamento mensal). Encryption at rest (KMS) e in transit (TLS 1.3) obrigatórios. Multi-AZ para serviços críticos.',
-    clientRights: 'A CONTRATANTE é dona da conta AWS e de todos os recursos nela provisionados. Pode acessar o console AWS diretamente. Exportação de dados via AWS CLI/SDK a qualquer momento.'
+    description: 'Amazon Web Services — infraestrutura cloud enterprise gerenciada integralmente pela CONTRATADA, utilizando serviços como EC2 (compute), S3 (storage), RDS (bancos gerenciados), Lambda (serverless), CloudFront (CDN global) e IAM (gestão de identidades), proporcionando escalabilidade, segurança e confiabilidade de nível empresarial para a aplicação da CONTRATANTE.',
+    rules: 'Princípio do menor privilégio em políticas IAM. Recursos taggeados com projeto/ambiente. Infraestrutura como código (Terraform/CloudFormation) versionada. Encryption at rest (KMS) e in transit (TLS 1.3) obrigatórios.',
+    obligations: 'A CONTRATADA configura AWS Budgets com alertas de custo. Multi-AZ para serviços críticos. Backups automatizados. Monitoramento 24/7 via CloudWatch. Custos AWS estão inclusos no valor da assinatura (dentro do orçamento mensal estimado). Uso acima do estimado pode gerar cobrança adicional previamente comunicada.',
+    clientRights: 'A CONTRATANTE utiliza infraestrutura AWS enterprise sem gerenciar nada. Pode solicitar relatório de custos e utilização. A propriedade da conta AWS e dos recursos é da CONTRATADA. Em caso de cancelamento, recursos são desprovisionados após período pago e dados exportados conforme solicitado.'
   },
   'Google Cloud': {
-    description: 'Google Cloud Platform (GCP) — infraestrutura cloud do Google com Compute Engine, Cloud Storage, BigQuery (data warehouse), Firebase, Kubernetes Engine, Cloud Functions e rede global premium com baixa latência.',
-    rules: 'Service accounts com escopos mínimos. Organization policies para governança. VPC network com firewall rules restritivas. Logging via Cloud Logging com retention policy definida.',
-    obligations: 'Configurar billing alerts e budgets. Implementar backup de VMs e discos persistentes via snapshots agendados. Use committed use discounts para workloads previsíveis (economia até 70%).',
-    clientRights: 'A CONTRATANTE é proprietária do projeto GCP. Pode conceder/remover acessos IAM. Portabilidade garantida: dados exportáveis via gsutil, bq extract, etc.'
+    description: 'Google Cloud Platform (GCP) — infraestrutura cloud do Google gerenciada pela CONTRATADA, com Compute Engine, Cloud Storage, BigQuery, Kubernetes Engine, Cloud Functions e rede global premium de baixa latência, proporcionando performance e escalabilidade de classe mundial para a aplicação.',
+    rules: 'Service accounts com escopos mínimos. Organization policies para governança. VPC com firewall rules restritivas. Logging via Cloud Logging com retention policy.',
+    obligations: 'A CONTRATADA configura billing alerts. Backups via snapshots agendados. Use committed use discounts para economia. Monitoramento 24/7. Custos GCP inclusos no valor da assinatura (dentro do orçamento estimado).',
+    clientRights: 'A CONTRATANTE utiliza infraestrutura GCP gerenciada pela CONTRATADA. Pode solicitar relatórios de custo/uso. Propriedade da conta é da CONTRATADA.'
   },
   'WordPress': {
-    description: 'Sistema de gerenciamento de conteúdo (CMS) open source mais utilizado no mundo (43% da web), ideal para sites institucionais, blogs, portais de notícias e e-commerce (via WooCommerce), com milhares de themes e plugins disponíveis.',
-    rules: 'WordPress 6.x com PHP 8.1+. Nunca editar core files ou themes/plugins diretamente — usar child theme e custom plugins. Atualizações de segurança aplicadas em até 48h após release.',
-    obligations: 'Backup completo (files + database) diário com retenção 30 dias. Security hardening: limitar login attempts, desativar XML-RPC se não usado, file permissions corretas (644/755). Performance: caching (WP Rocket/LiteSpeed), image optimization, lazy loading.',
-    clientRights: 'A CONTRATANTE recebe acesso admin do WordPress. Pode instalar plugins/themes adicionais (sob risco de compatibilidade — consultar CONTRATADA antes). Exportação de conteúdo via Tools > Export a qualquer momento.'
+    description: 'Sistema de gerenciamento de conteúdo (CMS) utilizado pela CONTRATADA quando apropriado ao escopo (sites institucionais, blogs, portais, e-commerce via WooCommerce), com milhares de themes e plugins disponíveis, proporcionando flexibilidade e rapidez na entrega de conteúdo para a CONTRATANTE.',
+    rules: 'WordPress 6.x com PHP 8.1+. Child theme e custom plugins — nunca edição direta de core. Atualizações de segurança aplicadas em até 48h. A CONTRATADA gerencia o admin do WordPress.',
+    obligations: 'A CONTRATADA realiza backup completo diário (files + database) com retenção 30 dias. Security hardening: limitar login attempts, desativar XML-RPC se não usado, file permissions corretas. Performance: caching, image optimization, lazy loading.',
+    clientRights: 'A CONTRATANTE pode solicitar acesso admin do WordPress para gerenciar conteúdo (posts, páginas, produtos) se o plano incluir essa autonomia. A propriedade da instalação, theme custom e plugins desenvolvidos é da CONTRATADA. Plugins/themes de terceiros instalados são licenciados conforme seus próprios termos.'
   },
   'Shopify': {
-    description: 'Plataforma SaaS de e-commerce líder global com hosting incluso, checkout otimizado (conversão média 3x maior que concorrentes), gateway de pagamento próprio (Shopify Payments), POS para vendas físicas e ecossistema de apps extensível.',
-    rules: 'Theme desenvolvido com Liquid (templating language Shopify) + Online Store 2.0 (sections everywhere). Checkout customization apenas via Shopify Plus (plano enterprise). Apps instalados devem ser auditados quanto a performance e privacidade.',
-    obligations: 'Configurar domínios, SSL, taxas de envio, impostos e políticas de reembolso/privacidade. Testar fluxo completo de compra (add to cart → checkout → payment → confirmation email) antes do go-live.',
-    clientRights: 'A CONTRATANTE é dona da loja Shopify e do plano contratado. Pode cancelar ou trocar de plano diretamente com a Shopify. Dados de clientes e pedidos exportáveis via CSV a qualquer momento.'
+    description: 'Plataforma SaaS de e-commerce líder global utilizada pela CONTRATADA para desenvolver a loja virtual da CONTRATANTE, com hosting incluso, checkout otimizado (conversão média 3x maior), gateway Shopify Payments, POS para vendas físicas e ecossistema de apps extensível.',
+    rules: 'Theme desenvolvido com Liquid + Online Store 2.0. Checkout customization apenas via Shopify Plus. Apps instalados são auditados quanto a performance e privacidade. A CONTRATADA gerencia a conta Shopify durante a vigência.',
+    obligations: 'A CONTRATADA configura domínios, SSL, taxas de envio, impostos e políticas. Testa fluxo completo de compra antes do go-live. Mantém a loja atualizada e funcional durante a vigência. Custos do plano Shopify estão inclusos ou cobrados separadamente conforme acordado.',
+    clientRights: 'A CONTRATANTE é dona dos dados da loja (clientes, pedidos, produtos) e pode exportá-los via CSV a qualquer momento. A propriedade da conta Shopify e do theme desenvolvido é da CONTRATADA durante a vigência. Em caso de cancelamento, a CONTRATANTE pode solicitar transferência da loja para sua própria conta Shopify mediante negociação e pagamento de taxa administrativa.'
   },
   'WooCommerce': {
-    description: 'Plugin de e-commerce open source para WordPress, transformando qualquer site WP em loja virtual completa com gestão de produtos, carrinho, checkout, pagamentos, frete, cupons e relatórios, sem mensalidade fixa da plataforma.',
-    rules: 'WooCommerce 8.x com WordPress 6.x. Theme compatível com WooCommerce (storefront ou custom). Gateways de pagamento configurados com credenciais de produção da CONTRATANTE.',
-    obligations: 'Testar todos os métodos de pagamento em sandbox antes de ativar em produção. Configurar emails transacionais (confirmação pedido, nota fiscal, rastreio). LGPD: consentimento no checkout, política de privacidade, direito ao esquecimento.',
-    clientRights: 'A CONTRATANTE é proprietária total da loja (diferente de SaaS como Shopify). Pode migrar para outro hosting, trocar de theme, ou até exportar para outra plataforma se desejar.'
+    description: 'Plugin de e-commerce open source para WordPress utilizado pela CONTRATADA para desenvolver a loja virtual da CONTRATANTE, com gestão completa de produtos, carrinho, checkout, pagamentos, frete, cupons e relatórios, sem mensalidade fixa da plataforma (apenas custos de infraestrutura inclusos na assinatura).',
+    rules: 'WooCommerce 8.x com WordPress 6.x. Theme compatível. Gateways de pagamento configurados com credenciais de produção. A CONTRATADA gerencia a infraestrutura e o admin técnico.',
+    obligations: 'A CONTRATADA testa todos os métodos de pagamento em sandbox antes de ativar em produção. Configura emails transacionais. Implementa LGPD no checkout. Mantém a loja segura e atualizada.',
+    clientRights: 'A CONTRATANTE pode acessar o admin do WooCommerce para gerenciar produtos, pedidos e clientes se o plano incluir autonomia. Pode exportar dados a qualquer momento. A propriedade da instalação e customizações é da CONTRATADA.'
   },
   'E-commerce': {
-    description: 'Loja virtual completa para venda de produtos/serviços online, incluindo catálogo, carrinho de compras, checkout seguro, integração com gateways de pagamento, cálculo de frete, gestão de estoque, cupons de desconto e painel administrativo de pedidos.',
-    rules: 'Checkout em no máximo 3 etapas (carrinho → dados → pagamento). SSL obrigatório em todo o site (não apenas no checkout). Confirmação de pedido por email em até 5 minutos. Política de troca/devolução visível no footer.',
-    obligations: 'Integrar gateway de pagamento homologado (Mercado Pago, Stripe, PagSeguro, etc). Implementar prevenção básica de fraude (validação CVV, AVS, limite de tentativas). Estoque sincronizado em tempo real para evitar overselling.',
-    clientRights: 'A CONTRATANTE recebe painel administrativo para gerenciar produtos, pedidos, clientes e relatórios de vendas sem dependência técnica da CONTRATADA para operações do dia a dia.'
+    description: 'Loja virtual completa desenvolvida e mantida pela CONTRATADA para venda de produtos/serviços online da CONTRATANTE, incluindo catálogo, carrinho de compras, checkout seguro, integração com gateways de pagamento, cálculo de frete, gestão de estoque, cupons de desconto e painel administrativo de pedidos, proporcionando canal de vendas digital profissional e pronto para operar.',
+    rules: 'Checkout em no máximo 3 etapas. SSL obrigatório em todo o site. Confirmação de pedido por email em até 5 minutos. Política de troca/devolução visível. A CONTRATADA gerencia a infraestrutura técnica.',
+    obligations: 'A CONTRATADA integra gateway de pagamento homologado. Implementa prevenção básica de fraude. Mantém estoque sincronizado em tempo real. Garante uptime conforme SLA especialmente em datas de alto volume (Black Friday, etc).',
+    clientRights: 'A CONTRATANTE opera a loja via painel administrativo (produtos, pedidos, clientes, relatórios) durante a vigência. É proprietária dos dados de clientes e pedidos. Pode exportar base completa a qualquer momento. A propriedade do código e da infraestrutura é da CONTRATADA.'
   },
   'Landing Page': {
-    description: 'Página única de alta conversão focada em um objetivo específico (captura de leads, venda de produto, inscrição em evento), com copywriting persuasivo, design direcionado, formulário otimizado e tracking de conversões integrado.',
-    rules: 'Carregamento em menos de 2 segundos (Core Web Vitals: LCP < 2.5s, FID < 100ms, CLS < 0.1). Single CTA (Call-to-Action) claro e repetido strategicamente. Mobile-first (60%+ do tráfego vem de mobile).',
-    obligations: 'Implementar tracking via Google Analytics 4 + Meta Pixel + Google Tag Manager. Formulário com validação em tempo real e mensagem de sucesso clara. A/B testing ready (variantes via query param ou ferramenta dedicada).',
-    clientRights: 'A CONTRATANTE recebe página otimizada para conversão com tracking configurado. Pode visualizar relatórios de visitas, conversões e origem do tráfego no GA4.'
+    description: 'Página única de alta conversão desenvolvida e mantida pela CONTRATADA, focada em objetivo específico da CONTRATANTE (captura de leads, venda de produto, inscrição em evento), com copywriting persuasivo, design direcionado, formulário otimizado e tracking de conversões integrado, maximizando retorno sobre investimento em tráfego pago.',
+    rules: 'Carregamento em menos de 2 segundos (Core Web Vitals otimizados). Single CTA claro. Mobile-first (60%+ do tráfego vem de mobile). A CONTRATADA gerencia hosting e domínio da landing.',
+    obligations: 'A CONTRATADA implementa tracking via GA4 + Meta Pixel + GTM. Formulário com validação em tempo real. A/B testing ready. Mantém a landing no ar e otimizada durante a vigência.',
+    clientRights: 'A CONTRATANTE utiliza a landing page para campanhas de marketing durante a vigência. Recebe relatórios de conversão. Pode solicitar alterações de copy/design/layout que serão implementadas pela CONTRATADA conforme cronograma.'
   },
   'Dashboard': {
-    description: 'Painel administrativo interativo com visualização de dados em tempo real, gráficos dinâmicos (charts), tabelas paginadas, filtros avançados, exportação de relatórios (PDF/CSV) e controle de acesso por perfis de usuário (RBAC).',
-    rules: 'Sidebar de navegação com seções claras. Dashboard principal com KPIs resumidos (cards) + gráficos de tendência. Tabelas com paginação (máximo 50 linhas/página), ordenação por coluna e busca global.',
-    obligations: 'Implementar loading states para todas as requisições async. Empty states informativos (não apenas tabela vazia). Error boundaries para falhas de componentes. Responsivo para uso em tablet/desktop.',
-    clientRights: 'A CONTRATANTE pode acessar o dashboard 24/7 via navegador. Pode criar/editar/excluir registros conforme permissões do seu perfil. Exportar dados em CSV/PDF para análise externa.'
+    description: 'Painel administrativo interativo desenvolvido e mantido pela CONTRATADA, com visualização de dados em tempo real, gráficos dinâmicos, tabelas paginadas, filtros avançados, exportação de relatórios (PDF/CSV) e controle de acesso por perfis de usuário (RBAC), proporcionando visão completa e controle total do negócio para a CONTRATANTE.',
+    rules: 'Sidebar de navegação clara. Dashboard principal com KPIs resumidos + gráficos de tendência. Tabelas com paginação (máx 50 linhas/página), ordenação e busca. Loading states e empty states informativos.',
+    obligations: 'A CONTRATADA mantém o dashboard funcional, atualizado com dados em tempo real e evolui conforme novas métricas são solicitadas pela CONTRATANTE. Error boundaries para falhas de componentes. Responsivo para tablet/desktop.',
+    clientRights: 'A CONTRATANTE acessa o dashboard 24/7 durante a vigência. Pode criar/editar/excluir registros conforme permissões do seu perfil. Exportar dados em CSV/PDF. Solicitar novas métricas/gráficos que serão implementados conforme cronograma.'
   },
   'CRM': {
-    description: 'Sistema de Customer Relationship Management para gestão completa do relacionamento com clientes: pipeline de vendas (kanban), histórico de interações, segmentação de contatos, automação de follow-ups, relatórios de conversão e previsão de receita.',
-    rules: 'Pipeline visual com estágios customizáveis (lead → qualificado → proposta → negociação → fechado). Cada contato com timeline de atividades (emails, calls, meetings, notes). Tags e segmentos para classificação.',
-    obligations: 'Implementar LGPD: base legal para tratamento de dados pessoais, consentimento explícito para marketing, direito de acesso/retificação/exclusão. Audit log de quem acessou/modificou cada registro.',
-    clientRights: 'A CONTRATANTE é controladora dos dados pessoais dos clientes cadastrados no CRM. Pode exportar base completa em CSV. Pode solicitar exclusão definitiva de registros conforme LGPD.'
+    description: 'Sistema de Customer Relationship Management desenvolvido e mantido pela CONTRATADA para gestão completa do relacionamento com clientes da CONTRATANTE: pipeline de vendas (kanban), histórico de interações, segmentação de contatos, automação de follow-ups, relatórios de conversão e previsão de receita, proporcionando organização e aumento de vendas.',
+    rules: 'Pipeline visual com estágios customizáveis. Timeline de atividades por contato. Tags e segmentos para classificação. LGPD compliant: base legal, consentimento, direito de acesso/retificação/exclusão.',
+    obligations: 'A CONTRATADA implementa LGPD: consentimento explícito para marketing, audit log de acessos, mecanismo de exercício de direitos do titular. Mantém o CRM funcional e evolui conforme necessidades da CONTRATANTE.',
+    clientRights: 'A CONTRATANTE é controladora dos dados pessoais dos clientes cadastrados. Pode exportar base completa em CSV. Pode solicitar exclusão definitiva de registros conforme LGPD. Usa o CRM durante a vigência da assinatura.'
   },
   'ERP': {
-    description: 'Enterprise Resource Planning — sistema integrado de gestão empresarial abrangendo módulos de financeiro (contas a pagar/receber, fluxo de caixa), estoque (entradas/saídas, inventário), vendas (pedidos, orçamentos), compras (cotações, fornecedores) e relatórios gerenciais.',
-    rules: 'Módulos integrados com dados consistentes (venda baixa estoque automaticamente, pagamento atualiza financeiro). Período fiscal configurável. Relatórios em PDF com layout profissional para impressão.',
-    obligations: 'Implementar controle de acesso granular por módulo/função (ex: vendedor vê apenas seus pedidos, gerente vê todos). Backup diário com teste de restore mensal. Conformidade com legislação fiscal brasileira (NF-e, SPED) se aplicável.',
-    clientRights: 'A CONTRATANTE pode operar o ERP autonomamente após treinamento. Dados são exportáveis em formatos padrão (CSV, XML, PDF). Migração para outro ERP possível via exportação estruturada.'
+    description: 'Enterprise Resource Planning — sistema integrado de gestão empresarial desenvolvido e mantido pela CONTRATADA, abrangendo módulos de financeiro (contas a pagar/receber, fluxo de caixa), estoque (entradas/saídas, inventário), vendas (pedidos, orçamentos), compras (cotações, fornecedores) e relatórios gerenciais, proporcionando controle total das operações da CONTRATANTE em uma única plataforma.',
+    rules: 'Módulos integrados com dados consistentes (venda baixa estoque automaticamente). Período fiscal configurável. Relatórios em PDF com layout profissional. Controle de acesso granular por módulo/função.',
+    obligations: 'A CONTRATADA mantém o ERP operacional, seguro e atualizado. Backup diário com teste de restore mensal. Conformidade com legislação fiscal brasileira (NF-e, SPED) se aplicável ao escopo. Suporte prioritário para bugs críticos (sistema fora do ar) em até 4h úteis.',
+    clientRights: 'A CONTRATANTE opera o ERP autonomamente após treinamento inicial fornecido pela CONTRATADA. Pode exportar dados em formatos padrão (CSV, XML, PDF). A propriedade do código e da infraestrutura é da CONTRATADA. Em caso de cancelamento, dados exportados são entregues em até 15 dias após quitação.'
   },
   'Sistema Web': {
-    description: 'Aplicação web customizada desenvolvida sob medida para atender processos específicos da CONTRATANTE, acessível via navegador com autenticação, interface intuitiva, banco de dados dedicado e funcionalidades alinhadas às regras de negócio do cliente.',
-    rules: 'Autenticação obrigatória para áreas restritas (login com email/senha + recuperação). Interface responsiva para desktop e tablet. Feedback visual para todas as ações do usuário (toasts, modais de confirmação).',
-    obligations: 'Documentar funcionalidades entregues em manual do usuário (PDF ou wiki). Treinamento remoto gravado para equipe da CONTRATANTE (mínimo 2 horas). Suporte a bugs críticos (sistema fora do ar) em até 4 horas úteis.',
-    clientRights: 'A CONTRATANTE pode usar o sistema 24/7 durante a vigência. Pode solicitar exportação de dados a qualquer momento. Ao final do contrato, recebe código-fonte completo (se acordado) ou dump de dados.'
+    description: 'Aplicação web customizada desenvolvida e mantida pela CONTRATADA sob medida para atender processos específicos da CONTRATANTE, acessível via navegador com autenticação segura, interface intuitiva, banco de dados dedicado e funcionalidades alinhadas às regras de negócio do cliente, proporcionando solução digital pronta para uso sem preocupação técnica.',
+    rules: 'Autenticação obrigatória para áreas restritas. Interface responsiva para desktop e tablet. Feedback visual para todas as ações. A CONTRATADA gerencia toda a stack técnica (frontend, backend, banco, infraestrutura).',
+    obligations: 'A CONTRATADA documenta funcionalidades em manual do usuário (PDF ou wiki). Fornece treinamento remoto gravado para equipe da CONTRATANTE (mínimo 2 horas). Suporte a bugs críticos em até 4h úteis. Mantém o sistema atualizado e seguro durante toda a vigência.',
+    clientRights: 'A CONTRATANTE usa o sistema 24/7 durante a vigência da assinatura. Pode solicitar exportação de dados a qualquer momento. Pode solicitar novas funcionalidades que serão orçadas e implementadas conforme acordo. Em caso de cancelamento, o acesso é desativado ao final do período pago e os dados mantidos por 30 dias para eventual reativação.'
   },
   'Automação': {
-    description: 'Implementação de workflows automatizados que eliminam tarefas manuais repetitivas: envio automático de emails/SMS baseados em gatilhos, sincronização de dados entre sistemas, geração de relatórios agendados, webhooks para integração em tempo real e bots para atendimento inicial.',
-    rules: 'Cada automação deve ter log de execução (success/fail/timestamp) para auditoria. Retry automático com exponential backoff para falhas transitórias (máximo 3 tentativas). Alerta para falhas definitivas.',
-    obligations: 'Documentar cada automação: gatilho, ação, condições, frequência. Testar em ambiente de staging antes de ativar em produção. Kill switch para desativar automação problemática rapidamente.',
-    clientRights: 'A CONTRATANTE pode solicitar ativação/desativação de automações específicas. Recebe relatório mensal de execuções (quantidade, taxa de sucesso, tempo economizado estimado).'
+    description: 'Workflows automatizados desenvolvidos e mantidos pela CONTRATADA que eliminam tarefas manuais repetitivas da CONTRATANTE: envio automático de emails/SMS baseados em gatilhos, sincronização de dados entre sistemas, geração de relatórios agendados, webhooks para integração em tempo real e bots para atendimento inicial, proporcionando ganho de produtividade e redução de erros operacionais.',
+    rules: 'Cada automação possui log de execução (success/fail/timestamp). Retry automático com exponential backoff (máx 3 tentativas). Alerta para falhas definitivas. Kill switch para desativar automação problemática rapidamente.',
+    obligations: 'A CONTRATADA documenta cada automação (gatilho, ação, condições, frequência). Testa em staging antes de ativar em produção. Monitora execuções e ajusta conforme necessário. Mantém automações operacionais durante a vigência.',
+    clientRights: 'A CONTRATANTE pode solicitar ativação/desativação de automações específicas. Recebe relatório mensal de execuções (quantidade, taxa de sucesso, tempo economizado estimado). Pode solicitar novas automações que serão orçadas e implementadas.'
   },
   'Integração API': {
-    description: 'Conexão técnica entre o sistema da CONTRATANTE e sistemas terceiros (ERPs, CRMs, gateways de pagamento, marketplaces, redes sociais, serviços de email/SMS) via APIs REST/GraphQL/SOAP, permitindo troca automática de dados sem intervenção manual.',
-    rules: 'Credenciais de API (keys, tokens, secrets) armazenadas em environment variables ou secrets manager — nunca em código. Rate limiting respeitado conforme documentação da API terceira. Timeout configurado (máximo 30s por requisição).',
-    obligations: 'Implementar logging de requisições/respostas (sem dados sensíveis) para debugging. Fallback gracioso quando API terceira está indisponível (queue para retry posterior, não perder dados). Documentar mapeamento de campos entre sistemas.',
-    clientRights: 'A CONTRATANTE pode solicitar adição/remoção de integrações durante a vigência (sujeito a reavaliação de escopo/prazo). Recebe documentação das integrações ativas com endpoints e frequência de sincronização.'
+    description: 'Conexões técnicas desenvolvidas e mantidas pela CONTRATADA entre o sistema da CONTRATANTE e sistemas terceiros (ERPs, CRMs, gateways de pagamento, marketplaces, redes sociais, serviços de email/SMS) via APIs REST/GraphQL/SOAP, permitindo troca automática de dados sem intervenção manual e eliminando retrabalho de digitação.',
+    rules: 'Credenciais de API armazenadas em secrets manager — nunca em código. Rate limiting respeitado conforme documentação da API terceira. Timeout configurado (máx 30s). Logging de requisições/respostas (sem dados sensíveis) para debugging.',
+    obligations: 'A CONTRATADA implementa fallback gracioso quando API terceira está indisponível (queue para retry). Documenta mapeamento de campos entre sistemas. Monitora saúde das integrações e alerta em caso de falha. Mantém integrações operacionais durante a vigência.',
+    clientRights: 'A CONTRATANTE pode solicitar adição/remoção de integrações durante a vigência (sujeito a reavaliação de escopo/prazo/valor). Recebe documentação das integrações ativas. Se uma API terceira sair do ar ou mudar, a CONTRATADA adapta a integração sem custo adicional se a mudança for razoável.'
   },
   'Mercado Pago': {
-    description: 'Gateway de pagamento líder na América Latina pertencente ao Mercado Livre, aceitando PIX (instantâneo), cartões de crédito/débito (todas as bandeiras), boleto bancário e carteira digital Mercado Pago, com checkout transparente ou redirecionado e conciliação automática.',
-    rules: 'Access Token de produção armazenado como secret (nunca exposto no frontend). X-Idempotency-Key obrigatório em toda requisição POST para evitar cobranças duplicadas. Webhook configurado para atualização automática de status de pagamento.',
-    obligations: 'Implementar tratamento de todos os status de pagamento (pending, approved, rejected, cancelled, refunded). Exibir QR Code PIX com countdown de expiração (30 min padrão). Reconciliação diária entre pedidos do sistema e transações do MP.',
-    clientRights: 'A CONTRATANTE recebe os valores pagos diretamente em sua conta Mercado Pago (liquidação D+1 para PIX, D+30 para cartão, ou antecipação conforme plano). Taxa do Mercado Pago (1% PIX, 3-5% cartão) é descontada na fonte pela plataforma.'
+    description: 'Gateway de pagamento líder na América Latina integrado pela CONTRATADA à aplicação, aceitando PIX (instantâneo), cartões de crédito/débito (todas as bandeiras), boleto bancário e carteira digital Mercado Pago, com checkout transparente, conciliação automática e liquidação direta na conta da CONTRATANTE, proporcionando recebimento rápido e seguro.',
+    rules: 'Access Token de produção armazenado como secret pela CONTRATADA. X-Idempotency-Key obrigatório para evitar cobranças duplicadas. Webhook configurado para atualização automática de status de pagamento no sistema.',
+    obligations: 'A CONTRATADA implementa tratamento de todos os status de pagamento (pending, approved, rejected, cancelled, refunded). Exibe QR Code PIX com countdown. Reconciliação diária entre pedidos do sistema e transações do MP. Mantém integração operacional e atualizada conforme mudanças da API do Mercado Pago.',
+    clientRights: 'A CONTRATANTE recebe os valores pagos diretamente em sua conta Mercado Pago (liquidação D+1 para PIX, D+30 para cartão, ou antecipação conforme plano MP). Taxa do Mercado Pago (1% PIX, 3-5% cartão) é descontada na fonte pela plataforma. A CONTRATANTE pode acessar extrato detalhado no app/dashboard do Mercado Pago. A integração é mantida pela CONTRATADA durante a vigência.'
   },
   'Stripe': {
-    description: 'Gateway de pagamento global com infraestrutura developer-first, aceitando cartões internacionais (Visa, Mastercard, Amex), carteiras digitais (Apple Pay, Google Pay), PIX via parceria local, e métodos de pagamento alternativos em 135+ moedas.',
-    rules: 'Secret key nunca no frontend — usar publishable key + Stripe.js para tokenização segura. PCI DSS compliance via Stripe Elements (dados do cartão nunca tocam o servidor da CONTRATANTE). Webhook signing secret para validar eventos.',
-    obligations: 'Implementar 3D Secure 2.0 para conformidade PSD2 (Europa) e redução de chargebacks. Customer Portal Stripe para gestão de assinaturas pelo próprio cliente. Refund flow implementado no painel admin.',
-    clientRights: 'A CONTRATANTE recebe payouts diretamente em sua conta bancária cadastrada no Stripe (D+2 Brasil). Dashboard Stripe acessível para visão completa de transações, disputas e métricas.'
+    description: 'Gateway de pagamento global integrado pela CONTRATADA, aceitando cartões internacionais (Visa, Mastercard, Amex), carteiras digitais (Apple Pay, Google Pay), PIX via parceria local e métodos alternativos em 135+ moedas, com infraestrutura developer-first, PCI DSS compliance via Stripe Elements e payouts diretos na conta bancária da CONTRATANTE.',
+    rules: 'Secret key armazenada como secret pela CONTRATADA — nunca no frontend. PCI DSS compliance via Stripe Elements (dados do cartão nunca tocam servidor da CONTRATANTE). Webhook signing secret para validar eventos. 3D Secure 2.0 implementado.',
+    obligations: 'A CONTRATADA implementa Customer Portal Stripe para gestão de assinaturas pelo cliente (se aplicável). Refund flow no painel admin. Monitora disputas/chargebacks. Mantém integração atualizada conforme mudanças da API Stripe.',
+    clientRights: 'A CONTRATANTE recebe payouts diretamente em conta bancária cadastrada no Stripe (D+2 Brasil). Acessa dashboard Stripe para visão completa de transações. A integração é mantida pela CONTRATADA durante a vigência.'
   },
   'PIX': {
-    description: 'Sistema de pagamentos instantâneos do Banco Central do Brasil, operando 24/7/365 com liquidação em segundos, sem custo para pessoa física e com taxas reduzidas para pessoa jurídica, aceito por 150+ milhões de brasileiros via QR Code estático/dinâmico ou chave PIX.',
-    rules: 'QR Code dinâmico gerado por PSP autorizado (Mercado Pago, Stripe, Asaas, etc) com valor exato e identificador único por cobrança. Expiração configurável (padrão 30 minutos). Webhook para confirmação automática de recebimento.',
-    obligations: 'Exibir QR Code com botão "copiar código" alternativo (acessibilidade). Countdown visual de expiração. Instruções claras de pagamento ("Abra o app do banco → PIX → Ler QR Code"). Status atualizado em tempo real após confirmação.',
-    clientRights: 'A CONTRATANTE recebe o valor integral do PIX (menos taxa do PSP, tipicamente 0,99%-1,49%) em sua conta em segundos. Extrato disponível no app do banco e no painel do PSP.'
+    description: 'Sistema de pagamentos instantâneos do Banco Central do Brasil integrado pela CONTRATADA, operando 24/7/365 com liquidação em segundos, aceito por 150+ milhões de brasileiros via QR Code dinâmico ou chave PIX, proporcionando recebimento imediato e experiência de pagamento moderna para os clientes da CONTRATANTE.',
+    rules: 'QR Code dinâmico gerado por PSP autorizado (Mercado Pago, Asaas, etc) com valor exato e identificador único. Expiração configurável (padrão 30 min). Webhook para confirmação automática. A CONTRATADA gerencia a integração técnica.',
+    obligations: 'A CONTRATADA exibe QR Code com botão "copiar código" alternativo. Countdown visual de expiração. Instruções claras de pagamento. Status atualizado em tempo real após confirmação. Mantém integração operacional durante a vigência.',
+    clientRights: 'A CONTRATANTE recebe o valor integral do PIX (menos taxa do PSP, tipicamente 0,99%-1,49%) em sua conta em segundos. Extrato disponível no app do banco e no painel do PSP. A integração PIX é mantida pela CONTRATADA como parte do serviço.'
   },
   'Boleto': {
-    description: 'Título de cobrança bancário tradicional brasileiro com vencimento futuro, compensação em D+1 a D+3 úteis, amplamente aceito por empresas e consumidores sem conta bancária digital, com registro obrigatório na CIP (Câmara Interbancária de Pagamentos) desde 2018.',
-    rules: 'Boleto registrado obrigatoriamente (geração via API do banco ou PSP). Nosso número único por boleto. Data de vencimento mínima D+3 úteis da emissão. Multa/juros configurados conforme contrato (padrão 2% multa + 1% mês juros).',
-    obligations: 'Enviar boleto por email imediatamente após emissão. Implementar webhook/webhook polling para confirmação de pagamento. Segunda via disponível no painel do cliente. Protesto automático opcional após X dias de atraso (configurável).',
-    clientRights: 'A CONTRATANTE pode emitir boletos para seus clientes finais via painel. Recebe valores compensados em conta bancária em D+1 após pagamento. Relatório de títulos em aberto/atrasados disponível para cobrança ativa.'
+    description: 'Título de cobrança bancário tradicional brasileiro integrado pela CONTRATADA, com compensação em D+1 a D+3 úteis, amplamente aceito por empresas e consumidores, com registro obrigatório na CIP desde 2018, proporcionando opção de pagamento para clientes que preferem ou necessitam desse método.',
+    rules: 'Boleto registrado obrigatoriamente via API do banco ou PSP. Nosso número único. Vencimento mínimo D+3 úteis. Multa/juros configurados conforme contrato (padrão 2% multa + 1% mês juros). A CONTRATADA gerencia a integração.',
+    obligations: 'A CONTRATADA envia boleto por email imediatamente após emissão. Implementa webhook/polling para confirmação. Segunda via disponível no painel do cliente. Mantém integração operacional durante a vigência.',
+    clientRights: 'A CONTRATANTE pode emitir boletos para seus clientes finais via painel. Recebe valores compensados em conta bancária em D+1 após pagamento. Relatório de títulos em aberto/atrasados disponível. A integração é mantida pela CONTRATADA.'
   },
   'Gateway de Pagamento': {
-    description: 'Infraestrutura técnica completa para processamento de transações financeiras online, abstraindo complexidade de múltiplos métodos de pagamento (cartão, PIX, boleto, carteira digital) em uma única integração, com conciliação, antifraude e relatórios unificados.',
-    rules: 'Certificação PCI DSS via uso de gateway homologado (nunca armazenar dados sensíveis de cartão diretamente). Sandbox/test environment disponível para validação antes de ir a produção. Split payment disponível se marketplace.',
-    obligations: 'Implementar retry automático para falhas de comunicação com gateway. Logs de transação com ID do gateway para rastreabilidade. Painel de reconciliação: pedidos do sistema vs transações do gateway (identificar divergências).',
-    clientRights: 'A CONTRATANTE recebe valores líquidos (após taxas do gateway) em conta bancária conforme cronograma do provedor escolhido. Acesso a extrato detalhado de transações via API ou dashboard do gateway.'
+    description: 'Infraestrutura técnica completa de processamento de transações financeiras online integrada e mantida pela CONTRATADA, abstraindo complexidade de múltiplos métodos de pagamento (cartão, PIX, boleto, carteira digital) em uma única integração, com conciliação, antifraude e relatórios unificados, proporcionando recebimento seguro e simplificado para a CONTRATANTE.',
+    rules: 'Certificação PCI DSS via uso de gateway homologado (nunca armazenar dados sensíveis de cartão). Sandbox disponível para testes. Split payment disponível se modelo marketplace.',
+    obligations: 'A CONTRATADA implementa retry automático para falhas. Logs de transação com ID do gateway. Painel de reconciliação: pedidos vs transações (identifica divergências). Mantém integração operacional e atualizada durante a vigência.',
+    clientRights: 'A CONTRATANTE recebe valores líquidos (após taxas do gateway) em conta bancária conforme cronograma do provedor. Acessa extrato detalhado via painel do sistema ou dashboard do gateway. A integração é mantida pela CONTRATADA como parte do serviço de assinatura.'
   },
   'SEO': {
-    description: 'Search Engine Optimization — conjunto de técnicas para melhorar o posicionamento orgânico do site nos resultados do Google e outros buscadores, aumentando tráfego qualificado sem custo por clique, através de otimização técnica, conteúdo relevante e autoridade de domínio.',
-    rules: 'SEO Técnico: title tags únicos (50-60 chars), meta descriptions (150-160 chars), heading hierarchy (H1 único por página), canonical tags, hreflang para multi-idioma, sitemap.xml submetido ao Search Console, robots.txt configurado.',
-    obligations: 'Core Web Vitals otimizados (LCP < 2.5s, INP < 200ms, CLS < 0.1). Structured data (JSON-LD) para rich snippets (Organization, Product, FAQ, BreadcrumbList). Internal linking strategy implementada. Imagens com alt text descritivo e formato WebP.',
-    clientRights: 'A CONTRATANTE recebe relatório mensal de performance SEO: posições no ranking para keywords-alvo, tráfego orgânico (GA4), impressões/cliques (Search Console), backlinks adquiridos e recomendações de conteúdo.'
+    description: 'Search Engine Optimization — técnicas implementadas e mantidas pela CONTRATADA para melhorar o posicionamento orgânico do site/aplicação pública da CONTRATANTE nos resultados do Google, aumentando tráfego qualificado sem custo por clique, através de otimização técnica, conteúdo relevante e autoridade de domínio.',
+    rules: 'SEO Técnico: title tags únicos (50-60 chars), meta descriptions (150-160 chars), heading hierarchy, canonical tags, sitemap.xml submetido ao Search Console, robots.txt configurado. Core Web Vitals otimizados (LCP < 2.5s, INP < 200ms, CLS < 0.1).',
+    obligations: 'A CONTRATADA implementa structured data (JSON-LD) para rich snippets. Internal linking strategy. Imagens com alt text e WebP. Monitora posições no ranking e tráfego orgânico. Ajusta estratégia conforme mudanças de algoritmo do Google.',
+    clientRights: 'A CONTRATANTE recebe relatório mensal de performance SEO: posições para keywords-alvo, tráfego orgânico (GA4), impressões/cliques (Search Console). Beneficia-se de tráfego gratuito crescente durante a vigência. Pode solicitar foco em keywords específicas.'
   },
   'Analytics': {
-    description: 'Implementação de ferramentas de análise de dados (Google Analytics 4, Meta Pixel, Hotjar, Microsoft Clarity) para medir tráfego, comportamento do usuário, conversões, origem de visitantes e performance de campanhas, embasando decisões de marketing e produto com dados reais.',
-    rules: 'GA4 configurado com enhanced measurement ativado (scrolls, outbound clicks, file downloads, video engagement). Eventos customizados para conversões-chave (purchase, lead_form_submit, signup). Consent mode v2 para LGPD/GDPR compliance.',
-    obligations: 'Implementar cookie banner com opções granulares (necessários, analytics, marketing). Anonimização de IP no GA4. Não enviar PII (Personally Identifiable Information) para ferramentas de analytics. Debug via GTM Preview antes de publish.',
-    clientRights: 'A CONTRATANTE tem acesso direto ao GA4, Meta Business Manager e demais dashboards com permissões de administrador. Pode criar relatórios customizados, segmentos e audiências para remarketing.'
+    description: 'Ferramentas de análise de dados implementadas e configuradas pela CONTRATADA (Google Analytics 4, Meta Pixel, Hotjar, Microsoft Clarity) para medir tráfego, comportamento do usuário, conversões, origem de visitantes e performance de campanhas da CONTRATANTE, embasando decisões de marketing e produto com dados reais.',
+    rules: 'GA4 com enhanced measurement ativado. Eventos customizados para conversões-chave. Consent mode v2 para LGPD/GDPR. Cookie banner com opções granulares. Anonimização de IP. Não enviar PII para analytics.',
+    obligations: 'A CONTRATADA configura e mantém as ferramentas de analytics operacionais. Debug via GTM Preview antes de publish. Monitora coleta de dados e ajusta conforme necessário. Garante conformidade LGPD na coleta.',
+    clientRights: 'A CONTRATANTE tem acesso direto ao GA4, Meta Business Manager e demais dashboards com permissões de administrador. Pode criar relatórios customizados, segmentos e audiências para remarketing. É proprietária dos dados coletados sobre seus usuários.'
   },
   'Email Marketing': {
-    description: 'Plataforma e estratégia para envio de emails comerciais em escala (newsletters, promoções, sequências automatizadas, transacionais) com segmentação de audiência, templates responsivos, automação por gatilhos, testes A/B e métricas de abertura/clique/conversão.',
-    rules: 'LGPD/GDPR compliant: opt-in explícito (double opt-in recomendado), link de descadastro visível em todo email, identificação clara do remetente. Enviar apenas para base própria (nunca comprar/alugar listas).',
-    obligations: 'Configurar autenticação de email: SPF, DKIM e DMARC (política quarantine/reject) para deliverability. Warm-up de domínio/IP novo (começar com volumes baixos). Limpeza de lista: remover hard bounces e inativos > 6 meses.',
-    clientRights: 'A CONTRATANTE é proprietária da base de contatos. Pode exportar lista completa (com consentimentos registrados) a qualquer momento. Pode trocar de plataforma (Mailchimp → ActiveCampaign → SendGrid) mantendo a base.'
+    description: 'Plataforma e estratégia de email marketing implementada e gerenciada pela CONTRATADA para envio de emails comerciais em escala (newsletters, promoções, sequências automatizadas, transacionais) com segmentação, templates responsivos, automação por gatilhos, testes A/B e métricas de abertura/clique/conversão, proporcionando canal de comunicação direto e mensurável com a base da CONTRATANTE.',
+    rules: 'LGPD compliant: opt-in explícito (double opt-in recomendado), link de descadastro visível, identificação clara do remetente. Enviar apenas para base própria. Autenticação SPF, DKIM e DMARC configurada.',
+    obligations: 'A CONTRATADA configura autenticação de email para deliverability. Warm-up de domínio/IP novo. Limpeza de lista (remove hard bounces e inativos > 6 meses). Monitora taxas de abertura/clique/bounce/spam. Mantém plataforma operacional durante a vigência.',
+    clientRights: 'A CONTRATANTE é proprietária da base de contatos. Pode exportar lista completa (com consentimentos) a qualquer momento. Pode trocar de plataforma mantendo a base. Recebe relatórios de performance de campanhas.'
   },
   'WhatsApp API': {
-    description: 'Integração oficial com WhatsApp Business API (via Meta Cloud API ou BSPs como Twilio, Zenvia, MessageBird) para envio de mensagens template aprovadas, atendimento automatizado via chatbot, notificações transacionais (pedido confirmado, boleto vencido) e suporte humano via inbox compartilhado.',
-    rules: 'Mensagens iniciadas pela empresa devem usar templates pré-aprovados pela Meta (categoria UTILITY ou MARKETING). Janela de 24h para mensagens free-form após último contato do cliente. Opt-out respeitado imediatamente.',
-    obligations: 'Implementar fila de mensagens com retry para falhas de entrega. Webhook para recebimento de mensagens dos clientes (resposta em até X minutos via bot ou humano). Métricas: taxa de entrega, leitura, resposta e bloqueios.',
-    clientRights: 'A CONTRATANTE acessa inbox WhatsApp compartilhado para atender clientes manualmente quando necessário. Histórico de conversas exportável. Base de contatos sincronizada com CRM se integrado.'
+    description: 'Integração oficial com WhatsApp Business API implementada e mantida pela CONTRATADA (via Meta Cloud API ou BSPs como Twilio, Zenvia) para envio de mensagens template aprovadas, atendimento automatizado via chatbot, notificações transacionais (pedido confirmado, boleto vencido) e suporte humano via inbox compartilhado, proporcionando canal de comunicação preferido dos brasileiros para a CONTRATANTE.',
+    rules: 'Mensagens iniciadas pela empresa usam templates pré-aprovados pela Meta. Janela de 24h para free-form após último contato do cliente. Opt-out respeitado imediatamente. A CONTRATADA gerencia a integração técnica e a conta BSP.',
+    obligations: 'A CONTRATADA implementa fila de mensagens com retry. Webhook para recebimento de mensagens dos clientes. Métricas: taxa de entrega, leitura, resposta e bloqueios. Mantém integração operacional e atualizada conforme mudanças da Meta.',
+    clientRights: 'A CONTRATANTE acessa inbox WhatsApp compartilhado para atender manualmente quando necessário. Histórico exportável. Base sincronizada com CRM se integrado. Custos por mensagem (Meta) podem ser inclusos ou cobrados separadamente conforme volume e plano acordado.'
   },
   'Chatbot': {
-    description: 'Agente conversacional automatizado baseado em regras (fluxo decision tree) ou inteligência artificial (NLP/LLM) para atender clientes 24/7, responder perguntas frequentes, qualificar leads, agendar reuniões e escalar para atendente humano quando necessário.',
-    rules: 'Sempre oferecer opção "falar com humano" claramente (não prender o usuário no bot). Identificar-se como assistente virtual (transparência). Coletar apenas dados necessários para o atendimento (minimização LGPD).',
-    obligations: 'Implementar handoff suave para humano com contexto da conversa preservado. Logs de conversas para melhoria contínua e auditoria. Fallback gracioso quando bot não entende (não loop infinito).',
-    clientRights: 'A CONTRATANTE pode editar fluxos/respostas do chatbot via painel visual (se ferramenta no-code) ou solicitar alterações à CONTRATADA. Recebe relatório de atendimentos: volume, resolução pelo bot vs humano, satisfação (CSAT).'
+    description: 'Agente conversacional automatizado desenvolvido e mantido pela CONTRATADA, baseado em regras (fluxo decision tree) ou inteligência artificial (NLP/LLM), para atender clientes da CONTRATANTE 24/7, responder perguntas frequentes, qualificar leads, agendar reuniões e escalar para humano quando necessário, proporcionando atendimento imediato e redução de custo operacional.',
+    rules: 'Sempre oferecer opção "falar com humano" claramente. Identificar-se como assistente virtual. Coletar apenas dados necessários (minimização LGPD). Handoff suave para humano com contexto preservado.',
+    obligations: 'A CONTRATADA implementa logs de conversas para melhoria contínua. Fallback gracioso quando bot não entende. Monitora métricas: volume, resolução bot vs humano, CSAT. Ajusta fluxos conforme feedback e análise de conversas.',
+    clientRights: 'A CONTRATANTE pode editar fluxos/respostas via painel visual (se ferramenta no-code inclusa) ou solicitar alterações à CONTRATADA. Recebe relatório de atendimentos. Usa o chatbot durante a vigência da assinatura.'
   },
   'UI/UX Design': {
-    description: 'Design de Interface do Usuário (UI) e Experiência do Usuário (UX) abrangendo pesquisa com usuários, arquitetura de informação, wireframes, protótipos interativos, design visual (cores, tipografia, iconografia), design system e testes de usabilidade para garantir produto intuitivo e agradável.',
-    rules: 'Seguir heurísticas de Nielsen (visibilidade do status, correspondência com mundo real, controle do usuário, consistência, prevenção de erros, reconhecimento vs memorização, flexibilidade, estética minimalista, ajuda para erros, ajuda e documentação).',
-    obligations: 'Entregar protótipo clicável em Figma para validação antes do desenvolvimento. Design system documentado (componentes, estados, tokens de cor/espaçamento). Teste de usabilidade com mínimo 5 usuários representativos.',
-    clientRights: 'A CONTRATANTE aprova cada etapa do design (wireframe → visual → protótipo) antes do desenvolvimento iniciar. Recebe arquivos Figma editáveis ao final do projeto para evoluções futuras.'
+    description: 'Design de Interface (UI) e Experiência do Usuário (UX) desenvolvido pela CONTRATADA abrangendo pesquisa com usuários, arquitetura de informação, wireframes, protótipos interativos, design visual (cores, tipografia, iconografia), design system e testes de usabilidade, garantindo que a aplicação seja intuitiva, agradável e eficiente para os usuários finais da CONTRATANTE.',
+    rules: 'Segue heurísticas de Nielsen (visibilidade do status, correspondência com mundo real, controle do usuário, consistência, prevenção de erros, reconhecimento vs memorização, flexibilidade, estética minimalista, ajuda para erros). Protótipo clicável em Figma para validação antes do desenvolvimento.',
+    obligations: 'A CONTRATADA entrega protótipo para aprovação da CONTRATANTE antes de desenvolver. Design system documentado. Teste de usabilidade com mínimo 5 usuários representativos. Mantém consistência visual durante evoluções.',
+    clientRights: 'A CONTRATANTE aprova cada etapa do design (wireframe → visual → protótipo) antes do desenvolvimento. Pode solicitar ajustes razoáveis durante a vigência. A propriedade dos arquivos de design (Figma) é da CONTRATADA, mas a CONTRATANTE pode solicitar view access para acompanhamento.'
   },
   'Figma': {
-    description: 'Ferramenta de design colaborativo baseada em nuvem permitindo criação de interfaces, protótipos interativos, design systems com componentes reutilizáveis, handoff para desenvolvedores (specs, CSS, assets) e comentários em tempo real entre stakeholders.',
-    rules: 'Arquivos organizados por projeto com páginas separadas (Cover, Wireframes, UI Design, Prototypes, Design System). Auto-layout em todos os componentes para responsividade. Variáveis Figma para tokens de design (cores, spacing, radius).',
-    obligations: 'Manter biblioteca de componentes publicada e versionada. Dev Mode ativado para handoff preciso. Assets exportados em formatos otimizados (SVG para ícones, WebP/PNG para imagens).',
-    clientRights: 'A CONTRATANTE recebe acesso ao arquivo Figma com permissão de view/comment (ou editor se acordado). Pode compartilhar com stakeholders internos. Exportar assets e specs a qualquer momento.'
+    description: 'Ferramenta de design colaborativo utilizada pela CONTRATADA para criar interfaces, protótipos interativos, design systems com componentes reutilizáveis e handoff preciso para desenvolvimento, permitindo validação visual com a CONTRATANTE antes do desenvolvimento e garantindo fidelidade entre design aprovado e produto final.',
+    rules: 'Arquivos organizados por projeto. Auto-layout em componentes. Variáveis Figma para tokens de design. Dev Mode ativado para handoff. Biblioteca de componentes publicada e versionada.',
+    obligations: 'A CONTRATADA mantém arquivos Figma atualizados conforme evoluções do produto. Assets exportados em formatos otimizados (SVG, WebP). Compartilha link de view/comment com a CONTRATANTE para acompanhamento.',
+    clientRights: 'A CONTRATANTE recebe acesso ao arquivo Figma com permissão de view/comment para acompanhar o progresso do design. Pode comentar e solicitar ajustes diretamente no arquivo. A propriedade do arquivo é da CONTRATADA.'
   },
   'Identidade Visual': {
-    description: 'Construção sistemática da marca incluindo logotipo (versões principal, secundária, ícone), paleta de cores (primária, secundária, neutra com códigos HEX/RGB/CMYK/Pantone), tipografia (fontes primária/secundária com hierarquia), elementos gráficos de apoio e manual de marca com regras de uso.',
-    rules: 'Logotipo deve funcionar em preto e branco, tamanho mínimo 24px de altura, e área de respiro respeitada. Paleta com contraste WCAG AA mínimo (4.5:1 para texto). Fontes com licenças comerciais válidas (ou open source como Inter, Roboto).',
-    obligations: 'Entregar manual de marca em PDF (mínimo 20 páginas) cobrindo: construção do logo, versões, usos incorretos, paleta, tipografia, aplicações (cartão, assinatura email, redes sociais, uniforme). Arquivos fonte em AI/EPS/SVG/PNG.',
-    clientRights: 'A CONTRATANTE é proprietária exclusiva da identidade visual criada (cessão de direitos patrimoniais via contrato). Pode registrar marca no INPI. Pode aplicar em qualquer material sem royalties à CONTRATADA.'
+    description: 'Construção sistemática da marca da CONTRATANTE realizada pela CONTRATADA, incluindo logotipo (versões principal, secundária, ícone), paleta de cores (primária, secundária, neutra com códigos HEX/RGB/CMYK/Pantone), tipografia (fontes primária/secundária com hierarquia), elementos gráficos de apoio e manual de marca com regras de uso, proporcionando identidade profissional e memorável para o negócio.',
+    rules: 'Logotipo original (não usa templates). Versões: colorida, monocromática, negativa. Formatos: SVG, PNG, PDF, ICO. Paleta com contraste WCAG AA mínimo. Fontes com licenças válidas.',
+    obligations: 'A CONTRATADA realiza pesquisa de concorrência antes da criação. Apresenta moodboard e rationale criativo. Mínimo 2 rodadas de alteração inclusas. Entrega manual de marca em PDF (mínimo 20 páginas) + arquivos fonte.',
+    clientRights: 'A CONTRATANTE é proprietária exclusiva da identidade visual criada (cessão de direitos patrimoniais via cláusula específica deste contrato). Pode registrar marca no INPI. Pode aplicar em qualquer material sem royalties. Esta é uma exceção: a identidade visual é entregue à CONTRATANTE mesmo em modelo de assinatura, pois é ativo de marca do cliente.'
   },
   'Logo': {
-    description: 'Criação de logotipo profissional representando visualmente a essência da marca, incluindo conceito criativo, 3 propostas iniciais, rodadas de refinamento, versões finais (horizontal, vertical, ícone/favicon) e arquivos em todos os formatos necessários para uso digital e impresso.',
-    rules: 'Logo deve ser original (não usar templates/bancos de imagem). Versões: colorida, monocromática, negativa (fundo escuro). Formatos entregues: SVG (vetorial escalável), PNG (transparente, múltiplos tamanhos), PDF (impressão), ICO (favicon).',
-    obligations: 'Pesquisa de concorrência e benchmarking antes da criação. Apresentação de moodboard e rationale criativo para cada proposta. Mínimo 2 rodadas de alteração inclusas no escopo.',
-    clientRights: 'A CONTRATANTE recebe cessão total de direitos autorais patrimoniais do logo (documento assinado). Pode usar, modificar, registrar e licenciar livremente. Arquivos fonte (AI/EPS) entregues para edição futura.'
+    description: 'Criação de logotipo profissional realizada pela CONTRATADA representando visualmente a essência da marca da CONTRATANTE, incluindo conceito criativo, 3 propostas iniciais, rodadas de refinamento, versões finais (horizontal, vertical, ícone/favicon) e arquivos em todos os formatos para uso digital e impresso.',
+    rules: 'Logo original. Versões: colorida, monocromática, negativa. Formatos: SVG (vetorial), PNG (transparente), PDF (impressão), ICO (favicon). Área de respiro respeitada. Tamanho mínimo 24px de altura.',
+    obligations: 'A CONTRATADA pesquisa concorrência. Apresenta moodboard e rationale. Mínimo 2 rodadas de alteração inclusas. Entrega arquivos fonte (AI/EPS) + derivados.',
+    clientRights: 'A CONTRATANTE recebe cessão total de direitos autorais patrimoniais do logo (documento assinado). Pode usar, modificar, registrar no INPI e licenciar livremente. Arquivos fonte entregues. Esta é uma exceção: o logo é entregue à CONTRATANTE mesmo em modelo de assinatura, pois é ativo de marca do cliente.'
   },
   'Segurança': {
-    description: 'Implementação de camadas de proteção contra ameaças cibernéticas incluindo OWASP Top 10 (injection, broken auth, sensitive data exposure, XXE, broken access control, misconfiguration, XSS, insecure deserialization, vulnerable components, insufficient logging), hardening de servidor, monitoramento de intrusão e plano de resposta a incidentes.',
-    rules: 'HTTPS obrigatório em 100% das páginas (HSTS habilitado). Headers de segurança: Content-Security-Policy, X-Frame-Options, X-Content-Type-Options, Referrer-Policy, Permissions-Policy. Senhas com bcrypt/argon2 (cost factor mínimo 12).',
-    obligations: 'Dependências auditadas semanalmente (npm audit, snyk, dependabot). Penetration test básico antes do go-live (OWASP ZAP ou Burp Suite Community). Plano de resposta a incidentes documentado (quem faz o quê em caso de breach).',
-    clientRights: 'A CONTRATANTE pode solicitar relatório de vulnerabilidades identificadas e corrigidas. Em caso de incidente de segurança, CONTRATADA deve notificar em até 24h e atuar na contenção/remediação prioritariamente.'
+    description: 'Camadas de proteção contra ameaças cibernéticas implementadas e mantidas pela CONTRATADA, cobrindo OWASP Top 10 (injection, broken auth, sensitive data exposure, XXE, broken access control, misconfiguration, XSS, insecure deserialization, vulnerable components, insufficient logging), hardening de servidor, monitoramento de intrusão e plano de resposta a incidentes, garantindo que os dados da CONTRATANTE e de seus usuários estejam protegidos.',
+    rules: 'HTTPS obrigatório (HSTS habilitado). Headers de segurança: CSP, X-Frame-Options, X-Content-Type-Options, Referrer-Policy. Senhas com bcrypt/argon2 (cost factor mínimo 12). Dependências auditadas semanalmente.',
+    obligations: 'A CONTRATADA realiza penetration test básico antes do go-live. Mantém dependências atualizadas. Plano de resposta a incidentes documentado. Notifica a CONTRATANTE em até 24h em caso de breach. Age prioritariamente na contenção/remediação.',
+    clientRights: 'A CONTRATANTE pode solicitar relatório de vulnerabilidades identificadas e corrigidas. Em caso de incidente, é notificada em até 24h com detalhes do ocorrido, impacto e medidas tomadas. A segurança é mantida continuamente pela CONTRATADA durante a vigência.'
   },
   'SSL': {
-    description: 'Certificado SSL/TLS (Secure Sockets Layer / Transport Layer Security) que criptografa a comunicação entre navegador do usuário e servidor, exibindo cadeado na barra de endereço, protocolo HTTPS e garantindo integridade/confidencialidade dos dados transmitidos (senhas, cartões, dados pessoais).',
-    rules: 'Certificado válido (não expirado) com cadeia completa instalada. TLS 1.2 mínimo (TLS 1.3 preferencial). Cipher suites seguros (AEAD: AES-GCM, ChaCha20-Poly1305). Redirecionamento HTTP → HTTPS automático (301).',
-    obligations: 'Renovação automática via Let\'s Encrypt (certbot/auto-renew) ou monitoramento de expiração com alerta 30 dias antes. Mixed content eliminado (nenhum recurso HTTP em página HTTPS). SSL Labs scan rating A mínimo.',
-    clientRights: 'A CONTRATANTE tem site com cadeado verde/HTTPS, transmitindo confiança aos visitantes e cumprindo requisito básico do Google para ranqueamento (HTTPS é fator de ranking desde 2014).'
+    description: 'Certificado SSL/TLS configurado e mantido pela CONTRATADA, criptografando a comunicação entre navegador do usuário e servidor, exibindo cadeado na barra de endereço, protocolo HTTPS e garantindo integridade/confidencialidade dos dados transmitidos (senhas, cartões, dados pessoais), transmitindo confiança aos usuários e cumprindo requisito do Google para ranqueamento.',
+    rules: 'Certificado válido com cadeia completa. TLS 1.2 mínimo (1.3 preferencial). Cipher suites seguros (AEAD). Redirecionamento HTTP → HTTPS automático (301). HSTS habilitado.',
+    obligations: 'A CONTRATADA renova automaticamente via Let\'s Encrypt ou monitora expiração com alerta 30 dias antes. Elimina mixed content. SSL Labs scan rating A mínimo. Mantém SSL válido durante toda a vigência.',
+    clientRights: 'A CONTRATANTE tem site/app com cadeado HTTPS, transmitindo confiança aos usuários e cumprindo requisitos de segurança e SEO. A renovação e manutenção do SSL é responsabilidade integral da CONTRATADA durante a vigência.'
   },
   'LGPD': {
-    description: 'Adequação à Lei Geral de Proteção de Dados Pessoais (Lei 13.709/2018) garantindo tratamento lícito de dados pessoais com base legal definida (consentimento, legítimo interesse, execução de contrato), transparência ao titular, minimização de coleta, segurança adequada e respeito aos direitos dos titulares (acesso, correção, exclusão, portabilidade, revisão de decisões automatizadas).',
-    rules: 'Política de Privacidade pública e acessível (link no footer). Cookie banner com categorias (necessários, analytics, marketing) e opção de recusar não-necessários. Registro de operações de tratamento (ROPA) documentado. DPO encarregado indicado (interno ou externo).',
-    obligations: 'Implementar mecanismo de exercício de direitos do titular (formulário ou email dedicado com resposta em até 15 dias). Anonimização/pseudonimização quando possível. Avaliação de Impacto (DPIA) para tratamentos de alto risco. Notificação à ANPD e titulares em caso de incidente em até 2 dias úteis.',
-    clientRights: 'A CONTRATANTE é Controladora dos dados pessoais tratados pelo sistema. CONTRATADA é Operadora (processa dados em nome da Controladora). CONTRATANTE pode solicitar relatório de conformidade LGPD e evidências de medidas técnicas/organizacionais implementadas.'
+    description: 'Adequação à Lei Geral de Proteção de Dados Pessoais (Lei 13.709/2018) implementada pela CONTRATADA, garantindo tratamento lícito de dados pessoais com base legal definida, transparência ao titular, minimização de coleta, segurança adequada e respeito aos direitos dos titulares (acesso, correção, exclusão, portabilidade, revisão de decisões automatizadas), protegendo a CONTRATANTE de sanções administrativas e reputacionais.',
+    rules: 'Política de Privacidade pública e acessível. Cookie banner com categorias e opção de recusar não-necessários. Registro de operações de tratamento (ROPA) documentado. DPO encarregado indicado. Consent mode v2 implementado.',
+    obligations: 'A CONTRATADA implementa mecanismo de exercício de direitos do titular (resposta em até 15 dias). Anonimização/pseudonimização quando possível. DPIA para tratamentos de alto risco. Notificação à ANPD e titulares em caso de incidente em até 2 dias úteis. Mantém conformidade LGPD durante toda a vigência.',
+    clientRights: 'A CONTRATANTE é Controladora dos dados pessoais tratados. A CONTRATADA é Operadora (processa em nome da Controladora). A CONTRATANTE pode solicitar relatório de conformidade LGPD e evidências de medidas implementadas. Em caso de sanção por falha técnica da CONTRATADA, esta assume responsabilidade conforme cláusula de limitação de responsabilidade.'
   },
   'Backup': {
-    description: 'Cópia de segurança automatizada e periódica de todos os dados críticos (banco de dados, arquivos uploads, configurações) armazenada em localização geográfica distinta do ambiente de produção, com política de retenção definida, criptografia em repouso e testes regulares de restauração para garantir recuperabilidade em caso de perda, corrupção ou ataque ransomware.',
-    rules: 'Backup diário incremental + semanal completo. Retenção: 30 dias diários, 12 semanas semanais, 12 meses mensais (política 3-2-1: 3 cópias, 2 mídias diferentes, 1 offsite). Criptografia AES-256 em repouso.',
-    obligations: 'Teste de restore trimestral documentado (RTO < 4h, RPO < 24h para dados críticos). Monitoramento de sucesso/falha de backup com alerta imediato em caso de falha. Logs de backup acessíveis para auditoria.',
-    clientRights: 'A CONTRATANTE pode solicitar restore pontual de dados (arquivo específico, registro de banco) mediante solicitação formal. Ao final do contrato, recebe dump completo dos dados em formato aberto (SQL, CSV, JSON).'
+    description: 'Cópia de segurança automatizada e periódica de todos os dados da aplicação gerenciada integralmente pela CONTRATADA, armazenada em localização geográfica distinta da produção, com política de retenção definida, criptografia em repouso e testes regulares de restauração, garantindo recuperabilidade em caso de perda, corrupção ou ataque ransomware e protegendo o negócio da CONTRATANTE.',
+    rules: 'Backup diário incremental + semanal completo. Retenção: 30 dias diários, 12 semanas semanais, 12 meses mensais (política 3-2-1). Criptografia AES-256 em repouso. Offsite em região diferente.',
+    obligations: 'A CONTRATADA realiza teste de restore trimestral documentado (RTO < 4h, RPO < 24h). Monitora sucesso/falha de backup com alerta imediato. Mantém logs de backup acessíveis para auditoria. Garante recuperabilidade durante toda a vigência.',
+    clientRights: 'A CONTRATANTE pode solicitar restore pontual de dados (arquivo específico, registro de banco) mediante solicitação formal. Ao final do contrato (cancelamento), recebe dump completo dos seus dados em formato aberto (SQL, CSV, JSON) em até 15 dias após quitação. Após 30 dias do cancelamento, os backups são excluídos definitivamente.'
   },
   'Monitoramento': {
-    description: 'Observabilidade contínua da infraestrutura e aplicação através de métricas (CPU, memória, latência, throughput), logs centralizados (agregação, busca, alertas), traces distribuídos (rastreamento de requisições entre serviços) e alertas proativos (email, Slack, SMS, PagerDuty) para detecção e resposta rápida a anomalias antes que impactem usuários finais.',
-    rules: 'Dashboards com KPIs principais: uptime %, latency p50/p95/p99, error rate, request rate (RED method). Alertas configurados com thresholds razoáveis (evitar alert fatigue). Runbooks documentados para cada tipo de alerta.',
-    obligations: 'Uptime monitoring externo (Pingdom, UptimeRobot) verificando a cada 1 minuto. Application Performance Monitoring (APM) com New Relic, Datadog ou Sentry. Log aggregation com ELK, Loki ou CloudWatch Logs. Retenção de logs mínima 90 dias.',
-    clientRights: 'A CONTRATANTE pode acessar dashboards de monitoramento (view-only) para acompanhar saúde do sistema. Recebe relatório mensal de SLA: uptime %, incidentes, tempo médio de resolução (MTTR), melhorias implementadas.'
+    description: 'Observabilidade contínua da infraestrutura e aplicação implementada e mantida pela CONTRATADA, através de métricas (CPU, memória, latência, throughput), logs centralizados, traces distribuídos e alertas proativos (email, Slack, SMS), permitindo detecção e resposta rápida a anomalias antes que impactem os usuários da CONTRATANTE, garantindo estabilidade e performance do sistema.',
+    rules: 'Dashboards com KPIs: uptime %, latency p50/p95/p99, error rate, request rate (RED method). Alertas com thresholds razoáveis (evitar alert fatigue). Runbooks documentados. Uptime monitoring externo a cada 1 minuto.',
+    obligations: 'A CONTRATADA mantém APM (New Relic, Datadog ou Sentry), log aggregation (ELK, Loki ou CloudWatch) e retention de logs mínima 90 dias. Responde a alertas críticos em até 1h útil. Mantém monitoramento operacional 24/7 durante a vigência.',
+    clientRights: 'A CONTRATANTE pode acessar dashboards de monitoramento (view-only) para acompanhar saúde do sistema. Recebe relatório mensal de SLA: uptime %, incidentes, MTTR, melhorias implementadas. Beneficia-se de detecção proativa de problemas antes que afetem seus usuários.'
   }
 };
 
 // Lista de tecnologias para os chips (extraída do database)
 const TECH_OPTIONS = Object.keys(TECH_SCOPE_DATABASE);
-
 let selectedTechs = new Set();
 
 // ==========================================
@@ -439,18 +439,12 @@ let selectedTechs = new Set();
 // ==========================================
 function generateScopeText(selectedTechnologies) {
   if (!selectedTechnologies || selectedTechnologies.length === 0) {
-    return {
-      intro: 'Desenvolvimento padrão conforme alinhamento prévio entre as partes.',
-      detailedClauses: []
-    };
+    return { intro: 'Desenvolvimento padrão conforme alinhamento prévio entre as partes.', detailedClauses: [] };
   }
-
   const techList = selectedTechnologies.join(', ');
-  let intro = `O presente contrato tem por escopo técnico a estruturação, o desenvolvimento, a implantação e a entrega dos serviços de tecnologia abaixo discriminados, utilizando as seguintes tecnologias, plataformas, ferramentas e metodologias: ${techList}.`;
-
+  let intro = `O presente contrato tem por escopo técnico a estruturação, o desenvolvimento, a implantação e a manutenção contínua dos serviços de tecnologia abaixo discriminados, utilizando as seguintes tecnologias, plataformas, ferramentas e metodologias: ${techList}.`;
   const detailedClauses = [];
-
-  selectedTechnologies.forEach((tech, index) => {
+  selectedTechnologies.forEach((tech) => {
     const scope = TECH_SCOPE_DATABASE[tech];
     if (scope) {
       detailedClauses.push({
@@ -462,7 +456,6 @@ function generateScopeText(selectedTechnologies) {
       });
     }
   });
-
   return { intro, detailedClauses, techList };
 }
 
@@ -962,14 +955,13 @@ window.signContract = async () => {
 window.downloadMyContract = () => generatePDFDocument(currentProject, currentContract);
 
 // ==========================================
-// PDF GENERATOR COM ESCOPO INTELIGENTE
+// PDF GENERATOR — MODELO SaaS / ASSINATURA
 // ==========================================
 function generatePDFDocument(proj, contract) {
   const { jsPDF } = window.jspdf;
   const doc = new jsPDF();
   const logoBase64 = getLogoBase64();
 
-  // Logo com borda arredondada
   if (logoBase64) {
     const lx=20,ly=15,lw=22,lh=22,lr=4;
     doc.setFillColor(11,15,25); doc.roundedRect(lx,ly,lw,lh,lr,lr,'F');
@@ -981,26 +973,26 @@ function generatePDFDocument(proj, contract) {
   doc.setFontSize(9); doc.setTextColor(100); doc.setFont("helvetica","normal"); doc.text("INOVAÇÃO E GESTÃO EM TECNOLOGIA",50,32);
   doc.setDrawColor(6,182,212); doc.setLineWidth(0.5); doc.line(20,42,190,42);
 
-  doc.setFontSize(14); doc.setTextColor(0); doc.setFont("helvetica","bold"); doc.text("CONTRATO DE PRESTAÇÃO DE SERVIÇOS DE TECNOLOGIA",20,52);
+  doc.setFontSize(14); doc.setTextColor(0); doc.setFont("helvetica","bold"); doc.text("CONTRATO DE LICENCIAMENTO DE SOFTWARE E PRESTAÇÃO DE SERVIÇOS",20,52);
   doc.setFontSize(10); doc.setFont("helvetica","normal");
-  doc.text(`CONTRATADA: SILVEN TEC`,20,62);
-  doc.text(`CONTRATANTE: ${proj.client_name}`,20,69);
-  doc.text(`OBJETO DO CONTRATO: ${proj.title}`,20,76);
+  doc.text(`CONTRATADA (LICENCIANTE): SILVEN TEC`,20,62);
+  doc.text(`CONTRATANTE (LICENCIADO): ${proj.client_name}`,20,69);
+  doc.text(`OBJETO: ${proj.title}`,20,76);
   doc.text(`VIGÊNCIA: De ${formatDate(proj.start_date)} a ${formatDate(proj.deadline)} (último dia do mês da última parcela)`,20,83);
-  const supportText = proj.support_type==='com_suporte'?'INCLUSO (Em dias úteis e horário comercial)':'NÃO INCLUSO (Apenas desenvolvimento)';
+  const supportText = proj.support_type==='com_suporte'?'INCLUSO (Em dias úteis e horário comercial)':'NÃO INCLUSO (Apenas desenvolvimento inicial)';
   doc.text(`MODALIDADE DE SUPORTE: ${supportText}`,20,90);
+  doc.text(`MODELO DE CONTRATAÇÃO: SaaS (Software as a Service) / Licenciamento por Assinatura Mensal`,20,97);
 
   // ESCOPO TÉCNICO INTELIGENTE
   const techArray = proj.tech_stack ? proj.tech_stack.split(',').map(t => t.trim()).filter(Boolean) : [];
   const scopeData = generateScopeText(techArray);
 
-  doc.setFont("helvetica","bold"); doc.setFontSize(11); doc.text("ESCOPO TÉCNICO E TECNOLOGIAS:",20,102);
+  let yPos = 107;
+  doc.setFont("helvetica","bold"); doc.setFontSize(11); doc.setTextColor(0); doc.text("ESCOPO TÉCNICO E TECNOLOGIAS:",20,yPos); yPos += 6;
   doc.setFont("helvetica","normal"); doc.setFontSize(9);
   const splitIntro = doc.splitTextToSize(scopeData.intro, 170);
-  doc.text(splitIntro, 20, 108);
-  let yPos = 108 + (splitIntro.length * 4) + 4;
+  doc.text(splitIntro, 20, yPos); yPos += (splitIntro.length * 4) + 4;
 
-  // Cláusulas detalhadas por tecnologia
   if (scopeData.detailedClauses && scopeData.detailedClauses.length > 0) {
     scopeData.detailedClauses.forEach((clause, idx) => {
       if (yPos > 250) { doc.addPage(); yPos = 20; }
@@ -1027,24 +1019,26 @@ function generatePDFDocument(proj, contract) {
     });
   }
 
-  // CLÁUSULAS CONTRATUAIS GERAIS
+  // CLÁUSULAS CONTRATUAIS — MODELO SaaS
   if (yPos > 240) { doc.addPage(); yPos = 20; }
-  doc.setFont("helvetica","bold"); doc.setFontSize(10); doc.setTextColor(0); doc.text("CLÁUSULAS CONTRATUAIS GERAIS:",20,yPos); yPos += 7;
+  doc.setFont("helvetica","bold"); doc.setFontSize(10); doc.setTextColor(0); doc.text("CLÁUSULAS CONTRATUAIS:",20,yPos); yPos += 7;
   doc.setFont("helvetica","normal"); doc.setFontSize(9);
 
   const clauses = [
-    "CLÁUSULA 1 - DO OBJETO: O presente contrato tem por objeto a prestação de serviços de tecnologia conforme escopo técnico detalhado acima, garantindo o cumprimento das regras de negócio e obrigações descritas para cada tecnologia selecionada.",
-    `CLÁUSULA 2 - DO PAGAMENTO: A CONTRATANTE pagará à CONTRATADA o valor fixo mensal de ${formatCurrency(proj.total_value)}, devido até a data de vencimento de cada parcela. O pagamento poderá ser realizado via PIX (QR Code gerado pelo sistema), boleto bancário ou outro meio acordado entre as partes.`,
-    "CLÁUSULA 3 - DA MULTA E JUROS DE MORA: O atraso no pagamento sujeitará a CONTRATANTE a multa penal de 2% (dois por cento) sobre o valor do débito, acrescida de juros de mora de 0,033% (zero vírgula zero trinta e três por cento) ao dia, calculados pro rata die desde o vencimento até a efetiva quitação.",
-    "CLÁUSULA 4 - DAS OBRIGAÇÕES DA CONTRATADA: A CONTRATADA obriga-se a executar os serviços com zelo, diligência e observância às melhores práticas de mercado para cada tecnologia descrita no escopo, respeitando os prazos, entregáveis e regras de negócio estabelecidas neste instrumento.",
-    "CLÁUSULA 5 - DAS OBRIGAÇÕES DA CONTRATANTE: A CONTRATANTE obriga-se a fornecer informações, acessos e materiais necessários para a execução dos serviços em tempo hábil, bem como realizar os pagamentos nas datas aprazadas. A ausência de retorno da CONTRATANTE por prazo superior a 5 (cinco) dias úteis poderá implicar em extensão proporcional do prazo de entrega.",
-    "CLÁUSULA 6 - DA PROPRIEDADE INTELECTUAL: Todos os direitos patrimoniais sobre o código-fonte, layouts, designs, textos e demais entregáveis desenvolvidos especificamente para a CONTRATANTE no âmbito deste contrato serão cedidos à CONTRATANTE após a quitação integral dos valores pactuados. Até a quitação, os direitos permanecem com a CONTRATADA.",
-    "CLÁUSULA 7 - DA CONFIDENCIALIDADE: Ambas as partes assumem o compromisso de manter sigilo absoluto sobre dados, informações, credenciais, estratégias de negócio e quaisquer conteúdos compartilhados durante a vigência deste contrato e por prazo indeterminado após seu término, sob pena de responsabilidade civil e criminal.",
-    "CLÁUSULA 8 - DA PROTEÇÃO DE DADOS (LGPD): As partes declaram ciência e compromisso de cumprimento da Lei nº 13.709/2018 (LGPD). A CONTRATADA atuará como Operadora de dados pessoais eventualmente tratados em nome da CONTRATANTE (Controladora), implementando medidas técnicas e organizacionais adequadas de segurança, e notificando a CONTRATANTE em até 24 (vinte e quatro) horas em caso de incidente de segurança envolvendo dados pessoais.",
-    "CLÁUSULA 9 - DO SUPORTE TÉCNICO: " + (proj.support_type==='com_suporte' ? "O suporte técnico está INCLUSO no valor mensal, abrangendo correção de bugs, dúvidas de utilização e pequenos ajustes, em dias úteis e horário comercial (9h às 18h), com prazo de resposta de até 4 (quatro) horas úteis para chamados críticos (sistema fora do ar) e até 24 (vinte e quatro) horas úteis para chamados não críticos." : "O suporte técnico NÃO está incluso no valor mensal, que cobre exclusivamente o desenvolvimento inicial. Serviços de suporte, manutenção e evoluções poderão ser contratados separadamente mediante orçamento específico."),
-    "CLÁUSULA 10 - DA RESCISÃO: Este contrato poderá ser rescindido por qualquer das partes mediante aviso prévio por escrito de no mínimo 30 (trinta) dias corridos. Em caso de rescisão, a CONTRATANTE deverá quitar todos os valores devidos até a data do efetivo encerramento, e a CONTRATADA entregará os dados e acessos em formato aberto em até 15 (quinze) dias após a quitação.",
-    "CLÁUSULA 11 - DO FORO: As partes elegem o foro da comarca do domicílio da CONTRATADA para dirimir quaisquer controvérsias oriundas deste contrato, com renúncia expressa a qualquer outro, por mais privilegiado que seja.",
-    "CLÁUSULA 12 - DISPOSIÇÕES GERAIS E ACEITE DIGITAL: As partes reconhecem a validade jurídica plena deste contrato em formato eletrônico, nos termos da Medida Provisória nº 2.200-2/2001 e do artigo 10 da referida norma. A assinatura digital apostada neste documento, realizada por meio de plataforma eletrônica com registro de data, hora e identificação das partes, comprova a integridade do documento, o aceite irrevogável de todas as cláusulas aqui estipuladas e a autoria das assinaturas, possuindo pleno vigor legal e eficácia probatória para todos os fins de direito, dispensando reconhecimento de firma ou testemunhas presenciais."
+    "CLÁUSULA 1 - DO OBJETO E MODELO DE CONTRATAÇÃO: O presente contrato tem por objeto o LICENCIAMENTO DE USO da aplicação de software descrita no escopo técnico acima, desenvolvida e mantida pela CONTRATADA, bem como a prestação de serviços de hospedagem, manutenção, suporte e evolução contínua do sistema. O modelo de contratação é SaaS (Software as a Service) por assinatura mensal, no qual a CONTRATANTE paga pelo DIREITO DE USO do sistema durante a vigência, NÃO havendo transferência de propriedade do código-fonte, da arquitetura ou da infraestrutura para a CONTRATANTE.",
+    `CLÁUSULA 2 - DO PAGAMENTO E RENOVAÇÃO: A CONTRATANTE pagará à CONTRATADA o valor fixo mensal de ${formatCurrency(proj.total_value)}, devido até a data de vencimento de cada parcela. O pagamento poderá ser realizado via PIX (QR Code gerado pelo sistema), boleto bancário ou outro meio acordado. A assinatura é renovada automaticamente ao final do período contratado, salvo manifestação contrária de qualquer das partes com antecedência mínima de 30 (trinta) dias. Enquanto a assinatura estiver ativa e os pagamentos em dia, a CONTRATANTE mantém acesso integral ao sistema.`,
+    "CLÁUSULA 3 - DA MULTA E JUROS DE MORA: O atraso no pagamento sujeitará a CONTRATANTE a multa penal de 2% (dois por cento) sobre o valor do débito, acrescida de juros de mora de 0,033% (zero vírgula zero trinta e três por cento) ao dia, calculados pro rata die desde o vencimento até a efetiva quitação. Em caso de atraso superior a 15 (quinze) dias, a CONTRATADA poderá SUSPENDER temporariamente o acesso ao sistema até a regularização do débito, sem que isso configure rescisão contratual.",
+    "CLÁUSULA 4 - DA PROPRIEDADE INTELECTUAL: Todo o código-fonte, arquitetura, design, layouts, textos, bancos de dados, integrações, documentação técnica e demais ativos intelectuais desenvolvidos pela CONTRATADA no âmbito deste contrato são e permanecem sendo de PROPRIEDADE EXCLUSIVA DA CONTRATADA (Silven Tec). A CONTRATANTE recebe apenas LICENÇA DE USO não exclusiva, intransferível e revogável do sistema durante a vigência da assinatura. É VEDADO à CONTRATANTE: (a) solicitar, copiar, reproduzir ou acessar o código-fonte; (b) realizar engenharia reversa; (c) sublicenciar, revender ou ceder o acesso a terceiros não autorizados; (d) modificar o sistema sem autorização expressa da CONTRATADA.",
+    "CLÁUSULA 5 - DOS DADOS DA CONTRATANTE: Os dados inseridos pela CONTRATANTE no sistema (cadastros, registros, arquivos, configurações) são de PROPRIEDADE DA CONTRATANTE. A CONTRATADA atua como Operadora desses dados nos termos da LGPD. A CONTRATANTE pode solicitar exportação completa dos seus dados em formato aberto (CSV, JSON, SQL dump) a qualquer momento durante a vigência e por até 30 (trinta) dias após o cancelamento. Após esse prazo, os dados são excluídos definitivamente dos servidores da CONTRATADA, conforme política de retenção.",
+    "CLÁUSULA 6 - DO CANCELAMENTO E DESATIVAÇÃO: Qualquer das partes pode cancelar a assinatura mediante aviso prévio por escrito de no mínimo 30 (trinta) dias corridos. Ao final do período pago, a CONTRATADA DESATIVARÁ o acesso da CONTRATANTE ao sistema. Os dados da CONTRATANTE serão mantidos por 30 (trinta) dias adicionais para eventual reativação (mediante quitação de débitos pendentes e pagamento da mensalidade vigente). Após esse prazo de carência, os dados são excluídos definitivamente. Não há reembolso de valores já pagos, salvo em caso de falha grave e comprovada na prestação do serviço por parte da CONTRATADA.",
+    "CLÁUSULA 7 - DAS OBRIGAÇÕES DA CONTRATADA: A CONTRATADA obriga-se a: (a) manter o sistema acessível 24/7 com uptime mínimo de 99% mensal; (b) aplicar correções de bugs sem custo adicional durante a vigência; (c) manter a infraestrutura segura, atualizada e com backups diários; (d) fornecer suporte técnico conforme modalidade contratada; (e) notificar a CONTRATANTE com 48h de antecedência sobre manutenções programadas; (f) cumprir as regras de negócio e obrigações descritas no escopo técnico para cada tecnologia selecionada.",
+    "CLÁUSULA 8 - DAS OBRIGAÇÕES DA CONTRATANTE: A CONTRATANTE obriga-se a: (a) realizar os pagamentos nas datas aprazidas; (b) fornecer informações e acessos necessários para a execução dos serviços; (c) utilizar o sistema conforme boas práticas e dentro da lei; (d) não compartilhar credenciais de acesso com terceiros não autorizados; (e) comunicar imediatamente qualquer suspeita de acesso não autorizado. A ausência de retorno da CONTRATANTE por prazo superior a 5 (cinco) dias úteis para solicitações da CONTRATADA poderá implicar em extensão proporcional do prazo de entrega de novas funcionalidades.",
+    "CLÁUSULA 9 - DO SUPORTE TÉCNICO: " + (proj.support_type==='com_suporte' ? "O suporte técnico está INCLUSO no valor mensal, abrangendo correção de bugs, dúvidas de utilização e pequenos ajustes (até 2 horas/mês de demandas extras), em dias úteis e horário comercial (9h às 18h), com prazo de resposta de até 4 (quatro) horas úteis para chamados críticos (sistema fora do ar) e até 24 (vinte e quatro) horas úteis para chamados não críticos. Demandas de novas funcionalidades ou alterações significativas serão orçadas separadamente." : "O suporte técnico NÃO está incluso no valor mensal, que cobre exclusivamente o licenciamento de uso e hospedagem. Serviços de suporte, correções, manutenções e evoluções poderão ser contratados separadamente mediante orçamento específico."),
+    "CLÁUSULA 10 - DA CONFIDENCIALIDADE: Ambas as partes assumem o compromisso de manter sigilo absoluto sobre dados, informações, credenciais, estratégias de negócio e quaisquer conteúdos compartilhados durante a vigência deste contrato e por prazo indeterminado após seu término, sob pena de responsabilidade civil e criminal.",
+    "CLÁUSULA 11 - DA PROTEÇÃO DE DADOS (LGPD): As partes declaram ciência e compromisso de cumprimento da Lei nº 13.709/2018 (LGPD). A CONTRATADA atuará como Operadora de dados pessoais tratados em nome da CONTRATANTE (Controladora), implementando medidas técnicas e organizacionais adequadas de segurança, e notificando a CONTRATANTE em até 24 (vinte e quatro) horas em caso de incidente de segurança envolvendo dados pessoais.",
+    "CLÁUSULA 12 - DA LIMITAÇÃO DE RESPONSABILIDADE: A CONTRATADA não será responsável por lucros cessantes, danos indiretos, consequenciais ou punitivos decorrentes do uso ou impossibilidade de uso do sistema. A responsabilidade máxima da CONTRATADA, em qualquer hipótese, limita-se ao valor total pago pela CONTRATANTE nos últimos 3 (três) meses anteriores ao evento gerador do dano. Excetuam-se dessa limitação os casos de dolo, culpa grave ou violação de confidencialidade/LGPD comprovados.",
+    "CLÁUSULA 13 - DO FORO: As partes elegem o foro da comarca do domicílio da CONTRATADA para dirimir quaisquer controvérsias oriundas deste contrato, com renúncia expressa a qualquer outro, por mais privilegiado que seja.",
+    "CLÁUSULA 14 - DISPOSIÇÕES GERAIS E ACEITE DIGITAL: As partes reconhecem a validade jurídica plena deste contrato em formato eletrônico, nos termos da Medida Provisória nº 2.200-2/2001. A assinatura digital apostada neste documento, realizada por meio de plataforma eletrônica com registro de data, hora e identificação das partes, comprova a integridade do documento, o aceite irrevogável de todas as cláusulas aqui estipuladas e a autoria das assinaturas, possuindo pleno vigor legal e eficácia probatória para todos os fins de direito, dispensando reconhecimento de firma ou testemunhas presenciais."
   ];
 
   clauses.forEach(clause => {
@@ -1059,20 +1053,20 @@ function generatePDFDocument(proj, contract) {
   if (contract && contract.admin_signature_data) {
     doc.addImage(contract.admin_signature_data,'PNG',20,yPos,50,25);
     doc.setDrawColor(6,182,212); doc.setLineWidth(0.5); doc.line(20,yPos+27,85,yPos+27);
-    doc.setFont("helvetica","bold"); doc.setFontSize(9); doc.setTextColor(0); doc.text("SILVEN TEC (Responsável Técnico)",20,yPos+32);
+    doc.setFont("helvetica","bold"); doc.setFontSize(9); doc.setTextColor(0); doc.text("SILVEN TEC (Licenciante / Responsável Técnico)",20,yPos+32);
     doc.setFont("helvetica","normal"); doc.setFontSize(7); doc.setTextColor(100); doc.text(`Emissão: ${new Date(contract.admin_signed_at).toLocaleString('pt-BR')}`,20,yPos+36);
   }
   if (contract && contract.signature_data) {
     doc.addImage(contract.signature_data,'PNG',115,yPos,50,25);
     doc.setDrawColor(6,182,212); doc.setLineWidth(0.5); doc.line(115,yPos+27,185,yPos+27);
-    doc.setFont("helvetica","bold"); doc.setFontSize(9); doc.setTextColor(0); doc.text(`CONTRATANTE: ${proj.client_name}`,115,yPos+32);
+    doc.setFont("helvetica","bold"); doc.setFontSize(9); doc.setTextColor(0); doc.text(`CONTRATANTE (Licenciado): ${proj.client_name}`,115,yPos+32);
     doc.setFont("helvetica","normal"); doc.setFontSize(7); doc.setTextColor(100); doc.text(`Aceite Digital: ${new Date(contract.signed_at).toLocaleString('pt-BR')}`,115,yPos+36);
   }
 
   const pageCount = doc.internal.getNumberOfPages();
   for (let i = 1; i <= pageCount; i++) {
     doc.setPage(i); doc.setFontSize(7); doc.setTextColor(150);
-    doc.text(`Silven Tec — Inovação & Gestão | Gerado em ${new Date().toLocaleString('pt-BR')} | Página ${i}/${pageCount}`,20,287);
+    doc.text(`Silven Tec — Inovação & Gestão | Modelo SaaS | Gerado em ${new Date().toLocaleString('pt-BR')} | Página ${i}/${pageCount}`,20,287);
   }
-  doc.save(`Contrato_SilvenTec_${proj.client_name.replace(/\s/g,'_')}.pdf`);
+  doc.save(`Contrato_SaaS_SilvenTec_${proj.client_name.replace(/\s/g,'_')}.pdf`);
 }
