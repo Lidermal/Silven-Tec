@@ -1,4 +1,4 @@
-/* app.js - Silven Tec Core Logic V17 - Complete Client Finance */
+/* app.js - Silven Tec Core Logic V18 - Smart Status & DB Fix */
 
 const SUPABASE_URL = 'https://evwsxwkvtjgexhjwofxh.supabase.co';
 const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImV2d3N4d2t2dGpnZXhoandvZnhoIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODc2ODk0MDEsImV4cCI6MjEwMzI2NTQwMX0.oN_ATHMc7KBHC7NA7O35Q5nS3H4OxSIAXMXvE7xYXCA';
@@ -195,9 +195,10 @@ async function initAdminPanel() {
                 
                 const token = await generateSmartToken(clientName);
 
+                // NOVO: Projeto nasce com status 'aguardando_assinatura'
                 const { data: projData, error: projError } = await db.from('projects').insert([{
                     client_name: clientName, title, total_value: value, 
-                    access_token: token, status: 'em_andamento', 
+                    access_token: token, status: 'aguardando_assinatura', 
                     deadline: firstDueDate, signed_client: false,
                     support_type: supportType, start_date: startDate
                 }]).select().single();
@@ -470,7 +471,6 @@ document.addEventListener('DOMContentLoaded', () => {
 async function initClientArea(token) {
     const { data, error } = await db.from('projects').select('*').eq('access_token', token).single();
     
-    // Tratamento de Segurança e Expulsão do Cliente caso o token não exista
     if(error || !data) { 
         showToast("Token inválido ou projeto cancelado/excluído.", "error");
         setTimeout(() => window.location.href = 'index.html', 2000);
@@ -498,7 +498,6 @@ async function initClientArea(token) {
         document.getElementById('signed-msg')?.classList.remove('hidden');
     }
 
-    // Carregar todas as parcelas do cliente para o Histórico
     const { data: payments } = await db.from('payments').select('*').eq('project_id', data.id).order('month_number', {ascending: true});
     const tbody = document.getElementById('client-finance-list');
     
@@ -576,18 +575,23 @@ window.signContract = async () => {
         const sigData = signaturePad.toDataURL();
         const signedDate = new Date().toISOString();
         
-        // Verifica se houve erro ao salvar no banco
+        // Salva contrato
         const { error: errContract } = await db.from('contracts').upsert({ project_id: currentProject.id, signature_data: sigData, signed_at: signedDate }, { onConflict: 'project_id' });
-        if(errContract) throw new Error("Acesso negado no banco. O administrador precisa liberar a gravação em SQL.");
+        if(errContract) throw new Error("Erro no banco de dados: " + errContract.message);
 
-        const { error: errProj } = await db.from('projects').update({ signed_client: true }).eq('id', currentProject.id);
+        // Atualiza status do projeto para EM ANDAMENTO
+        const { error: errProj } = await db.from('projects').update({ signed_client: true, status: 'em_andamento' }).eq('id', currentProject.id);
         if(errProj) throw new Error("Erro ao atualizar o status do projeto.");
         
         generatePDFDocument(currentProject, sigData, signedDate);
         
         document.getElementById('sign-area').classList.add('hidden');
         document.getElementById('signed-msg').classList.remove('hidden');
-        showToast("Contrato salvo com sucesso!", "success");
+        
+        // Atualiza interface do cliente na hora
+        document.getElementById('status-badge').textContent = 'EM ANDAMENTO';
+        showToast("Contrato salvo com sucesso! O projeto agora está Em Andamento.", "success");
+        
     } catch(e) {
         showToast(e.message, "error");
         btn.innerHTML = originalText;
