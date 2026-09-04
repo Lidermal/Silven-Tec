@@ -31,7 +31,7 @@
             <div style="margin-bottom: 2rem; border-bottom: 1px solid var(--border); padding-bottom: 1.5rem;">
                 <h1 id="proj-title" style="font-size: 2rem; color: white; margin-bottom: 0.5rem;">Carregando...</h1>
                 <p id="client-name" style="color: var(--text-muted);">Aguarde...</p>
-                <span id="status-badge" class="badge badge-cyan" style="margin-top: 1rem; display: inline-block;">STATUS</span>
+                <span id="status-badge" class="badge" style="margin-top: 1rem; display: inline-block;">STATUS</span>
             </div>
 
             <!-- Navegação por Abas -->
@@ -58,41 +58,54 @@
                 </div>
             </div>
 
-            <!-- ABA: FINANCEIRO -->
+            <!-- ABA: FINANCEIRO (Dinâmica de Bloqueio Adicionada) -->
             <div id="tab-finance" class="tab-content hidden">
-                <div style="text-align: center; padding: 3rem 2rem; background: rgba(0,0,0,0.3); border-radius: 16px; border: 1px solid var(--border); margin-bottom: 2rem;">
-                    <p class="input-label" style="font-size: 1rem; margin-bottom: 1rem;">Valor da Parcela Mensal</p>
-                    <h2 id="finance-value" style="font-size: 3.5rem; color: #10b981; margin: 0; font-weight: 700;">R$ 0,00</h2>
-                    
-                    <div id="late-fee-msg" class="hidden" style="margin-top: 1rem; padding: 1rem; background: rgba(239, 68, 68, 0.1); border: 1px solid rgba(239, 68, 68, 0.3); border-radius: 8px; color: #ef4444; font-size: 0.9rem;">
-                        <strong>Atenção:</strong> Pagamento em atraso.<br>
-                        Multa fixa (2%) + Juros de mora (0,033% ao dia) já aplicados.
+                
+                <!-- Visão Bloqueada (Antes de Assinar) -->
+                <div id="finance-locked" class="hidden" style="text-align: center; padding: 4rem 2rem; background: rgba(0,0,0,0.2); border-radius: 12px; border: 1px solid var(--border);">
+                    <div style="display: flex; justify-content: center; margin-bottom: 1.5rem;">
+                        <i data-lucide="lock" style="width: 60px; height: 60px; color: var(--text-muted);"></i>
                     </div>
-
-                    <button id="btn-pix" onclick="window.generatePix()" class="btn-primary" style="max-width: 350px; margin: 2rem auto 0; font-size: 1.1rem; padding: 1.2rem;">
-                        <i data-lucide="qr-code" size="20"></i> Pagar via PIX (Mercado Pago)
-                    </button>
-                    
-                    <p id="pix-loading" class="hidden" style="color: var(--cyan); margin-top: 1.5rem; display: flex; align-items: center; justify-content: center; gap: 0.5rem;">
-                        <i data-lucide="loader-2" class="animate-spin" size="16"></i> Gerando cobrança segura...
-                    </p>
-                    
-                    <div id="pix-result" class="hidden" style="margin-top: 2.5rem; background: white; padding: 2rem; border-radius: 16px; display: inline-block; box-shadow: 0 10px 30px rgba(0,0,0,0.5);">
-                        <img id="qr-img" src="" style="width: 220px; height: 220px; margin-bottom: 1.5rem; display: block; margin-left: auto; margin-right: auto;">
-                        <p style="color: #333; font-size: 0.8rem; margin-bottom: 0.5rem; font-weight: 600;">Código Copia e Cola:</p>
-                        <p id="pix-code" style="color: #666; font-size: 0.75rem; word-break: break-all; background: #f1f5f9; padding: 1rem; border-radius: 8px; cursor: pointer; border: 1px dashed #cbd5e1;" onclick="window.copyPix()">Clique aqui para copiar o código PIX</p>
-                    </div>
+                    <h3 style="color: white; font-size: 1.3rem; margin-bottom: 0.5rem;">Painel Financeiro Protegido</h3>
+                    <p style="color: var(--text-muted); max-width: 500px; margin: 0 auto;">Por favor, realize a assinatura do contrato digital na aba "Contrato Digital" para ativar seu projeto e liberar o acesso às suas parcelas e pagamentos.</p>
                 </div>
 
-                <!-- Tabela de Histórico de Parcelas do Cliente -->
-                <div class="data-table-container">
-                    <div class="table-header">
-                        <div class="table-title"><i data-lucide="list" size="18"></i> Histórico de Parcelas</div>
+                <!-- Visão Desbloqueada (Depois de Assinar) -->
+                <div id="finance-unlocked" class="hidden">
+                    <div style="text-align: center; padding: 3rem 2rem; background: rgba(0,0,0,0.3); border-radius: 16px; border: 1px solid var(--border); margin-bottom: 2rem;">
+                        <p class="input-label" style="font-size: 1rem; margin-bottom: 1rem;">Valor da Parcela Mensal</p>
+                        <h2 id="finance-value" style="font-size: 3.5rem; color: #10b981; margin: 0; font-weight: 700;">R$ 0,00</h2>
+                        
+                        <div id="late-fee-msg" class="hidden" style="margin-top: 1rem; padding: 1rem; background: rgba(239, 68, 68, 0.1); border: 1px solid rgba(239, 68, 68, 0.3); border-radius: 8px; color: #ef4444; font-size: 0.9rem;">
+                            <strong>Atenção:</strong> Pagamento em atraso.<br>
+                            Multa fixa (2%) + Juros de mora (0,033% ao dia) já aplicados.
+                        </div>
+
+                        <button id="btn-pix" onclick="window.generatePix()" class="btn-primary" style="max-width: 350px; margin: 2rem auto 0; font-size: 1.1rem; padding: 1.2rem;">
+                            <i data-lucide="qr-code" size="20"></i> Pagar via PIX (Mercado Pago)
+                        </button>
+                        
+                        <p id="pix-loading" class="hidden" style="color: var(--cyan); margin-top: 1.5rem; display: flex; align-items: center; justify-content: center; gap: 0.5rem;">
+                            <i data-lucide="loader-2" class="animate-spin" size="16"></i> Gerando cobrança segura...
+                        </p>
+                        
+                        <div id="pix-result" class="hidden" style="margin-top: 2.5rem; background: white; padding: 2rem; border-radius: 16px; display: inline-block; box-shadow: 0 10px 30px rgba(0,0,0,0.5);">
+                            <img id="qr-img" src="" style="width: 220px; height: 220px; margin-bottom: 1.5rem; display: block; margin-left: auto; margin-right: auto;">
+                            <p style="color: #333; font-size: 0.8rem; margin-bottom: 0.5rem; font-weight: 600;">Código Copia e Cola:</p>
+                            <p id="pix-code" style="color: #666; font-size: 0.75rem; word-break: break-all; background: #f1f5f9; padding: 1rem; border-radius: 8px; cursor: pointer; border: 1px dashed #cbd5e1;" onclick="window.copyPix()">Clique aqui para copiar o código PIX</p>
+                        </div>
                     </div>
-                    <table>
-                        <thead><tr><th>Parcela</th><th>Vencimento</th><th>Valor</th><th>Status</th></tr></thead>
-                        <tbody id="client-finance-list"></tbody>
-                    </table>
+
+                    <!-- Tabela de Histórico de Parcelas do Cliente -->
+                    <div class="data-table-container">
+                        <div class="table-header">
+                            <div class="table-title"><i data-lucide="list" size="18"></i> Histórico de Parcelas</div>
+                        </div>
+                        <table>
+                            <thead><tr><th>Parcela</th><th>Vencimento</th><th>Valor</th><th>Status</th></tr></thead>
+                            <tbody id="client-finance-list"></tbody>
+                        </table>
+                    </div>
                 </div>
             </div>
 
@@ -101,14 +114,14 @@
                 <!-- Área PENDENTE -->
                 <div id="sign-area">
                     <p style="margin-bottom: 1.5rem; color: var(--text-muted); line-height: 1.6;">
-                        Para validar sua mensalidade e os termos de serviço, realize sua assinatura digital abaixo. 
+                        Para validar sua mensalidade e ativar o desenvolvimento do projeto, realize sua assinatura digital abaixo. 
                         Este documento possui validade jurídica (MP 2.200-2/2001).
                     </p>
                     <canvas id="sig-pad" style="width: 100%; height: 200px; background: white; border-radius: 12px; border: 2px solid var(--border); touch-action: none; cursor: crosshair;"></canvas>
                     <div style="display: flex; gap: 1rem; margin-top: 1.5rem;">
                         <button onclick="window.clearSig()" class="action-btn" style="flex: 1;">Limpar</button>
                         <button onclick="window.signContract()" class="btn-primary" style="flex: 2;">
-                            <i data-lucide="pen-tool" size="18"></i> Assinar Contrato
+                            <i data-lucide="pen-tool" size="18"></i> Assinar Contrato e Iniciar Projeto
                         </button>
                     </div>
                 </div>
@@ -133,7 +146,7 @@
     <!-- Logo Oculta para o PDF Client-Side -->
     <img id="hidden-logo" src="logost.png" style="display:none;" crossorigin="anonymous">
 
-    <script src="app.js?v=17"></script>
+    <script src="app.js?v=19"></script>
     <script>
         const params = new URLSearchParams(window.location.search);
         const token = params.get('token');
