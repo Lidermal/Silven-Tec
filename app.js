@@ -1,4 +1,4 @@
-/* app.js - Silven Tec Core Logic V14 - Custom UI Edition */
+/* app.js - Silven Tec Core Logic V15 - Bugfixes Edition */
 
 const SUPABASE_URL = 'https://evwsxwkvtjgexhjwofxh.supabase.co';
 const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImV2d3N4d2t2dGpnZXhoandvZnhoIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODc2ODk0MDEsImV4cCI6MjEwMzI2NTQwMX0.oN_ATHMc7KBHC7NA7O35Q5nS3H4OxSIAXMXvE7xYXCA';
@@ -38,12 +38,11 @@ function createToastContainer() {
     return div;
 }
 
-// ALERTA DE CONFIRMAÇÃO PERSONALIZADO (Substitui o window.confirm)
 window.customConfirm = function(title, message) {
     return new Promise((resolve) => {
         const overlay = document.createElement('div');
         overlay.className = 'modal-overlay';
-        overlay.style.zIndex = '99999'; // Acima de tudo
+        overlay.style.zIndex = '99999';
         overlay.innerHTML = `
             <div class="modal-content" style="max-width: 400px; text-align: center; border-color: rgba(239, 68, 68, 0.3);">
                 <div style="color: #ef4444; margin-bottom: 1rem; display: flex; justify-content: center;">
@@ -223,6 +222,7 @@ async function initAdminPanel() {
                 closeModal('modal-new-project');
                 e.target.reset();
                 loadProjectsTable();
+                loadDashboardData();
             } catch (err) {
                 showToast("Erro: " + err.message, "error");
             } finally {
@@ -267,18 +267,24 @@ window.switchAdminView = function(viewName) {
 
 async function loadDashboardData() {
     const { data } = await db.from('projects').select('*').order('created_at', {ascending: false});
-    if(!data) return;
+    
     let rev = 0, signed = 0;
     const tbody = document.getElementById('dash-recent-list');
     tbody.innerHTML = '';
-    data.forEach(p => {
-        rev += Number(p.total_value);
-        if(p.signed_client) signed++;
-        if(tbody.children.length < 5) {
-            tbody.innerHTML += `<tr><td>${p.client_name}</td><td>${p.title}</td><td style="font-family:monospace; color:var(--cyan);">${p.access_token}</td><td><span class="badge badge-cyan">${p.status.replace('_', ' ')}</span></td><td>${formatCurrency(p.total_value)}</td></tr>`;
-        }
-    });
-    document.getElementById('dash-active-proj').textContent = data.length;
+    
+    if(data) {
+        data.forEach(p => {
+            rev += Number(p.total_value);
+            if(p.signed_client) signed++;
+            if(tbody.children.length < 5) {
+                tbody.innerHTML += `<tr><td>${p.client_name}</td><td>${p.title}</td><td style="font-family:monospace; color:var(--cyan);">${p.access_token}</td><td><span class="badge badge-cyan">${p.status.replace('_', ' ')}</span></td><td>${formatCurrency(p.total_value)}</td></tr>`;
+            }
+        });
+        document.getElementById('dash-active-proj').textContent = data.length;
+    } else {
+        document.getElementById('dash-active-proj').textContent = "0";
+    }
+    
     document.getElementById('dash-revenue').textContent = formatCurrency(rev);
     document.getElementById('dash-signed').textContent = signed;
 }
@@ -312,7 +318,6 @@ window.openEditProject = (id, client, title, status) => {
 };
 
 window.deleteProject = async (id) => {
-    // Usando a confirmação personalizada
     const confirmed = await customConfirm("Alerta de Exclusão", "Certeza absoluta que deseja excluir este projeto?<br><strong>Isso apagará permanentemente</strong> todas as parcelas e contratos vinculados a ele.");
     if(!confirmed) return;
     
@@ -322,7 +327,10 @@ window.deleteProject = async (id) => {
         const { error } = await db.from('projects').delete().eq('id', id);
         if(error) throw error;
         showToast("Projeto excluído com sucesso.", "success");
+        
         loadProjectsTable();
+        loadDashboardData();
+        loadFinanceTable();
     } catch (e) { showToast("Erro ao excluir: " + e.message, "error"); }
 };
 
@@ -337,6 +345,8 @@ async function loadFinanceTable() {
 
     if(!projects || projects.length === 0) {
         container.innerHTML = `<p style="color:var(--text-muted);">Nenhum projeto cadastrado ainda.</p>`;
+        document.getElementById('fin-received').textContent = formatCurrency(0);
+        document.getElementById('fin-pending').textContent = formatCurrency(0);
         return;
     }
 
@@ -459,7 +469,13 @@ document.addEventListener('DOMContentLoaded', () => {
 
 async function initClientArea(token) {
     const { data, error } = await db.from('projects').select('*').eq('access_token', token).single();
-    if(error || !data) return; // Redirecionamento já acontece no HTML
+    
+    // Tratamento de Segurança e Expulsão do Cliente caso o token não exista
+    if(error || !data) { 
+        showToast("Token inválido ou projeto cancelado/excluído.", "error");
+        setTimeout(() => window.location.href = 'index.html', 2000);
+        return;
+    }
     
     currentProject = data;
     document.getElementById('proj-title').textContent = data.title;
@@ -531,20 +547,35 @@ window.clearSig = () => signaturePad?.clear();
 window.signContract = async () => {
     if(!signaturePad || signaturePad.isEmpty()) return showToast('Por favor, assine o contrato.', 'warning');
     
-    const sigData = signaturePad.toDataURL();
-    const signedDate = new Date().toISOString();
-    
-    generatePDFDocument(currentProject, sigData, signedDate);
+    const btn = document.querySelector('#tab-contract .btn-primary');
+    const originalText = btn.innerHTML;
+    btn.innerHTML = `<i data-lucide="loader-2" class="animate-spin" size="18"></i> Salvando Documento...`;
+    btn.disabled = true;
 
-    await db.from('contracts').upsert({ project_id: currentProject.id, signature_data: sigData, signed_at: signedDate }, { onConflict: 'project_id' });
-    await db.from('projects').update({ signed_client: true }).eq('id', currentProject.id);
-    
-    document.getElementById('sign-area').classList.add('hidden');
-    document.getElementById('signed-msg').classList.remove('hidden');
-    showToast("Contrato salvo com sucesso!", "success");
+    try {
+        const sigData = signaturePad.toDataURL();
+        const signedDate = new Date().toISOString();
+        
+        // Verifica se houve erro ao salvar no banco (Evita falha silenciosa)
+        const { error: errContract } = await db.from('contracts').upsert({ project_id: currentProject.id, signature_data: sigData, signed_at: signedDate }, { onConflict: 'project_id' });
+        if(errContract) throw new Error("Acesso negado para registrar a assinatura no banco de dados.");
+
+        const { error: errProj } = await db.from('projects').update({ signed_client: true }).eq('id', currentProject.id);
+        if(errProj) throw new Error("Erro ao atualizar o status do projeto.");
+        
+        generatePDFDocument(currentProject, sigData, signedDate);
+        
+        document.getElementById('sign-area').classList.add('hidden');
+        document.getElementById('signed-msg').classList.remove('hidden');
+        showToast("Contrato salvo com sucesso!", "success");
+    } catch(e) {
+        showToast(e.message, "error");
+        btn.innerHTML = originalText;
+        btn.disabled = false;
+        lucide.createIcons();
+    }
 };
 
-// BOTÃO: CLIENTE BAIXAR CONTRATO
 window.downloadMyContract = async () => {
     try {
         const btn = document.getElementById('btn-download-contract');
