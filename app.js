@@ -1,4 +1,4 @@
-/* app.js - Silven Tec Core Logic V15 - Bugfixes Edition */
+/* app.js - Silven Tec Core Logic V17 - Complete Client Finance */
 
 const SUPABASE_URL = 'https://evwsxwkvtjgexhjwofxh.supabase.co';
 const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImV2d3N4d2t2dGpnZXhoandvZnhoIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODc2ODk0MDEsImV4cCI6MjEwMzI2NTQwMX0.oN_ATHMc7KBHC7NA7O35Q5nS3H4OxSIAXMXvE7xYXCA';
@@ -272,7 +272,7 @@ async function loadDashboardData() {
     const tbody = document.getElementById('dash-recent-list');
     tbody.innerHTML = '';
     
-    if(data) {
+    if(data && data.length > 0) {
         data.forEach(p => {
             rev += Number(p.total_value);
             if(p.signed_client) signed++;
@@ -497,6 +497,26 @@ async function initClientArea(token) {
         document.getElementById('sign-area')?.classList.add('hidden');
         document.getElementById('signed-msg')?.classList.remove('hidden');
     }
+
+    // Carregar todas as parcelas do cliente para o Histórico
+    const { data: payments } = await db.from('payments').select('*').eq('project_id', data.id).order('month_number', {ascending: true});
+    const tbody = document.getElementById('client-finance-list');
+    
+    if(tbody && payments) {
+        tbody.innerHTML = '';
+        payments.forEach(p => {
+            const isLate = new Date(p.due_date + 'T00:00:00') < new Date() && p.status !== 'paid';
+            const badgeClass = p.status==='paid' ? 'badge-green' : (isLate ? 'badge-red' : 'badge-cyan');
+            const badgeText = p.status==='paid' ? 'Pago' : (isLate ? 'Atrasado' : 'Pendente');
+            
+            tbody.innerHTML += `<tr>
+                <td>${p.month_number}ª</td>
+                <td>${formatDate(p.due_date)}</td>
+                <td>${formatCurrency(p.amount)}</td>
+                <td><span class="badge ${badgeClass}">${badgeText}</span></td>
+            </tr>`;
+        });
+    }
 }
 
 window.switchTab = function(tabName) {
@@ -556,9 +576,9 @@ window.signContract = async () => {
         const sigData = signaturePad.toDataURL();
         const signedDate = new Date().toISOString();
         
-        // Verifica se houve erro ao salvar no banco (Evita falha silenciosa)
+        // Verifica se houve erro ao salvar no banco
         const { error: errContract } = await db.from('contracts').upsert({ project_id: currentProject.id, signature_data: sigData, signed_at: signedDate }, { onConflict: 'project_id' });
-        if(errContract) throw new Error("Acesso negado para registrar a assinatura no banco de dados.");
+        if(errContract) throw new Error("Acesso negado no banco. O administrador precisa liberar a gravação em SQL.");
 
         const { error: errProj } = await db.from('projects').update({ signed_client: true }).eq('id', currentProject.id);
         if(errProj) throw new Error("Erro ao atualizar o status do projeto.");
