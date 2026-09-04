@@ -1,13 +1,13 @@
-/* app.js - Silven Tec Core Logic V20 - Double Signature & Tech Scope */
+/* app.js - Silven Tec Core Logic V20 - Double Signature & Tech Scope (Rounded Logo Fix) */
 
 const SUPABASE_URL = 'https://evwsxwkvtjgexhjwofxh.supabase.co';
 const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImV2d3N4d2t2dGpnZXhoandvZnhoIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODc2ODk0MDEsImV4cCI6MjEwMzI2NTQwMX0.oN_ATHMc7KBHC7NA7O35Q5nS3H4OxSIAXMXvE7xYXCA';
 const db = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
 let currentProject = null;
-let currentContract = null; // Armazena o contrato atual do cliente
+let currentContract = null;
 let signaturePad = null;
-let adminSignaturePad = null; // Canvas do Admin
+let adminSignaturePad = null;
 let realtimeDebounceTimer = null; 
 
 // ==========================================
@@ -151,7 +151,7 @@ async function initAdminPanel() {
             try {
                 const clientName = document.getElementById('new-client').value;
                 const title = document.getElementById('new-title').value;
-                const techStack = document.getElementById('new-techs').value; // CAPTURA PALAVRAS CHAVE
+                const techStack = document.getElementById('new-techs').value; 
                 const value = Number(document.getElementById('new-value').value);
                 const months = parseInt(document.getElementById('new-months').value);
                 const supportType = document.getElementById('new-support').value;
@@ -164,7 +164,7 @@ async function initAdminPanel() {
                     access_token: token, status: 'aguardando_assinatura', 
                     deadline: firstDueDate, signed_client: false,
                     support_type: supportType, start_date: startDate,
-                    tech_stack: techStack // SALVA NO BANCO
+                    tech_stack: techStack
                 }]).select().single();
                 if(projError) throw projError;
 
@@ -390,27 +390,22 @@ async function initClientArea(token) {
     document.getElementById('finance-value').textContent = formatCurrency(fin.final);
     if(fin.isLate) document.getElementById('late-fee-msg').classList.remove('hidden');
 
-    // BUSCAR CONTRATO PARA VERIFICAR ASSINATURA DUPLA
     const { data: contr } = await db.from('contracts').select('*').eq('project_id', proj.id).single();
     currentContract = contr;
 
-    // LÓGICA DE EXIBIÇÃO DAS ABAS (Bloqueios)
     if(proj.signed_client) {
-        // AMBOS ASSINARAM - TUDO LIBERADO
         document.getElementById('contract-preparing')?.classList.add('hidden');
         document.getElementById('sign-area')?.classList.add('hidden');
         document.getElementById('signed-msg')?.classList.remove('hidden');
         document.getElementById('finance-locked')?.classList.add('hidden');
         document.getElementById('finance-unlocked')?.classList.remove('hidden');
     } else if (contr && contr.admin_signature_data && !proj.signed_client) {
-        // ADMIN ASSINOU, CLIENTE AINDA NÃO - LIBERA ASSINATURA PARA O CLIENTE
         document.getElementById('contract-preparing')?.classList.add('hidden');
         document.getElementById('sign-area')?.classList.remove('hidden');
         document.getElementById('signed-msg')?.classList.add('hidden');
         document.getElementById('finance-locked')?.classList.remove('hidden');
         document.getElementById('finance-unlocked')?.classList.add('hidden');
     } else {
-        // ADMIN AINDA NÃO ASSINOU - TUDO BLOQUEADO
         document.getElementById('contract-preparing')?.classList.remove('hidden');
         document.getElementById('sign-area')?.classList.add('hidden');
         document.getElementById('signed-msg')?.classList.add('hidden');
@@ -418,7 +413,6 @@ async function initClientArea(token) {
         document.getElementById('finance-unlocked')?.classList.add('hidden');
     }
 
-    // CARREGAR HISTÓRICO FINANCEIRO
     const { data: payments } = await db.from('payments').select('*').eq('project_id', proj.id).order('month_number', {ascending: true});
     const tbody = document.getElementById('client-finance-list');
     if(tbody && payments) {
@@ -438,7 +432,6 @@ window.switchTab = function(tabName) {
     document.getElementById(`tab-${tabName}`)?.classList.remove('hidden');
     document.querySelector(`.tab-btn[onclick*="${tabName}"]`)?.classList.add('active');
 
-    // Inicializa o pad do cliente só quando abre a aba e se tiver liberado
     if(tabName === 'contract' && !signaturePad && currentProject && !currentProject.signed_client && currentContract && currentContract.admin_signature_data) {
         const canvas = document.getElementById('sig-pad');
         if(canvas) {
@@ -486,7 +479,6 @@ window.signContract = async () => {
         document.getElementById('status-badge').textContent = 'EM ANDAMENTO';
         document.getElementById('status-badge').className = 'badge badge-cyan';
         
-        // Atualiza a memória local
         currentProject.signed_client = true;
         const { data: updatedContr } = await db.from('contracts').select('*').eq('project_id', currentProject.id).single();
         currentContract = updatedContr;
@@ -498,17 +490,20 @@ window.signContract = async () => {
 window.downloadMyContract = () => generatePDFDocument(currentProject, currentContract);
 
 // ==========================================
-// GERADOR DE PDF CENTRALIZADO E AUTOMATIZADO
+// FUNÇÃO CENTRAL PARA GERAR PDF
 // ==========================================
 function generatePDFDocument(proj, contract) {
     const { jsPDF } = window.jspdf;
     const doc = new jsPDF();
     const logoBase64 = getLogoBase64();
     
-    // FUNDO ESCURO ATRÁS DA LOGO TRANSPARENTE
-    doc.setFillColor(11, 15, 25); // Cor exata do menu da Silven Tec
-    doc.rect(18, 13, 26, 26, 'F');
-    if(logoBase64) doc.addImage(logoBase64, 'PNG', 20, 15, 22, 22);
+    // FUNDO ESCURO ARREDONDADO ATRÁS DA LOGO (Não vaza pelos cantos)
+    if(logoBase64) {
+        doc.setFillColor(11, 15, 25);
+        // x=20, y=15, largura=22, altura=22, raio_x=5, raio_y=5 (curvatura)
+        doc.roundedRect(20, 15, 22, 22, 5, 5, 'F');
+        doc.addImage(logoBase64, 'PNG', 20, 15, 22, 22);
+    }
     
     doc.setFontSize(22); doc.setTextColor(6, 182, 212); doc.setFont("helvetica", "bold"); 
     doc.text("SILVEN TEC", 50, 25);
