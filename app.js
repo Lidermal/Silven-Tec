@@ -1,4 +1,4 @@
-/* app.js - Silven Tec Core Logic V13 - Complete Edition */
+/* app.js - Silven Tec Core Logic V14 - Custom UI Edition */
 
 const SUPABASE_URL = 'https://evwsxwkvtjgexhjwofxh.supabase.co';
 const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImV2d3N4d2t2dGpnZXhoandvZnhoIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODc2ODk0MDEsImV4cCI6MjEwMzI2NTQwMX0.oN_ATHMc7KBHC7NA7O35Q5nS3H4OxSIAXMXvE7xYXCA';
@@ -6,10 +6,10 @@ const db = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
 let currentProject = null;
 let signaturePad = null;
-let realtimeDebounceTimer = null; // Anti-spam de notificações
+let realtimeDebounceTimer = null; 
 
 // ==========================================
-// SISTEMA DE NOTIFICAÇÕES (TOAST)
+// COMPONENTES DE UI PERSONALIZADOS
 // ==========================================
 function showToast(message, type = 'info') {
     const container = document.getElementById('toast-container') || createToastContainer();
@@ -38,13 +38,39 @@ function createToastContainer() {
     return div;
 }
 
+// ALERTA DE CONFIRMAÇÃO PERSONALIZADO (Substitui o window.confirm)
+window.customConfirm = function(title, message) {
+    return new Promise((resolve) => {
+        const overlay = document.createElement('div');
+        overlay.className = 'modal-overlay';
+        overlay.style.zIndex = '99999'; // Acima de tudo
+        overlay.innerHTML = `
+            <div class="modal-content" style="max-width: 400px; text-align: center; border-color: rgba(239, 68, 68, 0.3);">
+                <div style="color: #ef4444; margin-bottom: 1rem; display: flex; justify-content: center;">
+                    <i data-lucide="alert-triangle" style="width: 50px; height: 50px;"></i>
+                </div>
+                <h3 style="color: white; font-size: 1.3rem; margin-bottom: 0.8rem; font-family:'Orbitron';">${title}</h3>
+                <p style="color: var(--text-muted); margin-bottom: 2rem; font-size: 0.95rem; line-height: 1.5;">${message}</p>
+                <div style="display: flex; gap: 1rem;">
+                    <button id="btn-custom-cancel" class="action-btn" style="flex: 1;">Cancelar</button>
+                    <button id="btn-custom-ok" class="btn-primary" style="flex: 1; background: #ef4444; color: white;">Sim, confirmar</button>
+                </div>
+            </div>
+        `;
+        document.body.appendChild(overlay);
+        if(window.lucide) lucide.createIcons({nodes: [overlay]});
+        
+        document.getElementById('btn-custom-cancel').onclick = () => { overlay.remove(); resolve(false); };
+        document.getElementById('btn-custom-ok').onclick = () => { overlay.remove(); resolve(true); };
+    });
+};
+
 // ==========================================
 // UTILITÁRIOS
 // ==========================================
 function formatCurrency(val) { return new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(val); }
 function formatDate(dateStr) { 
     if(!dateStr) return '-';
-    // Corrige fuso horário para mostrar a data exata
     const [year, month, day] = dateStr.split('T')[0].split('-');
     return `${day}/${month}/${year}`;
 }
@@ -67,7 +93,6 @@ function calculateFinalValue(baseValue, deadlineStr) {
     return { final: value + multa + juros, isLate: true, days: diffDays };
 }
 
-// Transformar logo HTML em Base64 para o jsPDF
 function getLogoBase64() {
     const img = document.getElementById('hidden-logo');
     if(!img) return null;
@@ -80,7 +105,7 @@ function getLogoBase64() {
 }
 
 // ==========================================
-// REALTIME LISTENERS (Com Anti-Spam)
+// REALTIME LISTENERS
 // ==========================================
 function setupRealtime() {
     db.channel('public:all')
@@ -92,7 +117,7 @@ function setupRealtime() {
               if(document.getElementById('view-projects') && !document.getElementById('view-projects').classList.contains('hidden')) loadProjectsTable();
               if(document.getElementById('view-finance') && !document.getElementById('view-finance').classList.contains('hidden')) loadFinanceTable();
               if(document.getElementById('view-contracts') && !document.getElementById('view-contracts').classList.contains('hidden')) loadContractsTable();
-          }, 1000); // Aguarda 1 segundo após a última alteração para atualizar a tela
+          }, 1000);
       })
       .subscribe();
 }
@@ -153,7 +178,6 @@ async function initAdminPanel() {
     if(document.getElementById('new-start')) document.getElementById('new-start').value = today;
     if(document.getElementById('new-due')) document.getElementById('new-due').value = nextMonth;
 
-    // Criar Projeto
     const formNew = document.getElementById('form-new-project');
     if(formNew) {
         formNew.addEventListener('submit', async (e) => {
@@ -207,7 +231,6 @@ async function initAdminPanel() {
         });
     }
 
-    // Editar Projeto
     const formEdit = document.getElementById('form-edit-project');
     if(formEdit) {
         formEdit.addEventListener('submit', async (e) => {
@@ -289,9 +312,11 @@ window.openEditProject = (id, client, title, status) => {
 };
 
 window.deleteProject = async (id) => {
-    if(!confirm("Certeza que deseja excluir este projeto? Isso apagará todas as parcelas e contratos dele.")) return;
+    // Usando a confirmação personalizada
+    const confirmed = await customConfirm("Alerta de Exclusão", "Certeza absoluta que deseja excluir este projeto?<br><strong>Isso apagará permanentemente</strong> todas as parcelas e contratos vinculados a ele.");
+    if(!confirmed) return;
+    
     try {
-        // Apaga filhos primeiro (Cascade manual por segurança)
         await db.from('payments').delete().eq('project_id', id);
         await db.from('contracts').delete().eq('project_id', id);
         const { error } = await db.from('projects').delete().eq('id', id);
@@ -346,12 +371,12 @@ async function loadFinanceTable() {
     document.getElementById('fin-pending').textContent = formatCurrency(pending);
 }
 
+// Abertura do Menu Deslizante
 window.openFinanceDetails = (proj, payments) => {
-    document.getElementById('finance-modal-title').textContent = `Financeiro: ${proj.client_name}`;
+    document.getElementById('finance-modal-title').textContent = proj.client_name;
     const tbody = document.getElementById('finance-modal-list');
     tbody.innerHTML = '';
     
-    // Ordena as parcelas
     payments.sort((a,b) => a.month_number - b.month_number);
 
     payments.forEach(p => {
@@ -370,17 +395,21 @@ window.openFinanceDetails = (proj, payments) => {
         </tr>`;
     });
     
-    openModal('modal-finance-details');
+    document.getElementById('slide-finance-details').classList.add('active');
     lucide.createIcons();
 };
 
+window.closeSlidePanel = (id) => document.getElementById(id).classList.remove('active');
+
 window.markPaid = async (paymentId) => {
-    if(!confirm("Marcar esta parcela como PAGA?")) return;
+    const confirmed = await customConfirm("Registro de Pagamento", "Deseja registrar e confirmar o pagamento desta parcela?");
+    if(!confirmed) return;
+    
     try {
         await db.from('payments').update({ status: 'paid' }).eq('id', paymentId);
-        showToast("Parcela atualizada!", "success");
-        closeModal('modal-finance-details');
-        loadFinanceTable(); // Recarrega
+        showToast("Parcela atualizada com sucesso!", "success");
+        document.getElementById('slide-finance-details').classList.remove('active');
+        loadFinanceTable();
     } catch(e) { showToast("Erro: " + e.message, "error"); }
 };
 
@@ -407,12 +436,10 @@ async function loadContractsTable() {
     lucide.createIcons();
 }
 
-// O Admin gera o PDF na hora copiando os dados do cliente e a assinatura em Base64
 window.generateAdminPDF = async (projectId) => {
     const { data: proj } = await db.from('projects').select('*').eq('id', projectId).single();
     const { data: contr } = await db.from('contracts').select('*').eq('project_id', projectId).single();
     if(!proj || !contr) return showToast("Erro ao carregar dados do contrato.", "error");
-
     generatePDFDocument(proj, contr.signature_data, contr.signed_at);
 };
 
@@ -432,7 +459,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
 async function initClientArea(token) {
     const { data, error } = await db.from('projects').select('*').eq('access_token', token).single();
-    if(error || !data) { showToast('Token inválido.', 'error'); window.location.href='index.html'; return; }
+    if(error || !data) return; // Redirecionamento já acontece no HTML
     
     currentProject = data;
     document.getElementById('proj-title').textContent = data.title;
@@ -456,21 +483,14 @@ async function initClientArea(token) {
     }
 }
 
-// Correção exata da transição de abas do cliente
 window.switchTab = function(tabName) {
-    // Esconde todos os conteúdos
     document.querySelectorAll('.tab-content').forEach(el => el.classList.add('hidden'));
-    // Remove 'active' de todos os botões
     document.querySelectorAll('.tab-btn').forEach(el => el.classList.remove('active'));
-    
-    // Mostra o conteúdo certo
     document.getElementById(`tab-${tabName}`)?.classList.remove('hidden');
     
-    // Encontra o botão clicado usando querySelector pelo atributo onclick e adiciona 'active'
     const btn = document.querySelector(`.tab-btn[onclick*="${tabName}"]`);
     if(btn) btn.classList.add('active');
 
-    // Inicializa a assinatura se for a aba de contrato e ainda não estiver assinado
     if(tabName === 'contract' && !signaturePad && currentProject && !currentProject.signed_client) {
         const canvas = document.getElementById('sig-pad');
         if(canvas) {
@@ -508,17 +528,14 @@ window.copyPix = () => {
 
 window.clearSig = () => signaturePad?.clear();
 
-// CLIENTE: Assinar Contrato e Gravar no Banco
 window.signContract = async () => {
     if(!signaturePad || signaturePad.isEmpty()) return showToast('Por favor, assine o contrato.', 'warning');
     
     const sigData = signaturePad.toDataURL();
     const signedDate = new Date().toISOString();
     
-    // Gera o PDF visual para o cliente baixar na hora
     generatePDFDocument(currentProject, sigData, signedDate);
 
-    // Salva no banco de dados
     await db.from('contracts').upsert({ project_id: currentProject.id, signature_data: sigData, signed_at: signedDate }, { onConflict: 'project_id' });
     await db.from('projects').update({ signed_client: true }).eq('id', currentProject.id);
     
@@ -527,31 +544,48 @@ window.signContract = async () => {
     showToast("Contrato salvo com sucesso!", "success");
 };
 
+// BOTÃO: CLIENTE BAIXAR CONTRATO
+window.downloadMyContract = async () => {
+    try {
+        const btn = document.getElementById('btn-download-contract');
+        const originalText = btn.innerHTML;
+        btn.innerHTML = `<i data-lucide="loader-2" class="animate-spin" size="18"></i> Gerando Documento...`;
+        btn.disabled = true;
+
+        const { data: contr, error } = await db.from('contracts').select('*').eq('project_id', currentProject.id).single();
+        if (error || !contr) throw new Error("Contrato não encontrado. Atualize a página.");
+        
+        generatePDFDocument(currentProject, contr.signature_data, contr.signed_at);
+        
+        btn.innerHTML = originalText;
+        btn.disabled = false;
+        lucide.createIcons();
+    } catch (e) {
+        showToast(e.message, "error");
+    }
+};
+
 // ==========================================
-// FUNÇÃO CENTRAL PARA GERAR PDF FORMATADO (Usada por Admin e Cliente)
+// FUNÇÃO CENTRAL PARA GERAR PDF
 // ==========================================
 function generatePDFDocument(proj, signatureBase64, dateISO) {
     const { jsPDF } = window.jspdf;
     const doc = new jsPDF();
     
-    // 1. Inserir Logo
     const logoBase64 = getLogoBase64();
     if(logoBase64) {
         doc.addImage(logoBase64, 'PNG', 20, 15, 22, 22);
     }
     
-    // CABEÇALHO
     doc.setFontSize(22); doc.setTextColor(6, 182, 212); doc.setFont("helvetica", "bold"); 
     doc.text("SILVEN TEC", (logoBase64 ? 45 : 20), 25);
     doc.setFontSize(9); doc.setTextColor(100); doc.setFont("helvetica", "normal"); 
     doc.text("INOVAÇÃO E GESTÃO EM TECNOLOGIA", (logoBase64 ? 45 : 20), 32);
     doc.line(20, 42, 190, 42);
     
-    // TÍTULO
     doc.setFontSize(14); doc.setTextColor(0); doc.setFont("helvetica", "bold"); 
     doc.text("CONTRATO DE PRESTAÇÃO DE SERVIÇOS DE TECNOLOGIA", 20, 52);
     
-    // DADOS INICIAIS
     doc.setFontSize(10); doc.setFont("helvetica", "normal");
     doc.text(`CONTRATADA: SILVEN TEC`, 20, 62);
     doc.text(`CONTRATANTE: ${proj.client_name}`, 20, 69);
@@ -561,7 +595,6 @@ function generatePDFDocument(proj, signatureBase64, dateISO) {
     const supportText = proj.support_type === 'com_suporte' ? 'INCLUSO (Em dias úteis e horário comercial)' : 'NÃO INCLUSO (Apenas desenvolvimento/entrega)';
     doc.text(`MODALIDADE DE SUPORTE: ${supportText}`, 20, 90);
     
-    // CLÁUSULAS COMPLETAS JURIDICAMENTE
     doc.setFont("helvetica", "bold"); doc.text("CLÁUSULAS CONTRATUAIS:", 20, 105);
     doc.setFont("helvetica", "normal"); doc.setFontSize(9);
     
@@ -582,7 +615,6 @@ function generatePDFDocument(proj, signatureBase64, dateISO) {
         yPos += (splitText.length * 4) + 4;
     });
     
-    // ÁREA DE ASSINATURA
     yPos += 10;
     doc.addImage(signatureBase64, 'PNG', 20, yPos, 60, 30);
     doc.line(20, yPos + 32, 100, yPos + 32);
@@ -591,6 +623,5 @@ function generatePDFDocument(proj, signatureBase64, dateISO) {
     doc.setFont("helvetica", "bold"); doc.text("Assinatura Digital do Contratante", 20, yPos + 38);
     doc.setFont("helvetica", "normal"); doc.text(`Validação Eletrônica (MP 2.200-2/2001) - Data: ${displayDate}`, 20, yPos + 44);
 
-    // Baixa o arquivo com o nome personalizado
     doc.save(`Contrato_SilvenTec_${proj.client_name.replace(/\s/g,'_')}.pdf`);
 }
