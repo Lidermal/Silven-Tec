@@ -121,6 +121,7 @@
                 <div class="input-group">
                     <label class="input-label">Status</label>
                     <select id="edit-status" class="input-field" style="appearance:auto;">
+                        <option value="aguardando_assinatura">Aguardando Assinatura</option>
                         <option value="em_andamento">Em Andamento</option>
                         <option value="concluido">Concluído</option>
                         <option value="cancelado">Cancelado</option>
@@ -158,7 +159,7 @@
     <!-- Logo Oculta para PDF -->
     <img id="hidden-logo" src="logost.png" style="display:none;" crossorigin="anonymous">
 
-    <script src="app.js?v=14"></script>
+    <script src="app.js?v=18"></script>
     <script>
         if(!sessionStorage.getItem('silven_admin')) window.location.href = 'index.html';
         else initAdminPanel();
