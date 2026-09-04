@@ -87,6 +87,7 @@
 
             <!-- ABA: CONTRATO DIGITAL -->
             <div id="tab-contract" class="tab-content hidden">
+                <!-- Área PENDENTE -->
                 <div id="sign-area">
                     <p style="margin-bottom: 1.5rem; color: var(--text-muted); line-height: 1.6;">
                         Para validar sua mensalidade e os termos de serviço, realize sua assinatura digital abaixo. 
@@ -101,10 +102,17 @@
                     </div>
                 </div>
                 
-                <div id="signed-msg" class="hidden" style="text-align: center; padding: 3rem; color: #10b981; background: rgba(16, 185, 129, 0.1); border-radius: 12px; border: 1px solid rgba(16, 185, 129, 0.3);">
-                    <i data-lucide="check-circle-2" style="width: 50px; height: 50px; margin-bottom: 1rem;"></i>
-                    <p style="font-weight: 700; font-size: 1.4rem;">Contrato Assinado!</p>
-                    <p style="font-size: 0.9rem; color: var(--text-muted); margin-top: 0.5rem;">O PDF foi gerado e enviado ao sistema da Silven Tec com sucesso.</p>
+                <!-- Área JÁ ASSINADA -->
+                <div id="signed-msg" class="hidden" style="text-align: center; padding: 3rem; background: rgba(0, 0, 0, 0.2); border-radius: 12px; border: 1px solid var(--border);">
+                    <div style="color: #10b981; margin-bottom: 1rem; display: flex; justify-content: center;">
+                        <i data-lucide="check-circle-2" style="width: 60px; height: 60px;"></i>
+                    </div>
+                    <p style="font-weight: 700; font-size: 1.4rem; color: white;">Contrato Assinado!</p>
+                    <p style="font-size: 0.95rem; color: var(--text-muted); margin-top: 0.5rem; margin-bottom: 2.5rem;">Seus serviços estão ativos e o documento foi devidamente registrado e arquivado no sistema da Silven Tec.</p>
+                    
+                    <button id="btn-download-contract" onclick="window.downloadMyContract()" class="btn-primary" style="max-width: 300px; margin: 0 auto;">
+                        <i data-lucide="download" size="18"></i> Baixar Meu Contrato (PDF)
+                    </button>
                 </div>
             </div>
 
@@ -114,12 +122,17 @@
     <!-- Logo Oculta para o PDF Client-Side -->
     <img id="hidden-logo" src="logost.png" style="display:none;" crossorigin="anonymous">
 
-    <script src="app.js?v=13"></script>
+    <script src="app.js?v=14"></script>
     <script>
         const params = new URLSearchParams(window.location.search);
         const token = params.get('token');
-        if(!token) { alert('Acesso inválido.'); window.location.href='index.html'; }
-        else { window.initClientArea(token); lucide.createIcons(); }
+        if(!token) { 
+            showToast('Acesso inválido. Redirecionando...', 'error'); 
+            setTimeout(() => window.location.href='index.html', 1500);
+        } else { 
+            window.initClientArea(token); 
+            lucide.createIcons(); 
+        }
     </script>
 </body>
 </html>
