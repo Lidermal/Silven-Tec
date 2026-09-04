@@ -7,7 +7,6 @@
     <link rel="stylesheet" href="style.css">
     <link rel="icon" type="image/png" href="logost.png">
     
-    <!-- Bibliotecas Necessárias -->
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/signature_pad@4.0.0/dist/signature_pad.umd.min.js"></script>
@@ -29,7 +28,6 @@
     <main class="container" style="max-width: 1000px; margin: 3rem auto; padding: 0 1.5rem;">
         <div class="glass-panel animate-in">
             
-            <!-- Cabeçalho do Projeto -->
             <div style="margin-bottom: 2rem; border-bottom: 1px solid var(--border); padding-bottom: 1.5rem;">
                 <h1 id="proj-title" style="font-size: 2rem; color: white; margin-bottom: 0.5rem;">Carregando...</h1>
                 <p id="client-name" style="color: var(--text-muted);">Aguarde...</p>
@@ -38,9 +36,9 @@
 
             <!-- Navegação por Abas -->
             <div class="tabs-nav" style="display: flex; gap: 2rem; border-bottom: 1px solid var(--border); margin-bottom: 2rem;">
-                <div class="tab-btn active" onclick="window.switchTab('overview')" style="cursor: pointer; padding-bottom: 1rem; border-bottom: 2px solid var(--cyan); color: var(--cyan);">Visão Geral</div>
-                <div class="tab-btn" onclick="window.switchTab('finance')" style="cursor: pointer; padding-bottom: 1rem; color: var(--text-muted);">Financeiro & Parcelas</div>
-                <div class="tab-btn" onclick="window.switchTab('contract')" style="cursor: pointer; padding-bottom: 1rem; color: var(--text-muted);">Contrato Digital</div>
+                <div class="tab-btn active" onclick="window.switchTab('overview')" style="cursor: pointer; padding-bottom: 1rem;">Visão Geral</div>
+                <div class="tab-btn" onclick="window.switchTab('finance')" style="cursor: pointer; padding-bottom: 1rem;">Financeiro & Parcelas</div>
+                <div class="tab-btn" onclick="window.switchTab('contract')" style="cursor: pointer; padding-bottom: 1rem;">Contrato Digital</div>
             </div>
 
             <!-- ABA: VISÃO GERAL -->
@@ -60,14 +58,12 @@
                 </div>
             </div>
 
-            <!-- ABA: FINANCEIRO (COM LÓGICA DE JUROS E MP) -->
+            <!-- ABA: FINANCEIRO -->
             <div id="tab-finance" class="tab-content hidden">
                 <div style="text-align: center; padding: 3rem 2rem; background: rgba(0,0,0,0.3); border-radius: 16px; border: 1px solid var(--border);">
-                    
                     <p class="input-label" style="font-size: 1rem; margin-bottom: 1rem;">Valor da Parcela Mensal</p>
                     <h2 id="finance-value" style="font-size: 3.5rem; color: #10b981; margin: 0; font-weight: 700;">R$ 0,00</h2>
                     
-                    <!-- Aviso de Atraso (Dinâmico) -->
                     <div id="late-fee-msg" class="hidden" style="margin-top: 1rem; padding: 1rem; background: rgba(239, 68, 68, 0.1); border: 1px solid rgba(239, 68, 68, 0.3); border-radius: 8px; color: #ef4444; font-size: 0.9rem;">
                         <strong>Atenção:</strong> Pagamento em atraso.<br>
                         Multa fixa (2%) + Juros de mora (0,033% ao dia) já aplicados.
@@ -81,7 +77,6 @@
                         <i data-lucide="loader-2" class="animate-spin" size="16"></i> Gerando cobrança segura...
                     </p>
                     
-                    <!-- Área do QR Code -->
                     <div id="pix-result" class="hidden" style="margin-top: 2.5rem; background: white; padding: 2rem; border-radius: 16px; display: inline-block; box-shadow: 0 10px 30px rgba(0,0,0,0.5);">
                         <img id="qr-img" src="" style="width: 220px; height: 220px; margin-bottom: 1.5rem; display: block; margin-left: auto; margin-right: auto;">
                         <p style="color: #333; font-size: 0.8rem; margin-bottom: 0.5rem; font-weight: 600;">Código Copia e Cola:</p>
@@ -109,14 +104,17 @@
                 <div id="signed-msg" class="hidden" style="text-align: center; padding: 3rem; color: #10b981; background: rgba(16, 185, 129, 0.1); border-radius: 12px; border: 1px solid rgba(16, 185, 129, 0.3);">
                     <i data-lucide="check-circle-2" style="width: 50px; height: 50px; margin-bottom: 1rem;"></i>
                     <p style="font-weight: 700; font-size: 1.4rem;">Contrato Assinado!</p>
-                    <p style="font-size: 0.9rem; color: var(--text-muted); margin-top: 0.5rem;">O PDF foi baixado e o status atualizado no sistema.</p>
+                    <p style="font-size: 0.9rem; color: var(--text-muted); margin-top: 0.5rem;">O PDF foi gerado e enviado ao sistema da Silven Tec com sucesso.</p>
                 </div>
             </div>
 
         </div>
     </main>
 
-    <script src="app.js?v=7"></script>
+    <!-- Logo Oculta para o PDF Client-Side -->
+    <img id="hidden-logo" src="logost.png" style="display:none;" crossorigin="anonymous">
+
+    <script src="app.js?v=13"></script>
     <script>
         const params = new URLSearchParams(window.location.search);
         const token = params.get('token');
