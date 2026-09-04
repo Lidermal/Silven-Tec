@@ -1,4 +1,4 @@
-/* app.js - Silven Tec Core Logic V18 - Smart Status & DB Fix */
+/* app.js - Silven Tec Core Logic V19 - Smart Protection & Status */
 
 const SUPABASE_URL = 'https://evwsxwkvtjgexhjwofxh.supabase.co';
 const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImV2d3N4d2t2dGpnZXhoandvZnhoIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODc2ODk0MDEsImV4cCI6MjEwMzI2NTQwMX0.oN_ATHMc7KBHC7NA7O35Q5nS3H4OxSIAXMXvE7xYXCA';
@@ -195,7 +195,7 @@ async function initAdminPanel() {
                 
                 const token = await generateSmartToken(clientName);
 
-                // NOVO: Projeto nasce com status 'aguardando_assinatura'
+                // TODO NOVO PROJETO NASCE COMO AGUARDANDO ASSINATURA
                 const { data: projData, error: projError } = await db.from('projects').insert([{
                     client_name: clientName, title, total_value: value, 
                     access_token: token, status: 'aguardando_assinatura', 
@@ -278,7 +278,9 @@ async function loadDashboardData() {
             rev += Number(p.total_value);
             if(p.signed_client) signed++;
             if(tbody.children.length < 5) {
-                tbody.innerHTML += `<tr><td>${p.client_name}</td><td>${p.title}</td><td style="font-family:monospace; color:var(--cyan);">${p.access_token}</td><td><span class="badge badge-cyan">${p.status.replace('_', ' ')}</span></td><td>${formatCurrency(p.total_value)}</td></tr>`;
+                // Dinâmica de Cor do Badge para o Admin
+                const badgeClass = p.status === 'aguardando_assinatura' ? 'badge-warning' : (p.status === 'em_andamento' ? 'badge-cyan' : (p.status === 'concluido' ? 'badge-green' : 'badge-red'));
+                tbody.innerHTML += `<tr><td>${p.client_name}</td><td>${p.title}</td><td style="font-family:monospace; color:var(--cyan);">${p.access_token}</td><td><span class="badge ${badgeClass}">${p.status.replace('_', ' ').toUpperCase()}</span></td><td>${formatCurrency(p.total_value)}</td></tr>`;
             }
         });
         document.getElementById('dash-active-proj').textContent = data.length;
@@ -480,8 +482,13 @@ async function initClientArea(token) {
     currentProject = data;
     document.getElementById('proj-title').textContent = data.title;
     document.getElementById('client-name').textContent = `Cliente: ${data.client_name}`;
-    document.getElementById('status-badge').textContent = data.status.replace('_', ' ').toUpperCase();
     document.getElementById('deadline-display').textContent = formatDate(data.deadline);
+
+    // Cor dinâmica da badge do Status no Cliente
+    const badgeClassProj = data.status === 'aguardando_assinatura' ? 'badge-warning' : (data.status === 'em_andamento' ? 'badge-cyan' : (data.status === 'concluido' ? 'badge-green' : 'badge-red'));
+    const statusBadge = document.getElementById('status-badge');
+    statusBadge.textContent = data.status.replace('_', ' ').toUpperCase();
+    statusBadge.className = `badge ${badgeClassProj}`;
 
     const financeData = calculateFinalValue(data.total_value, data.deadline);
     const valEl = document.getElementById('finance-value');
@@ -493,9 +500,15 @@ async function initClientArea(token) {
         lateMsg.innerHTML = `<strong>Atenção:</strong> Atraso de ${financeData.days} dias.<br>Multa (2%) + Juros (0,033%/dia) aplicados.`;
     } else { lateMsg.classList.add('hidden'); }
 
+    // Bloqueia a visualização financeira e oculta a área de assinar se JÁ estiver assinado
     if(data.signed_client) {
         document.getElementById('sign-area')?.classList.add('hidden');
         document.getElementById('signed-msg')?.classList.remove('hidden');
+        document.getElementById('finance-unlocked')?.classList.remove('hidden');
+        document.getElementById('finance-locked')?.classList.add('hidden');
+    } else {
+        document.getElementById('finance-unlocked')?.classList.add('hidden');
+        document.getElementById('finance-locked')?.classList.remove('hidden');
     }
 
     const { data: payments } = await db.from('payments').select('*').eq('project_id', data.id).order('month_number', {ascending: true});
@@ -575,21 +588,25 @@ window.signContract = async () => {
         const sigData = signaturePad.toDataURL();
         const signedDate = new Date().toISOString();
         
-        // Salva contrato
         const { error: errContract } = await db.from('contracts').upsert({ project_id: currentProject.id, signature_data: sigData, signed_at: signedDate }, { onConflict: 'project_id' });
-        if(errContract) throw new Error("Erro no banco de dados: " + errContract.message);
+        if(errContract) throw new Error("Erro no banco: " + errContract.message);
 
-        // Atualiza status do projeto para EM ANDAMENTO
+        // Cliente altera o status magicamente para Em Andamento no banco de dados
         const { error: errProj } = await db.from('projects').update({ signed_client: true, status: 'em_andamento' }).eq('id', currentProject.id);
         if(errProj) throw new Error("Erro ao atualizar o status do projeto.");
         
         generatePDFDocument(currentProject, sigData, signedDate);
         
+        // Atualiza as abas instantaneamente sem precisar recarregar a tela
         document.getElementById('sign-area').classList.add('hidden');
         document.getElementById('signed-msg').classList.remove('hidden');
+        document.getElementById('finance-locked').classList.add('hidden');
+        document.getElementById('finance-unlocked').classList.remove('hidden');
         
-        // Atualiza interface do cliente na hora
-        document.getElementById('status-badge').textContent = 'EM ANDAMENTO';
+        const statusBadge = document.getElementById('status-badge');
+        statusBadge.textContent = 'EM ANDAMENTO';
+        statusBadge.className = 'badge badge-cyan';
+
         showToast("Contrato salvo com sucesso! O projeto agora está Em Andamento.", "success");
         
     } catch(e) {
