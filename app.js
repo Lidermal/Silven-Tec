@@ -1,4 +1,4 @@
-/* app.js - Silven Tec Core Logic V12 - Notificações & Schema Fix */
+/* app.js - Silven Tec Core Logic V13 - Complete Edition */
 
 const SUPABASE_URL = 'https://evwsxwkvtjgexhjwofxh.supabase.co';
 const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImV2d3N4d2t2dGpnZXhoandvZnhoIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODc2ODk0MDEsImV4cCI6MjEwMzI2NTQwMX0.oN_ATHMc7KBHC7NA7O35Q5nS3H4OxSIAXMXvE7xYXCA';
@@ -6,16 +6,15 @@ const db = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
 let currentProject = null;
 let signaturePad = null;
+let realtimeDebounceTimer = null; // Anti-spam de notificações
 
 // ==========================================
-// SISTEMA DE NOTIFICAÇÕES PERSONALIZADAS
+// SISTEMA DE NOTIFICAÇÕES (TOAST)
 // ==========================================
 function showToast(message, type = 'info') {
     const container = document.getElementById('toast-container') || createToastContainer();
-    
     const toast = document.createElement('div');
     toast.className = `toast ${type}`;
-    
     let icon = '<i data-lucide="info" size="20"></i>';
     if(type === 'success') icon = '<i data-lucide="check-circle" size="20"></i>';
     if(type === 'error') icon = '<i data-lucide="alert-circle" size="20"></i>';
@@ -23,7 +22,6 @@ function showToast(message, type = 'info') {
 
     toast.innerHTML = `${icon} <span>${message}</span>`;
     container.appendChild(toast);
-    
     if(window.lucide) lucide.createIcons({ nodes: [toast] });
 
     setTimeout(() => {
@@ -44,7 +42,12 @@ function createToastContainer() {
 // UTILITÁRIOS
 // ==========================================
 function formatCurrency(val) { return new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(val); }
-function formatDate(dateStr) { return dateStr ? new Date(dateStr).toLocaleDateString('pt-BR') : '-'; }
+function formatDate(dateStr) { 
+    if(!dateStr) return '-';
+    // Corrige fuso horário para mostrar a data exata
+    const [year, month, day] = dateStr.split('T')[0].split('-');
+    return `${day}/${month}/${year}`;
+}
 
 async function generateSmartToken(name) {
     const prefix = 'ST';
@@ -56,7 +59,7 @@ async function generateSmartToken(name) {
 function calculateFinalValue(baseValue, deadlineStr) {
     const value = Number(baseValue);
     const today = new Date(); today.setHours(0,0,0,0);
-    const due = new Date(deadlineStr); due.setHours(0,0,0,0);
+    const due = new Date(deadlineStr + 'T00:00:00'); due.setHours(0,0,0,0);
     const diffDays = Math.ceil((today - due) / (1000 * 60 * 60 * 24));
     if (diffDays <= 0) return { final: value, isLate: false, days: 0 };
     const multa = value * 0.02;
@@ -64,17 +67,32 @@ function calculateFinalValue(baseValue, deadlineStr) {
     return { final: value + multa + juros, isLate: true, days: diffDays };
 }
 
+// Transformar logo HTML em Base64 para o jsPDF
+function getLogoBase64() {
+    const img = document.getElementById('hidden-logo');
+    if(!img) return null;
+    const canvas = document.createElement('canvas');
+    canvas.width = img.naturalWidth || 200;
+    canvas.height = img.naturalHeight || 200;
+    const ctx = canvas.getContext('2d');
+    ctx.drawImage(img, 0, 0);
+    return canvas.toDataURL('image/png');
+}
+
 // ==========================================
-// REALTIME LISTENERS
+// REALTIME LISTENERS (Com Anti-Spam)
 // ==========================================
 function setupRealtime() {
     db.channel('public:all')
       .on('postgres_changes', { event: '*', schema: 'public' }, () => {
-          showToast('Dados atualizados em tempo real', 'success');
-          loadDashboardData();
-          loadProjectsTable();
-          loadFinanceTable();
-          loadContractsTable();
+          clearTimeout(realtimeDebounceTimer);
+          realtimeDebounceTimer = setTimeout(() => {
+              showToast('Banco de dados atualizado', 'success');
+              if(document.getElementById('view-dashboard') && !document.getElementById('view-dashboard').classList.contains('hidden')) loadDashboardData();
+              if(document.getElementById('view-projects') && !document.getElementById('view-projects').classList.contains('hidden')) loadProjectsTable();
+              if(document.getElementById('view-finance') && !document.getElementById('view-finance').classList.contains('hidden')) loadFinanceTable();
+              if(document.getElementById('view-contracts') && !document.getElementById('view-contracts').classList.contains('hidden')) loadContractsTable();
+          }, 1000); // Aguarda 1 segundo após a última alteração para atualizar a tela
       })
       .subscribe();
 }
@@ -109,7 +127,7 @@ window.entrarAdmin = async function() {
         showToast("Login realizado com sucesso!", "success");
         setTimeout(() => window.location.href = 'admin.html', 500);
     } catch (err) {
-        showToast(err.message, "error");
+        showToast("E-mail ou senha incorretos.", "error");
         btn.innerHTML = `<i data-lucide="shield-check" size="16"></i> Entrar no Sistema`; 
         btn.disabled = false;
         lucide.createIcons();
@@ -124,24 +142,24 @@ window.logout = async () => {
 };
 
 // ==========================================
-// ADMIN PANEL LOGIC
+// ADMIN PANEL LOGIC (Projetos & CRUD)
 // ==========================================
 async function initAdminPanel() {
     setupRealtime();
     loadDashboardData();
     
-    // Define datas padrão no modal
     const today = new Date().toISOString().split('T')[0];
     const nextMonth = new Date(Date.now() + 30*86400000).toISOString().split('T')[0];
     if(document.getElementById('new-start')) document.getElementById('new-start').value = today;
     if(document.getElementById('new-due')) document.getElementById('new-due').value = nextMonth;
 
-    const form = document.getElementById('form-new-project');
-    if(form) {
-        form.addEventListener('submit', async (e) => {
+    // Criar Projeto
+    const formNew = document.getElementById('form-new-project');
+    if(formNew) {
+        formNew.addEventListener('submit', async (e) => {
             e.preventDefault();
             const btn = e.target.querySelector('button[type="submit"]');
-            btn.disabled = true; btn.textContent = 'Gerando Contrato e Parcelas...';
+            btn.disabled = true; btn.textContent = 'Gerando...';
 
             try {
                 const clientName = document.getElementById('new-client').value;
@@ -154,20 +172,17 @@ async function initAdminPanel() {
                 
                 const token = await generateSmartToken(clientName);
 
-                // 1. Criar Projeto (Usando select() para pegar o ID gerado)
                 const { data: projData, error: projError } = await db.from('projects').insert([{
                     client_name: clientName, title, total_value: value, 
                     access_token: token, status: 'em_andamento', 
                     deadline: firstDueDate, signed_client: false,
                     support_type: supportType, start_date: startDate
                 }]).select().single();
-
                 if(projError) throw projError;
 
-                // 2. Gerar Parcelas Automáticas
                 const payments = [];
                 for(let i=0; i<months; i++) {
-                    let d = new Date(firstDueDate);
+                    let d = new Date(firstDueDate + 'T12:00:00');
                     d.setMonth(d.getMonth() + i);
                     payments.push({
                         project_id: projData.id,
@@ -177,20 +192,39 @@ async function initAdminPanel() {
                         status: 'pending'
                     });
                 }
-                
                 const { error: payError } = await db.from('payments').insert(payments);
                 if(payError) throw payError;
 
                 showToast(`Projeto criado! Token: ${token}`, "success");
                 closeModal('modal-new-project');
                 e.target.reset();
-                
+                loadProjectsTable();
             } catch (err) {
-                showToast("Erro ao criar projeto: " + err.message, "error");
-                console.error(err);
+                showToast("Erro: " + err.message, "error");
             } finally {
-                btn.disabled = false; btn.textContent = 'Gerar Contrato e Token';
+                btn.disabled = false; btn.textContent = 'Gerar Contrato';
             }
+        });
+    }
+
+    // Editar Projeto
+    const formEdit = document.getElementById('form-edit-project');
+    if(formEdit) {
+        formEdit.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const id = document.getElementById('edit-id').value;
+            const client_name = document.getElementById('edit-client').value;
+            const title = document.getElementById('edit-title').value;
+            const status = document.getElementById('edit-status').value;
+            
+            try {
+                const { error } = await db.from('projects').update({ client_name, title, status }).eq('id', id);
+                if(error) throw error;
+                showToast("Projeto atualizado!", "success");
+                closeModal('modal-edit-project');
+                loadProjectsTable();
+                loadDashboardData();
+            } catch (err) { showToast("Erro ao editar: " + err.message, "error"); }
         });
     }
 }
@@ -218,7 +252,7 @@ async function loadDashboardData() {
         rev += Number(p.total_value);
         if(p.signed_client) signed++;
         if(tbody.children.length < 5) {
-            tbody.innerHTML += `<tr><td>${p.client_name}</td><td>${p.title}</td><td style="font-family:monospace; color:var(--cyan);">${p.access_token}</td><td><span class="badge badge-cyan">${p.status}</span></td><td>${formatCurrency(p.total_value)}</td></tr>`;
+            tbody.innerHTML += `<tr><td>${p.client_name}</td><td>${p.title}</td><td style="font-family:monospace; color:var(--cyan);">${p.access_token}</td><td><span class="badge badge-cyan">${p.status.replace('_', ' ')}</span></td><td>${formatCurrency(p.total_value)}</td></tr>`;
         }
     });
     document.getElementById('dash-active-proj').textContent = data.length;
@@ -231,27 +265,126 @@ async function loadProjectsTable() {
     const tbody = document.getElementById('projects-list');
     tbody.innerHTML = '';
     data?.forEach(p => {
-        tbody.innerHTML += `<tr><td style="font-weight:600;">${p.title}</td><td>${p.client_name}</td><td>${formatDate(p.start_date)} até ${formatDate(p.deadline)}</td><td><button class="action-btn" onclick="navigator.clipboard.writeText('${p.access_token}');showToast('Token copiado!', 'success')">Copiar Token</button></td></tr>`;
+        tbody.innerHTML += `<tr>
+            <td style="font-weight:600;">${p.title}</td>
+            <td>${p.client_name}</td>
+            <td>${formatDate(p.start_date)} até ${formatDate(p.deadline)}</td>
+            <td style="font-family:monospace; color:var(--cyan);">${p.access_token}</td>
+            <td>
+                <button class="action-btn" onclick="navigator.clipboard.writeText('${p.access_token}');showToast('Copiado!', 'success')" title="Copiar Token"><i data-lucide="copy" size="16"></i></button>
+                <button class="action-btn" onclick="openEditProject('${p.id}', '${p.client_name}', '${p.title}', '${p.status}')" title="Editar"><i data-lucide="edit" size="16"></i></button>
+                <button class="action-btn delete" onclick="deleteProject('${p.id}')" title="Excluir"><i data-lucide="trash-2" size="16"></i></button>
+            </td>
+        </tr>`;
     });
+    lucide.createIcons();
 }
 
+window.openEditProject = (id, client, title, status) => {
+    document.getElementById('edit-id').value = id;
+    document.getElementById('edit-client').value = client;
+    document.getElementById('edit-title').value = title;
+    document.getElementById('edit-status').value = status;
+    openModal('modal-edit-project');
+};
+
+window.deleteProject = async (id) => {
+    if(!confirm("Certeza que deseja excluir este projeto? Isso apagará todas as parcelas e contratos dele.")) return;
+    try {
+        // Apaga filhos primeiro (Cascade manual por segurança)
+        await db.from('payments').delete().eq('project_id', id);
+        await db.from('contracts').delete().eq('project_id', id);
+        const { error } = await db.from('projects').delete().eq('id', id);
+        if(error) throw error;
+        showToast("Projeto excluído com sucesso.", "success");
+        loadProjectsTable();
+    } catch (e) { showToast("Erro ao excluir: " + e.message, "error"); }
+};
+
+// ADMIN: FINANCEIRO EM CARDS
 async function loadFinanceTable() {
-    const { data } = await db.from('payments').select('*, projects(client_name, title)').order('due_date', {ascending: true});
-    const tbody = document.getElementById('finance-list');
-    tbody.innerHTML = '';
+    const { data: projects } = await db.from('projects').select('id, client_name, title, access_token, total_value');
+    const { data: payments } = await db.from('payments').select('*');
+    
     let received = 0, pending = 0;
+    const container = document.getElementById('finance-cards-container');
+    container.innerHTML = '';
 
-    data?.forEach(p => {
-        const isLate = new Date(p.due_date) < new Date() && p.status !== 'paid';
-        if(p.status === 'paid') received += Number(p.amount);
-        else pending += Number(p.amount);
+    if(!projects || projects.length === 0) {
+        container.innerHTML = `<p style="color:var(--text-muted);">Nenhum projeto cadastrado ainda.</p>`;
+        return;
+    }
 
-        tbody.innerHTML += `<tr><td>${p.projects?.client_name}</td><td>${p.month_number}ª Parcela</td><td>${formatDate(p.due_date)}</td><td>${formatCurrency(p.amount)}</td><td><span class="badge ${p.status==='paid'?'badge-green':(isLate?'badge-red':'badge-cyan')}">${p.status==='paid'?'Pago':(isLate?'Atrasado':'Pendente')}</span></td></tr>`;
+    projects.forEach(proj => {
+        const projPayments = payments?.filter(p => p.project_id === proj.id) || [];
+        const paidCount = projPayments.filter(p => p.status === 'paid').length;
+        const totalCount = projPayments.length;
+        
+        projPayments.forEach(p => {
+            if(p.status === 'paid') received += Number(p.amount);
+            else pending += Number(p.amount);
+        });
+
+        const card = document.createElement('div');
+        card.className = 'finance-card';
+        card.onclick = () => openFinanceDetails(proj, projPayments);
+        card.innerHTML = `
+            <h4>${proj.client_name}</h4>
+            <p>${proj.title}</p>
+            <div class="finance-info">
+                <span style="color:var(--text-main); font-size: 0.9rem; font-weight:600;">${paidCount}/${totalCount} Pagos</span>
+                <span class="finance-token">${proj.access_token}</span>
+            </div>
+            <div style="margin-top: 1rem; text-align:right; font-weight:700; color:var(--cyan); font-size:1.2rem;">
+                ${formatCurrency(proj.total_value)} /mês
+            </div>
+        `;
+        container.appendChild(card);
     });
+
     document.getElementById('fin-received').textContent = formatCurrency(received);
     document.getElementById('fin-pending').textContent = formatCurrency(pending);
 }
 
+window.openFinanceDetails = (proj, payments) => {
+    document.getElementById('finance-modal-title').textContent = `Financeiro: ${proj.client_name}`;
+    const tbody = document.getElementById('finance-modal-list');
+    tbody.innerHTML = '';
+    
+    // Ordena as parcelas
+    payments.sort((a,b) => a.month_number - b.month_number);
+
+    payments.forEach(p => {
+        const isLate = new Date(p.due_date + 'T00:00:00') < new Date() && p.status !== 'paid';
+        const badgeClass = p.status==='paid' ? 'badge-green' : (isLate ? 'badge-red' : 'badge-cyan');
+        const badgeText = p.status==='paid' ? 'Pago' : (isLate ? 'Atrasado' : 'Pendente');
+        
+        tbody.innerHTML += `<tr>
+            <td>${p.month_number}ª Parcela</td>
+            <td>${formatDate(p.due_date)}</td>
+            <td>${formatCurrency(p.amount)}</td>
+            <td><span class="badge ${badgeClass}">${badgeText}</span></td>
+            <td>
+               <button class="action-btn" title="Marcar como Pago" onclick="markPaid('${p.id}')"><i data-lucide="check" size="16"></i></button>
+            </td>
+        </tr>`;
+    });
+    
+    openModal('modal-finance-details');
+    lucide.createIcons();
+};
+
+window.markPaid = async (paymentId) => {
+    if(!confirm("Marcar esta parcela como PAGA?")) return;
+    try {
+        await db.from('payments').update({ status: 'paid' }).eq('id', paymentId);
+        showToast("Parcela atualizada!", "success");
+        closeModal('modal-finance-details');
+        loadFinanceTable(); // Recarrega
+    } catch(e) { showToast("Erro: " + e.message, "error"); }
+};
+
+// ADMIN: CONTRATOS E PDF REGENERATOR
 async function loadContractsTable() {
     const { data: projects } = await db.from('projects').select('*');
     const { data: contracts } = await db.from('contracts').select('*');
@@ -259,9 +392,29 @@ async function loadContractsTable() {
     tbody.innerHTML = '';
     projects?.forEach(p => {
         const contract = contracts?.find(c => c.project_id === p.id);
-        tbody.innerHTML += `<tr><td>${p.title}</td><td>${p.client_name}</td><td>${contract ? formatDate(contract.signed_at) : '-'}</td><td><span class="badge ${contract ? 'badge-green' : 'badge-red'}">${contract ? 'Assinado' : 'Pendente'}</span></td></tr>`;
+        const signedDate = contract ? formatDate(contract.signed_at) + ' às ' + new Date(contract.signed_at).toLocaleTimeString('pt-BR').substring(0,5) : '-';
+        
+        tbody.innerHTML += `<tr>
+            <td>${p.title}</td>
+            <td>${p.client_name}</td>
+            <td>${signedDate}</td>
+            <td><span class="badge ${contract ? 'badge-green' : 'badge-red'}">${contract ? 'Assinado' : 'Pendente'}</span></td>
+            <td>
+                ${contract ? `<button class="action-btn primary" onclick="generateAdminPDF('${p.id}')"><i data-lucide="download" size="14"></i> Baixar PDF</button>` : `<span style="font-size:0.8rem; color:var(--text-muted);">Aguardando Cliente</span>`}
+            </td>
+        </tr>`;
     });
+    lucide.createIcons();
 }
+
+// O Admin gera o PDF na hora copiando os dados do cliente e a assinatura em Base64
+window.generateAdminPDF = async (projectId) => {
+    const { data: proj } = await db.from('projects').select('*').eq('id', projectId).single();
+    const { data: contr } = await db.from('contracts').select('*').eq('project_id', projectId).single();
+    if(!proj || !contr) return showToast("Erro ao carregar dados do contrato.", "error");
+
+    generatePDFDocument(proj, contr.signature_data, contr.signed_at);
+};
 
 window.openModal = (id) => document.getElementById(id).classList.remove('hidden');
 window.closeModal = (id) => document.getElementById(id).classList.add('hidden');
@@ -284,7 +437,7 @@ async function initClientArea(token) {
     currentProject = data;
     document.getElementById('proj-title').textContent = data.title;
     document.getElementById('client-name').textContent = `Cliente: ${data.client_name}`;
-    document.getElementById('status-badge').textContent = data.status.toUpperCase();
+    document.getElementById('status-badge').textContent = data.status.replace('_', ' ').toUpperCase();
     document.getElementById('deadline-display').textContent = formatDate(data.deadline);
 
     const financeData = calculateFinalValue(data.total_value, data.deadline);
@@ -303,11 +456,21 @@ async function initClientArea(token) {
     }
 }
 
+// Correção exata da transição de abas do cliente
 window.switchTab = function(tabName) {
+    // Esconde todos os conteúdos
     document.querySelectorAll('.tab-content').forEach(el => el.classList.add('hidden'));
+    // Remove 'active' de todos os botões
     document.querySelectorAll('.tab-btn').forEach(el => el.classList.remove('active'));
+    
+    // Mostra o conteúdo certo
     document.getElementById(`tab-${tabName}`)?.classList.remove('hidden');
-    event.currentTarget.classList.add('active');
+    
+    // Encontra o botão clicado usando querySelector pelo atributo onclick e adiciona 'active'
+    const btn = document.querySelector(`.tab-btn[onclick*="${tabName}"]`);
+    if(btn) btn.classList.add('active');
+
+    // Inicializa a assinatura se for a aba de contrato e ainda não estiver assinado
     if(tabName === 'contract' && !signaturePad && currentProject && !currentProject.signed_client) {
         const canvas = document.getElementById('sig-pad');
         if(canvas) {
@@ -345,60 +508,89 @@ window.copyPix = () => {
 
 window.clearSig = () => signaturePad?.clear();
 
+// CLIENTE: Assinar Contrato e Gravar no Banco
 window.signContract = async () => {
     if(!signaturePad || signaturePad.isEmpty()) return showToast('Por favor, assine o contrato.', 'warning');
     
     const sigData = signaturePad.toDataURL();
-    const { jsPDF } = window.jspdf;
-    const doc = new jsPDF();
+    const signedDate = new Date().toISOString();
     
-    // CABEÇALHO
-    doc.setFontSize(22); doc.setTextColor(6, 182, 212); doc.setFont("helvetica", "bold"); doc.text("SILVEN TEC", 20, 20);
-    doc.setFontSize(10); doc.setTextColor(100); doc.setFont("helvetica", "normal"); doc.text("INOVAÇÃO & GESTÃO EM TECNOLOGIA", 20, 26);
-    doc.line(20, 32, 190, 32);
-    
-    // TÍTULO
-    doc.setFontSize(14); doc.setTextColor(0); doc.setFont("helvetica", "bold"); doc.text("CONTRATO DE PRESTAÇÃO DE SERVIÇOS DE TECNOLOGIA", 20, 45);
-    
-    // DADOS
-    doc.setFontSize(10); doc.setFont("helvetica", "normal");
-    doc.text(`CONTRATADA: SILVEN TEC`, 20, 55);
-    doc.text(`CONTRATANTE: ${currentProject.client_name}`, 20, 62);
-    doc.text(`OBJETO: ${currentProject.title}`, 20, 69);
-    doc.text(`VIGÊNCIA: De ${formatDate(currentProject.start_date)} a ${formatDate(currentProject.deadline)}`, 20, 76);
-    doc.text(`SUPORTE: ${currentProject.support_type === 'com_suporte' ? 'INCLUSO (Horário Comercial)' : 'NÃO INCLUSO'}`, 20, 83);
-    
-    // CLÁUSULAS JURÍDICAS
-    doc.setFont("helvetica", "bold"); doc.text("CLÁUSULAS GERAIS:", 20, 95);
-    doc.setFont("helvetica", "normal"); doc.setFontSize(9);
-    
-    const clauses = [
-        "1. DO PAGAMENTO: O valor mensal é de " + formatCurrency(currentProject.total_value) + ", payable até o dia do vencimento.",
-        "2. DA MULTA E JUROS: Em caso de atraso, incidirá multa fixa de 2% (dois por cento) sobre o valor da parcela, acrescida de juros moratórios de 0,033% (trinta e três milésimos por cento) ao dia, conforme Código Civil Brasileiro.",
-        "3. DO SUPORTE: " + (currentProject.support_type === 'com_suporte' ? "A CONTRATADA fornecerá suporte técnico durante o horário comercial." : "O presente contrato não contempla suporte técnico contínuo."),
-        "4. DA CONFIDENCIALIDADE (LGPD): As partes comprometem-se a tratar dados pessoais conforme a Lei 13.709/2018.",
-        "5. DA RESCISÃO: O contrato poderá ser rescindido com aviso prévio de 30 dias."
-    ];
-    
-    let yPos = 102;
-    clauses.forEach(clause => {
-        const splitText = doc.splitTextToSize(clause, 170);
-        doc.text(splitText, 20, yPos);
-        yPos += (splitText.length * 4) + 3;
-    });
-    
-    // ASSINATURA
-    doc.addImage(sigData, 'PNG', 20, yPos + 10, 80, 40);
-    doc.line(20, yPos + 52, 100, yPos + 52);
-    doc.text("Assinatura Digital do Contratante", 20, yPos + 58);
-    doc.text(`Data: ${new Date().toLocaleString('pt-BR')}`, 20, yPos + 64);
+    // Gera o PDF visual para o cliente baixar na hora
+    generatePDFDocument(currentProject, sigData, signedDate);
 
-    doc.save(`Contrato_SilvenTec_${currentProject.title.replace(/\s/g,'_')}.pdf`);
-
-    await db.from('contracts').upsert({ project_id: currentProject.id, signature_data: sigData, signed_at: new Date().toISOString() }, { onConflict: 'project_id' });
+    // Salva no banco de dados
+    await db.from('contracts').upsert({ project_id: currentProject.id, signature_data: sigData, signed_at: signedDate }, { onConflict: 'project_id' });
     await db.from('projects').update({ signed_client: true }).eq('id', currentProject.id);
     
     document.getElementById('sign-area').classList.add('hidden');
     document.getElementById('signed-msg').classList.remove('hidden');
-    showToast("Contrato assinado e PDF baixado!", "success");
+    showToast("Contrato salvo com sucesso!", "success");
 };
+
+// ==========================================
+// FUNÇÃO CENTRAL PARA GERAR PDF FORMATADO (Usada por Admin e Cliente)
+// ==========================================
+function generatePDFDocument(proj, signatureBase64, dateISO) {
+    const { jsPDF } = window.jspdf;
+    const doc = new jsPDF();
+    
+    // 1. Inserir Logo
+    const logoBase64 = getLogoBase64();
+    if(logoBase64) {
+        doc.addImage(logoBase64, 'PNG', 20, 15, 22, 22);
+    }
+    
+    // CABEÇALHO
+    doc.setFontSize(22); doc.setTextColor(6, 182, 212); doc.setFont("helvetica", "bold"); 
+    doc.text("SILVEN TEC", (logoBase64 ? 45 : 20), 25);
+    doc.setFontSize(9); doc.setTextColor(100); doc.setFont("helvetica", "normal"); 
+    doc.text("INOVAÇÃO E GESTÃO EM TECNOLOGIA", (logoBase64 ? 45 : 20), 32);
+    doc.line(20, 42, 190, 42);
+    
+    // TÍTULO
+    doc.setFontSize(14); doc.setTextColor(0); doc.setFont("helvetica", "bold"); 
+    doc.text("CONTRATO DE PRESTAÇÃO DE SERVIÇOS DE TECNOLOGIA", 20, 52);
+    
+    // DADOS INICIAIS
+    doc.setFontSize(10); doc.setFont("helvetica", "normal");
+    doc.text(`CONTRATADA: SILVEN TEC`, 20, 62);
+    doc.text(`CONTRATANTE: ${proj.client_name}`, 20, 69);
+    doc.text(`OBJETO DO CONTRATO: ${proj.title}`, 20, 76);
+    doc.text(`VIGÊNCIA: De ${formatDate(proj.start_date)} a ${formatDate(proj.deadline)}`, 20, 83);
+    
+    const supportText = proj.support_type === 'com_suporte' ? 'INCLUSO (Em dias úteis e horário comercial)' : 'NÃO INCLUSO (Apenas desenvolvimento/entrega)';
+    doc.text(`MODALIDADE DE SUPORTE: ${supportText}`, 20, 90);
+    
+    // CLÁUSULAS COMPLETAS JURIDICAMENTE
+    doc.setFont("helvetica", "bold"); doc.text("CLÁUSULAS CONTRATUAIS:", 20, 105);
+    doc.setFont("helvetica", "normal"); doc.setFontSize(9);
+    
+    const clauses = [
+        "CLÁUSULA 1 - DO OBJETO: O presente contrato tem por objeto a prestação de serviços de tecnologia conforme especificado no escopo do projeto, garantindo o cumprimento de todos os requisitos técnicos pré-acordados entre as partes.",
+        `CLÁUSULA 2 - DO PAGAMENTO: Pelos serviços prestados, a CONTRATANTE pagará à CONTRATADA o valor fixo mensal de ${formatCurrency(proj.total_value)}, que deverá ser pago até a data de vencimento estabelecida na plataforma financeira.`,
+        "CLÁUSULA 3 - DA MULTA E JUROS DE MORA: O atraso no pagamento sujeitará a CONTRATANTE a uma multa penal, inarredável, fixada em 2% (dois por cento) sobre o valor do débito, somada a juros de mora de 0,033% (trinta e três milésimos por cento) cobrados ao dia, nos termos da legislação civil vigente.",
+        "CLÁUSULA 4 - DAS OBRIGAÇÕES DA CONTRATADA: A CONTRATADA obriga-se a entregar os serviços com zelo, utilizando-se das melhores práticas e ferramentas de desenvolvimento de software atuais, respeitando os prazos delimitados.",
+        "CLÁUSULA 5 - DA CONFIDENCIALIDADE E LGPD: Ambas as partes assumem o compromisso de manter o mais absoluto sigilo e confidencialidade sobre todos os dados e informações técnicas ou financeiras compartilhadas, adequando-se integralmente à Lei Geral de Proteção de Dados (Lei nº 13.709/2018).",
+        "CLÁUSULA 6 - DA RESCISÃO E CANCELAMENTO: Este contrato poderá ser rescindido por qualquer das partes mediante aviso prévio expresso de, no mínimo, 30 (trinta) dias corridos, garantindo-se a quitação proporcional dos serviços já executados.",
+        "CLÁUSULA 7 - DO FORO: Fica eleito o foro da Comarca de Teresina - PI para dirimir e resolver quaisquer dúvidas ou questões oriundas ou relativas a este contrato, com renúncia expressa a qualquer outro, por mais privilegiado que seja."
+    ];
+    
+    let yPos = 112;
+    clauses.forEach(clause => {
+        const splitText = doc.splitTextToSize(clause, 170);
+        doc.text(splitText, 20, yPos);
+        yPos += (splitText.length * 4) + 4;
+    });
+    
+    // ÁREA DE ASSINATURA
+    yPos += 10;
+    doc.addImage(signatureBase64, 'PNG', 20, yPos, 60, 30);
+    doc.line(20, yPos + 32, 100, yPos + 32);
+    
+    const displayDate = new Date(dateISO).toLocaleString('pt-BR');
+    doc.setFont("helvetica", "bold"); doc.text("Assinatura Digital do Contratante", 20, yPos + 38);
+    doc.setFont("helvetica", "normal"); doc.text(`Validação Eletrônica (MP 2.200-2/2001) - Data: ${displayDate}`, 20, yPos + 44);
+
+    // Baixa o arquivo com o nome personalizado
+    doc.save(`Contrato_SilvenTec_${proj.client_name.replace(/\s/g,'_')}.pdf`);
+}
